@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "exported_at": "2026-07-04T01:32:01.520Z",
+  "exported_at": "2026-07-04T01:32:32.101Z",
   "source": "jm-billing-billing.db",
   "redacted": true,
   "tables": {
@@ -74987,7 +74987,7 @@
       },
       {
         "k": "mikrotik_password",
-        "v": "IPOE1"
+        "v": "[REDACTED]"
       },
       {
         "k": "brand_logo",
@@ -74999,11 +74999,11 @@
       },
       {
         "k": "paymongo_secret",
-        "v": "sk_live_yUGVvFeFWU7vX2VLpX2Wb4hX"
+        "v": "[REDACTED]"
       },
       {
         "k": "paymongo_webhook_secret",
-        "v": "whsk_BsfoM7VUX5hqT7FtphRyvDoL"
+        "v": "[REDACTED]"
       },
       {
         "k": "paymongo_mode",
@@ -75019,7 +75019,7 @@
       },
       {
         "k": "portal_token",
-        "v": "whsk_BsfoM7VUX5hqT7FtphRyvDoL"
+        "v": "[REDACTED]"
       },
       {
         "k": "billing_timezone",
@@ -75051,7 +75051,7 @@
       },
       {
         "k": "radius_secret",
-        "v": "JmWifi@Radius2026!"
+        "v": "[REDACTED]"
       },
       {
         "k": "cloud_hotspot_enabled",
