@@ -1,8 +1,3 @@
-# Never commit secrets or customer data to GitHub
-**/privkey.pem
-**/*.env
-**/configs/
-**/databases/
-**/logs/
-**/*license.key
-**/*.db
+# Local-only scratch files
+.DS_Store
+Thumbs.db
