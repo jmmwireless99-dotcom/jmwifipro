@@ -1,0 +1,48 @@
+JM WIFI Billing — database summary
+Exported: 2026-07-03T23:50:03.395Z
+VPS: 187.77.145.131 /opt/jm-billing
+Local folder: C:\Users\jmmwi\JMWIFI.PRO-BACKEUP\jmwifi-full-backup-20260703T234918Z
+
+Tables: 41
+Row counts:
+  agent_ledger: 0
+  agent_withdrawals: 0
+  agents: 3
+  audit: 5166
+  client_status: 272
+  coin_log_seen: 0
+  credit_ledger: 80
+  customer_sessions: 0
+  customers: 291
+  expenses: 0
+  fiber_lines: 32
+  hardware_sales: 0
+  hotspot_accounts: 0
+  hotspot_events: 20
+  installs: 5
+  inventory_items: 0
+  inventory_moves: 0
+  inventory_units: 0
+  invoices: 557
+  job_order_items: 0
+  job_order_techs: 3
+  job_orders: 11
+  naps: 94
+  olts: 7
+  outages: 0
+  payment_proofs: 0
+  payments: 81
+  plans: 9
+  referral_ledger: 1
+  routers: 5
+  settings: 88
+  sms_messages: 1
+  techs: 10
+  tickets: 78
+  unit_events: 0
+  usage_live: 0
+  usage_period: 0
+  users: 16
+  vendos: 0
+  voucher_orders: 205
+  voucher_radius_sessions: 0

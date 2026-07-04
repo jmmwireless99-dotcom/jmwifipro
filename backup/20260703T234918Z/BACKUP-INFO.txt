@@ -1,0 +1,32 @@
+Backup time (UTC): 20260703T234918Z
+Hostname: srv1770674
+Kernel: 6.8.0-124-generic
+Uptime: up 1 week, 6 days, 20 hours, 13 minutes
+Disk:
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        48G  3.5G   44G   8% /
+
+Services:
+active
+active
+active
+active
+
+Listening ports:
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                     
+LISTEN 0      511          0.0.0.0:80        0.0.0.0:*    users:(("nginx",pid=81117,fd=5),("nginx",pid=37137,fd=5))  
+LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*    users:(("sshd",pid=9605,fd=3),("systemd",pid=1,fd=202))    
+LISTEN 0      511          0.0.0.0:443       0.0.0.0:*    users:(("nginx",pid=81117,fd=12),("nginx",pid=37137,fd=12))
+LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*    users:(("systemd-resolve",pid=9609,fd=17))                 
+LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*    users:(("systemd-resolve",pid=9609,fd=15))                 
+LISTEN 0      511             [::]:80           [::]:*    users:(("nginx",pid=81117,fd=6),("nginx",pid=37137,fd=6))  
+LISTEN 0      4096            [::]:22           [::]:*    users:(("sshd",pid=9605,fd=4),("systemd",pid=1,fd=203))    
+LISTEN 0      511             [::]:443          [::]:*    users:(("nginx",pid=81117,fd=11),("nginx",pid=37137,fd=11))
+LISTEN 0      511                *:3000            *:*    users:(("MainThread",pid=3179786,fd=26))                   
+
+Opt directories:
+total 16
+drwxr-xr-x  4 root root 4096 Jun 25 15:16 .
+drwxr-xr-x 23 root root 4096 Jul  4 07:16 ..
+drwxr-xr-x  4 root root 4096 Jun 22 18:17 JeffNetPanel
+drwxr-xr-x  6 root root 4096 Jul  2 17:10 jm-billing
