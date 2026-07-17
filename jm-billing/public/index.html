@@ -903,7 +903,7 @@
       <label style="font-size:12px;color:var(--muted)">Voucher mode</label>
       <select id="vc-mode" style="background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option value="user">Username only (no password)</option><option value="both">Username = password</option></select>
       <label style="font-size:12px;color:var(--muted)">Generator</label>
-      <select id="vc-generator" style="background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option value="cloud">Cloud RADIUS (jmwifi.pro default)</option><option value="original">Original — direct MikroTik (Jeffrey)</option></select>
+      <select id="vc-generator" style="background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option value="original" selected>Original — direct MikroTik (Jeffrey)</option><option value="cloud">Cloud RADIUS (jmwifi.pro default)</option></select>
       <div id="vc-generator-hint" style="font-family:var(--sans);font-size:11px;color:var(--muted)">Cloud mode issues vouchers via RADIUS for all sites. Original mode writes directly to the selected router profile.</div>
       <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
         <button class="go" onclick="makeVouchers(this)">Generate &amp; print</button>
@@ -1281,6 +1281,7 @@
   <button id="nav-expenses" onclick="showView('expenses')"><span class="ico">💸</span>Expenses</button>
   <button id="nav-map" onclick="showView('map')"><span class="ico">🌍</span>Earth Map</button>
   <div class="grp">Business</div>
+  <button id="nav-hotspot" onclick="showView('hotspot')"><span class="ico">🎫</span>Hotspot Generator</button>
   <button id="nav-routers" onclick="showView('routers')"><span class="ico">🖧</span>Multi-site routers</button>
   <button id="nav-plans" onclick="showView('plans')"><span class="ico">📑</span>Plans / Packages</button>
   <button id="nav-referrals" onclick="showView('referrals')"><span class="ico">🎁</span>Referrals &amp; Points</button>
@@ -2012,6 +2013,70 @@
       <div style="grid-column:1/-1"><label class="set-grp">Note</label><input id="ex-note" class="set-in" placeholder="optional"></div>
       <div style="grid-column:1/-1;display:flex;gap:8px"><button onclick="saveExpense()" style="flex:1">Save expense</button></div>
       <div class="err" id="ex-err" style="display:none;grid-column:1/-1;color:var(--bad);font-size:13px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-hotspot" class="hidden">
+  <div class="dash-head">
+    <div>
+      <h1 class="module-title" style="margin-bottom:2px">Hotspot Generator</h1>
+      <p class="module-desc">Jeffrey’s original jmwifi.pro voucher generator — create codes and print cards.</p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:20px;max-width:640px">
+    <h2>Generate hotspot vouchers
+      <span style="display:flex;gap:8px;align-items:center;margin-left:auto">
+        <button class="refresh" onclick="loadHotspotGeneratorPage()">⟳ refresh</button>
+      </span>
+    </h2>
+    <div style="padding:0 0 12px;font-family:var(--sans);font-size:12.5px;color:var(--muted)">
+      <b>Original (Jeffrey)</b> writes users directly to a MikroTik hotspot profile.
+      Cloud RADIUS issues nationwide codes for <b>jmwifi.pro/voucher</b>.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding:0 0 4px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:12px;color:var(--muted)">Router / site</label>
+          <select id="hg-router" onchange="hgLoadProfiles()" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px">
+            <option value="">Default / cloud</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted)">Package (hotspot user profile)</label>
+          <select id="hg-profile" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option>default</option></select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label style="font-size:12px;color:var(--muted)">Count</label><input id="hg-count" type="number" value="10" min="1" max="500" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"></div>
+        <div><label style="font-size:12px;color:var(--muted)">Code length</label><input id="hg-length" type="number" value="8" min="4" max="16" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label style="font-size:12px;color:var(--muted)">Prefix</label><input id="hg-prefix" value="JM" placeholder="e.g. JM" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"></div>
+        <div><label style="font-size:12px;color:var(--muted)">Uptime limit</label><input id="hg-uptime" value="1h" placeholder="e.g. 1d, 6h" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label style="font-size:12px;color:var(--muted)">Price label (print)</label><input id="hg-price" placeholder="e.g. ₱20" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"></div>
+        <div><label style="font-size:12px;color:var(--muted)">Expiry label (print)</label><input id="hg-exp" placeholder="e.g. Valid 24h" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:12px;color:var(--muted)">Voucher mode</label>
+          <select id="hg-mode" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option value="user">Username only (no password)</option><option value="both">Username = password</option></select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted)">Generator</label>
+          <select id="hg-generator" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px">
+            <option value="original" selected>Original — direct MikroTik (Jeffrey)</option>
+            <option value="cloud">Cloud RADIUS (jmwifi.pro default)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
+        <button class="go" onclick="makeHotspotGeneratorVouchers(this)">Generate &amp; print</button>
+        <span id="hg-msg" style="font-size:12px;color:var(--muted)"></span>
+      </div>
     </div>
   </div>
 </div>
@@ -2886,7 +2951,7 @@ async function loadProfiles() {
 
 // ---------- view switching ----------
 let plansCache = [];
-const VIEWS = ["ops", "clients", "inventory", "joborders", "techs", "expenses", "map", "routers", "plans", "referrals", "agents", "helpdesk", "sms", "reports"];
+const VIEWS = ["ops", "clients", "inventory", "joborders", "techs", "expenses", "map", "hotspot", "routers", "plans", "referrals", "agents", "helpdesk", "sms", "reports"];
 const CLIENT_TABS = {
   management: "Clients",
   ipoe: "IPoE",
@@ -2978,6 +3043,7 @@ function showView(name, tab) {
   if (name === "joborders") { loadJobOrders(); }
   if (name === "expenses") { loadExpenses(); }
   if (name === "map") { mapTab("map"); loadMap(); mapTimer = setInterval(loadMap, 25000); }
+  if (name === "hotspot") loadHotspotGeneratorPage();
   if (name === "routers") { loadRouters(); startRoutersAutoRefresh(); } else stopRoutersAutoRefresh();
   if (name === "reports") { loadSalesResetStats(); fillAllSiteFilters(); loadSales(currentRange); loadFinance(); loadReminders(); loadCashflow(); loadSalesByRouter(); loadProfitByRouter(); }
   if (name === "referrals") loadReferralsPage();
@@ -5804,6 +5870,60 @@ async function makeVouchers(btn) {
   printVouchers(r.data);
   if (_rtManageId) rtLoadHotspotUsers(_rtManageId);
   else if (typeof loadAcc === "function") loadAcc();
+}
+async function loadHotspotGeneratorPage() {
+  const sel = $("hg-router"); if (!sel) return;
+  const prev = sel.value;
+  try {
+    const r = await api("/api/billing/routers");
+    const list = (r.ok && r.data) ? r.data : [];
+    sel.innerHTML = '<option value="">Default / cloud</option>' + list.map(x =>
+      `<option value="${x.id}">${esc(x.name || ("#" + x.id))}${x.host ? " — " + esc(x.host) : ""}</option>`
+    ).join("");
+    if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+    else if (list.length) {
+      const def = list.find(x => x.is_default) || list[0];
+      sel.value = String(def.id);
+    }
+  } catch {
+    sel.innerHTML = '<option value="">Default / cloud</option>';
+  }
+  await hgLoadProfiles();
+  if ($("hg-msg")) $("hg-msg").textContent = "";
+}
+async function hgLoadProfiles() {
+  const rid = $("hg-router") && $("hg-router").value;
+  const sel = $("hg-profile"); if (!sel) return;
+  sel.innerHTML = '<option>default</option>';
+  if (!rid) return;
+  try {
+    const r = await api("/api/billing/routers/" + rid + "/hotspot-profiles");
+    if (r.ok && (r.data || []).length) {
+      sel.innerHTML = r.data.map(p => `<option>${esc(p.name)}</option>`).join("");
+    }
+  } catch {}
+}
+async function makeHotspotGeneratorVouchers(btn) {
+  btn.disabled = true; $("hg-msg").textContent = "Creating vouchers…";
+  const rid = $("hg-router").value;
+  const body = {
+    count: +$("hg-count").value,
+    profile: $("hg-profile").value,
+    length: +$("hg-length").value,
+    prefix: $("hg-prefix").value.trim(),
+    uptime: $("hg-uptime").value.trim(),
+    price: $("hg-price").value.trim(),
+    exp: $("hg-exp").value.trim(),
+    userOnly: $("hg-mode").value === "user",
+    generator: $("hg-generator").value,
+    router_id: rid ? Number(rid) : undefined,
+  };
+  const r = await api("/api/router/hotspot/vouchers", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  btn.disabled = false;
+  if (!r.ok) { $("hg-msg").textContent = r.error || "Failed"; return; }
+  const mode = r.data.generator === "original" ? " (original MikroTik)" : " (cloud RADIUS)";
+  $("hg-msg").textContent = `Created ${r.data.count} voucher(s)${mode}.` + (r.data.errors && r.data.errors.length ? ` ${r.data.errors.length} failed.` : "");
+  printVouchers(r.data);
 }
 function printVouchers(d) {
   const biz = ($("set-biz_name")&&$("set-biz_name").value) || "WiFi";
@@ -9383,9 +9503,9 @@ function showApp(user) {
 const USER_ACCOUNT_ROLES = ["admin", "cashier", "technician", "staff", "helper", "agent"];
 const ROLE_VIEWS = {
   admin: null,
-  cashier: ["ops", "clients", "plans", "joborders", "techs", "inventory", "expenses", "referrals", "agents", "helpdesk", "sms", "reports", "map"],
+  cashier: ["ops", "clients", "plans", "hotspot", "joborders", "techs", "inventory", "expenses", "referrals", "agents", "helpdesk", "sms", "reports", "map"],
   technician: ["joborders", "techs", "inventory", "referrals", "map", "helpdesk"],
-  staff: ["ops", "clients", "joborders", "techs", "inventory", "referrals", "helpdesk", "map"],
+  staff: ["ops", "clients", "hotspot", "joborders", "techs", "inventory", "referrals", "helpdesk", "map"],
   helper: ["inventory", "joborders", "techs", "referrals", "helpdesk", "map"],
   agent: ["agents"],
 };
