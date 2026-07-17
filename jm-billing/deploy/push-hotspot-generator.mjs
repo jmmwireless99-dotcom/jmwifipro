@@ -4,6 +4,9 @@ import { uploadToVps } from "./vps-config.mjs";
 
 const FILES = [
   "lib/hotspot-generator.js",
+  "lib/kitifi-server.js",
+  "lib/kitifi-vouchers.js",
+  "lib/db.js",
   "server.js",
   "public/index.html",
 ];

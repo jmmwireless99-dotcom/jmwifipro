@@ -33,6 +33,7 @@ import { startRadiusServer } from "./lib/radius-server.js";
 import { fetchVendo } from "./lib/juanfi.js";
 import { hotspotWalledGardenCommands } from "./lib/payment-whitelist-hosts.js";
 import { genVoucherCode, parseVoucherPaymentTag, minsToHotspotUptime, generateHotspotVouchers } from "./lib/hotspot-generator.js";
+import { kitifiGenerateVouchers, kitifiConfig, kitifiDefaultRouterId, kitifiDefaultProfile } from "./lib/kitifi-server.js";
 import { parseCoinLog, coinSig } from "./lib/coinlog.js";
 import { dbFile } from "./lib/db.js";
 import { Accounts } from "./lib/db.js";
@@ -3650,16 +3651,19 @@ async function handleRouter(req, res, pathname) {
         return ok({ steps, address: addr, mac });
       }
       case "/hotspot/vouchers": {
-        const useOriginal = String(b.generator || "").toLowerCase() === "original";
+        const genMode = String(b.generator || "").toLowerCase();
+        const useOriginal = genMode === "original";
+        const useKitifi = genMode === "kitifi";
         const userOnly = b.userOnly !== false;
         let vRouterId = b.router_id ? Number(b.router_id) : null;
         let vRouterName = "";
         let vconn = mt;
+        if (useKitifi && !vRouterId) vRouterId = kitifiDefaultRouterId();
         if (vRouterId) {
           const vr = Routers.get(vRouterId);
           if (!vr) return send(res, 404, { ok: false, error: "Router not found." });
           vRouterName = vr.name;
-          if (useOriginal || !hotspotCentralEnabled()) {
+          if (useOriginal || useKitifi || !hotspotCentralEnabled()) {
             try { vconn = connForRouter(vr); await vconn.identity(); } catch (e) { return send(res, 502, { ok: false, error: "Can't reach " + vr.name + ": " + e.message }); }
           }
         } else if (useOriginal) {
@@ -3671,6 +3675,19 @@ async function handleRouter(req, res, pathname) {
           }
         }
         let out;
+        if (useKitifi) {
+          out = await kitifiGenerateVouchers(vconn, {
+            count: b.count,
+            planId: b.plan_id || b.planId || "",
+            profile: b.profile || kitifiDefaultProfile(),
+            uptime: b.uptime || "",
+            length: b.length,
+            prefix: b.prefix,
+            userOnly,
+          });
+          Audit.add({ type: "manual", action: "vouchers", detail: `${out.count}x ${out.profile}${userOnly ? " (user-only)" : ""} kitifi @ ${vRouterName || ("#" + vRouterId)}`, ok: true });
+          return ok({ ...out, price: b.price || out.price || "", exp: b.exp || "", router: vRouterName, generator: "kitifi", central: false, dryRun: !!RouterOSAPI.dryRun });
+        }
         if (useOriginal) {
           const profile = b.profile || "default";
           out = await generateHotspotVouchers({
@@ -3739,6 +3756,10 @@ async function handleBilling(req, res, pathname) {
     if (sub === "/summary" && method === "GET") return ok(summary());
 
     // Central hotspot (nationwide RADIUS — does not delete MikroTik users/profiles)
+    if (sub === "/kitifi/config" && method === "GET") {
+      try { return ok(kitifiConfig()); }
+      catch (e) { return send(res, 500, { ok: false, error: e.message }); }
+    }
     if (sub === "/hotspot-central/status" && method === "GET") {
       return ok({
         enabled: hotspotCentralEnabled(),

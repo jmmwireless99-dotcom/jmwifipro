@@ -903,8 +903,8 @@
       <label style="font-size:12px;color:var(--muted)">Voucher mode</label>
       <select id="vc-mode" style="background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option value="user">Username only (no password)</option><option value="both">Username = password</option></select>
       <label style="font-size:12px;color:var(--muted)">Generator</label>
-      <select id="vc-generator" style="background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option value="original" selected>Original — direct MikroTik (Jeffrey)</option><option value="cloud">Cloud RADIUS (jmwifi.pro default)</option></select>
-      <div id="vc-generator-hint" style="font-family:var(--sans);font-size:11px;color:var(--muted)">Cloud mode issues vouchers via RADIUS for all sites. Original mode writes directly to the selected router profile.</div>
+      <select id="vc-generator" style="background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option value="kitifi" selected>Direct Kitifi controller</option><option value="original">Original — direct MikroTik (Jeffrey)</option><option value="cloud">Cloud RADIUS (jmwifi.pro default)</option></select>
+      <div id="vc-generator-hint" style="font-family:var(--sans);font-size:11px;color:var(--muted)">Kitifi writes VOUCHER-profile users to the Kitifi MikroTik (same as the Kitifi controller). Original writes any selected router profile. Cloud uses RADIUS.</div>
       <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
         <button class="go" onclick="makeVouchers(this)">Generate &amp; print</button>
         <span id="vc-msg" style="font-size:12px;color:var(--muted)"></span>
@@ -2032,8 +2032,8 @@
       </span>
     </h2>
     <div style="padding:0 0 12px;font-family:var(--sans);font-size:12.5px;color:var(--muted)">
-      <b>Original (Jeffrey)</b> writes users directly to a MikroTik hotspot profile.
-      Cloud RADIUS issues nationwide codes for <b>jmwifi.pro/voucher</b>.
+      <b>Direct Kitifi</b> mirrors the Kitifi controller voucher generator (VOUCHER profile on Candelaria-kitifi).
+      <b>Original (Jeffrey)</b> writes any selected MikroTik profile. Cloud RADIUS issues nationwide codes for <b>jmwifi.pro/voucher</b>.
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;padding:0 0 4px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -2044,7 +2044,8 @@
           </select>
         </div>
         <div>
-          <label style="font-size:12px;color:var(--muted)">Package (hotspot user profile)</label>
+          <label style="font-size:12px;color:var(--muted)" id="hg-profile-label">Package (hotspot user profile)</label>
+          <select id="hg-plan" onchange="hgApplyKitifiPlan()" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px;display:none"></select>
           <select id="hg-profile" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px"><option>default</option></select>
         </div>
       </div>
@@ -2067,12 +2068,14 @@
         </div>
         <div>
           <label style="font-size:12px;color:var(--muted)">Generator</label>
-          <select id="hg-generator" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px">
-            <option value="original" selected>Original — direct MikroTik (Jeffrey)</option>
+          <select id="hg-generator" onchange="hgOnGeneratorChange()" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12.5px">
+            <option value="kitifi" selected>Direct Kitifi controller</option>
+            <option value="original">Original — direct MikroTik (Jeffrey)</option>
             <option value="cloud">Cloud RADIUS (jmwifi.pro default)</option>
           </select>
         </div>
       </div>
+      <div id="hg-kitifi-hint" style="font-size:11px;color:var(--muted)">Uses Kitifi Wifi Rates → VOUCHER profile on the Kitifi MikroTik (<span id="hg-kitifi-ctrl">10.0.0.10</span>).</div>
       <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
         <button class="go" onclick="makeHotspotGeneratorVouchers(this)">Generate &amp; print</button>
         <span id="hg-msg" style="font-size:12px;color:var(--muted)"></span>
@@ -5871,6 +5874,7 @@ async function makeVouchers(btn) {
   if (_rtManageId) rtLoadHotspotUsers(_rtManageId);
   else if (typeof loadAcc === "function") loadAcc();
 }
+let _hgKitifi = null;
 async function loadHotspotGeneratorPage() {
   const sel = $("hg-router"); if (!sel) return;
   const prev = sel.value;
@@ -5888,8 +5892,55 @@ async function loadHotspotGeneratorPage() {
   } catch {
     sel.innerHTML = '<option value="">Default / cloud</option>';
   }
-  await hgLoadProfiles();
+  try {
+    const kc = await api("/api/billing/kitifi/config");
+    _hgKitifi = kc.ok ? kc.data : null;
+  } catch { _hgKitifi = null; }
+  await hgOnGeneratorChange();
   if ($("hg-msg")) $("hg-msg").textContent = "";
+}
+async function hgOnGeneratorChange() {
+  const mode = $("hg-generator") ? $("hg-generator").value : "kitifi";
+  const planSel = $("hg-plan");
+  const profSel = $("hg-profile");
+  const hint = $("hg-kitifi-hint");
+  const label = $("hg-profile-label");
+  if (hint) hint.style.display = mode === "kitifi" ? "" : "none";
+  if (mode === "kitifi" && _hgKitifi) {
+    if (label) label.textContent = "Kitifi Wifi Rate";
+    if (planSel) {
+      planSel.style.display = "";
+      const rates = _hgKitifi.rates || [];
+      planSel.innerHTML = rates.map(p =>
+        `<option value="${esc(p.id)}" data-profile="${esc(p.profile || "VOUCHER")}" data-uptime="${esc(p.uptime || "")}" data-price="${esc(p.price != null ? ("₱" + p.price) : "")}">${esc(p.name || p.id)} — ₱${esc(p.price)} / ${esc(p.uptime)}</option>`
+      ).join("") || '<option value="1h">1 Hour WiFi</option>';
+    }
+    if (profSel) profSel.style.display = "none";
+    if ($("hg-router") && _hgKitifi.router_id) $("hg-router").value = String(_hgKitifi.router_id);
+    if ($("hg-kitifi-ctrl")) $("hg-kitifi-ctrl").textContent = (_hgKitifi.controller_url || "http://10.0.0.10/admin").replace(/^https?:\/\//, "").replace(/\/admin\/?$/, "");
+    if ($("hg-prefix") && !$("hg-prefix").value) $("hg-prefix").value = "";
+    hgApplyKitifiPlan();
+    return;
+  }
+  if (label) label.textContent = "Package (hotspot user profile)";
+  if (planSel) planSel.style.display = "none";
+  if (profSel) profSel.style.display = "";
+  await hgLoadProfiles();
+}
+function hgApplyKitifiPlan() {
+  const planSel = $("hg-plan"); if (!planSel || planSel.style.display === "none") return;
+  const opt = planSel.selectedOptions && planSel.selectedOptions[0];
+  if (!opt) return;
+  if ($("hg-profile")) {
+    const prof = opt.dataset.profile || "VOUCHER";
+    if (![...$("hg-profile").options].some(o => o.value === prof || o.textContent === prof)) {
+      $("hg-profile").innerHTML = `<option>${esc(prof)}</option>`;
+    }
+    $("hg-profile").value = prof;
+  }
+  if ($("hg-uptime") && opt.dataset.uptime) $("hg-uptime").value = opt.dataset.uptime;
+  if ($("hg-price") && opt.dataset.price) $("hg-price").value = opt.dataset.price;
+  if ($("hg-exp") && opt.dataset.uptime) $("hg-exp").value = "Valid " + opt.dataset.uptime;
 }
 async function hgLoadProfiles() {
   const rid = $("hg-router") && $("hg-router").value;
@@ -5906,6 +5957,8 @@ async function hgLoadProfiles() {
 async function makeHotspotGeneratorVouchers(btn) {
   btn.disabled = true; $("hg-msg").textContent = "Creating vouchers…";
   const rid = $("hg-router").value;
+  const mode = $("hg-generator").value;
+  if (mode === "kitifi") hgApplyKitifiPlan();
   const body = {
     count: +$("hg-count").value,
     profile: $("hg-profile").value,
@@ -5915,14 +5968,15 @@ async function makeHotspotGeneratorVouchers(btn) {
     price: $("hg-price").value.trim(),
     exp: $("hg-exp").value.trim(),
     userOnly: $("hg-mode").value === "user",
-    generator: $("hg-generator").value,
+    generator: mode,
+    plan_id: mode === "kitifi" && $("hg-plan") ? $("hg-plan").value : undefined,
     router_id: rid ? Number(rid) : undefined,
   };
   const r = await api("/api/router/hotspot/vouchers", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
   btn.disabled = false;
   if (!r.ok) { $("hg-msg").textContent = r.error || "Failed"; return; }
-  const mode = r.data.generator === "original" ? " (original MikroTik)" : " (cloud RADIUS)";
-  $("hg-msg").textContent = `Created ${r.data.count} voucher(s)${mode}.` + (r.data.errors && r.data.errors.length ? ` ${r.data.errors.length} failed.` : "");
+  const modeLabel = r.data.generator === "kitifi" ? " (Kitifi controller)" : (r.data.generator === "original" ? " (original MikroTik)" : " (cloud RADIUS)");
+  $("hg-msg").textContent = `Created ${r.data.count} voucher(s)${modeLabel}.` + (r.data.errors && r.data.errors.length ? ` ${r.data.errors.length} failed.` : "");
   printVouchers(r.data);
 }
 function printVouchers(d) {
