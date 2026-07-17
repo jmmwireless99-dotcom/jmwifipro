@@ -1,3 +1,20 @@
 # Local-only scratch files
 .DS_Store
 Thumbs.db
+
+# Dev runtime copy (regenerated from tarball)
+run/
+
+# Live database and secrets — never commit
+**/billing.db
+**/billing.db-*
+**/.env
+**/privkey.pem
+
+# Backup server artifacts with credentials
+backup/**/ssl/
+backup/**/configs/*.env
+backup/**/configs/*license*
+
+# App backups inside jm-billing working tree
+jm-billing/server.js.bak-*

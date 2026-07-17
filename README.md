@@ -2,6 +2,19 @@
 
 Full **jmwifi.pro** billing backup and deployment files.
 
+## Hotspot voucher generator (original)
+
+Jeffrey's original jmwifi.pro hotspot voucher generator is preserved at
+[`original/hotspot-generator/`](original/hotspot-generator/) and integrated into the
+unpacked app at [`jm-billing/lib/hotspot-generator.js`](jm-billing/lib/hotspot-generator.js).
+
+The admin panel supports two modes:
+
+- **Cloud RADIUS** — default production path for centralized vouchers
+- **Original (Jeffrey)** — direct MikroTik `/ip/hotspot/user` creation on a router profile
+
+See [`original/hotspot-generator/README.md`](original/hotspot-generator/README.md) for API details.
+
 ## Latest backup
 
 `backup/20260703T234918Z/` — pulled from VPS `187.77.145.131` on 2026-07-04 (UTC).
