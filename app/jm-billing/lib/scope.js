@@ -108,6 +108,10 @@ export function enrichUserFromDb(base) {
   const full = Accounts.getByIdFull(base.id);
   if (!full) return base;
   const router_ids = full.router_ids || [];
+  const sites = router_ids.map((id) => {
+    const r = Routers.get(id);
+    return { id, name: r ? r.name : ("Site#" + id) };
+  });
   return {
     id: base.id,
     username: base.username,
@@ -115,6 +119,6 @@ export function enrichUserFromDb(base) {
     scope: full.scope || "all",
     router_ids,
     map_private: !!full.map_private,
-    sites: router_ids,
+    sites,
   };
 }
