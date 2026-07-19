@@ -31,6 +31,7 @@ const FILES = [
   "lib/scope.js",
   "lib/auth.js",
   "lib/db.js",
+  "lib/sync-site.js",
   "server.js",
   "public/index.html",
 ];

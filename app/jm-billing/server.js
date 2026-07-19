@@ -51,6 +51,7 @@ import { Usage } from "./lib/db.js";
 import { parseQueues } from "./lib/usage.js";
 import * as Auth from "./lib/auth.js";
 import { mapDataForScope, guardRouterAccess, filterByRouterIds, scopedRouterAreas } from "./lib/scope.js";
+import { syncSiteClients } from "./lib/sync-site.js";
 import * as License from "./lib/license.js";
 
 loadEnv(); // read .env next to the executable, if present
@@ -2211,6 +2212,7 @@ const requestHandler = async (req, res) => {
       const isReferrals = pathname.startsWith("/api/billing/referrals");
       const isAgents = pathname.startsWith("/api/billing/agents");
       const isRoutersRead = pathname.startsWith("/api/billing/routers") && req.method === "GET";
+      const isRouterSiteOps = /^\/api\/billing\/routers\/\d+\/(sync-clients|reprovision|test)$/.test(pathname) && req.method === "POST";
       const isAdminOnly = pathname === "/api/billing/settings" || pathname === "/api/billing/automation" || pathname === "/api/billing/sales/reset" || pathname === "/api/billing/import-users";
       const agentSelfPath = pathname === "/api/billing/agents/me" || pathname === "/api/billing/agents/me/withdraw";
       const opsRoles = ["operator", "cashier", "staff", "technician", "helper"];
@@ -2234,6 +2236,7 @@ const requestHandler = async (req, res) => {
       }
       else if (isJobOrders || isInventory || isTechs || isMapInfra) { if (!need(...opsRoles)) return denied(); }
       else if (isHelpdeskOps) { if (!need("cashier", "staff", "helper", "technician", "operator")) return denied(); }
+      else if (isRouterSiteOps) { if (!need("operator", "staff", "technician", "helper", "admin")) return denied(); }
       else if (isCustomers || isCustomerTools) { if (!need("cashier", "staff", "operator")) return denied(); }
       else if (isRoutersRead) { if (!need("operator", "cashier", "staff", "technician", "helper", "admin")) return denied(); }
       else { if (!need("cashier", "operator")) return denied(); }                    // payments, expenses, plans…
@@ -3894,8 +3897,19 @@ async function handleBilling(req, res, pathname) {
     // ---- Routers / Sites (multiple MikroTik) ----
     if (sub === "/routers" && method === "GET") {
       // never leak passwords to the browser; show whether one is set + live health
-      let list = Routers.list();
+      let list = Routers.list().filter((r) => r.enabled !== 0 && r.host);
       if (siteScoped) list = list.filter((r) => scopedIds.includes(r.id));
+      const stale = list.some((r) => {
+        const h = _routerHealth[r.id];
+        if (!h || !h.lastCheck) return true;
+        const age = Date.now() - Date.parse(String(h.lastCheck).replace(" ", "T"));
+        return !Number.isFinite(age) || age > 90000;
+      });
+      if (q.refresh === "1" || stale) {
+        try { await pollAllRouters(); } catch {}
+      }
+      if (siteScoped) list = Routers.list().filter((r) => scopedIds.includes(r.id));
+      else list = Routers.list();
       return ok(list.map(({ password, ...r }) => ({ ...r, hasPassword: !!password, health: _routerHealth[r.id] || null })));
     }
     // Live per-router health (Layer 4). Optionally re-poll first with ?refresh=1.
@@ -4115,25 +4129,32 @@ async function handleBilling(req, res, pathname) {
     }
     // Reprovision every customer on a given router (e.g. after replacing/resetting the device).
     if ((mm = m(/^\/routers\/(\d+)\/reprovision$/)) && method === "POST") {
-      const rid = Number(mm[1]);
-      const r = Routers.get(rid);
-      if (!r) return send(res, 404, { ok: false, error: "Router not found." });
-      const custs = (Customers.list() || []).filter((c) => c.router_id === rid && c.username);
-      const out = { ok: [], failed: [] };
-      for (const c of custs) {
-        try {
-          const conn = connForRouter(r);
-          const isIpoe = (c.conn_type || "pppoe") === "ipoe";
-          const isHotspot = (c.plan_type || "pppoe") === "hotspot";
-          const profile = (c.status === "suspended" ? suspendedProfileName() : (c.plan_profile || "default"));
-          if (isIpoe) await ipoeProvision(c);
-          else if (isHotspot) await conn.createHotspotUser({ name: c.username, password: c.password, profile });
-          else await conn.createPppoe({ name: c.username, password: c.password, profile, comment: c.name });
-          out.ok.push(c.id);
-        } catch (e) { out.failed.push({ id: c.id, name: c.name, error: e.message }); }
+      const r = getRouterScoped(mm[1]); if (!r) return;
+      const conn = connForRouter(r);
+      try {
+        const out = await syncSiteClients(r, conn, { pull: false, push: true, reprovisionAll: true });
+        const push = out.push || { ok: [], failed: [] };
+        Audit.add({ type: "manual", action: "reprovision-router", detail: `${r.name}: ${push.ok.length} ok, ${push.failed.length} failed`, ok: !push.failed.length });
+        try { await pollAllRouters(); } catch {}
+        return ok({ ok: push.ok.map((x) => x.id), failed: push.failed });
+      } catch (e) {
+        return send(res, 502, { ok: false, error: e.message });
       }
-      Audit.add({ type: "manual", action: "reprovision-router", detail: `${r.name}: ${out.ok.length} ok, ${out.failed.length} failed`, ok: out.failed.length === 0 });
-      return ok(out);
+    }
+    if ((mm = m(/^\/routers\/(\d+)\/sync-clients$/)) && method === "POST") {
+      const r = getRouterScoped(mm[1]); if (!r) return;
+      const conn = connForRouter(r);
+      try {
+        const out = await syncSiteClients(r, conn, {
+          pull: body.pull !== false,
+          push: body.push !== false,
+          reprovisionAll: !!body.reprovisionAll,
+        });
+        try { await pollAllRouters(); } catch {}
+        return ok(out);
+      } catch (e) {
+        return send(res, 502, { ok: false, error: e.message });
+      }
     }
     if (sub === "/outages" && method === "GET") return ok(Outages.list());
     if (sub === "/ai/digest" && method === "GET") {

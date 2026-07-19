@@ -4484,6 +4484,7 @@ function renderSiteCard(rt, opts) {
       '<button class="mini go" onclick="openRouterManage(' + rt.id + ')">⚙ Manage</button>' +
       '<button class="mini" onclick="testRouter(' + rt.id + ')">Test</button>' +
       '<button class="mini" onclick="editRouter(' + rt.id + ')">Edit</button>' +
+      (rt.clients > 0 ? '<button class="mini" onclick="syncSiteClients(' + rt.id + ',\'' + esc(rt.name).replace(/'/g, "") + '\')" title="Sync billing ↔ MikroTik PPPoE">Sync</button>' : '') +
       (rt.clients > 0 ? '<button class="mini" onclick="reprovisionRouter(' + rt.id + ',\'' + esc(rt.name).replace(/'/g, "") + '\')" title="Re-create all accounts on device">Reprovision</button>' : '') +
       '<button class="mini danger" onclick="delRouter(' + rt.id + ')">✕</button>' +
       '</div>';
@@ -4545,16 +4546,30 @@ function stopRoutersAutoRefresh() { if (_rtAutoTimer) { clearInterval(_rtAutoTim
 // Update only the live status/counts cells without rebuilding the table (preserves any open panel).
 async function refreshRouterCountsOnly() {
   try {
-    const r = await api("/api/billing/routers");
+    const r = await api("/api/billing/routers?refresh=1");
     if (!r.ok) return;
     _routerCache = r.data || [];
     updateRouterSummary(_routerCache);
   } catch {}
 }
-async function loadRouters() {
+async function syncSiteClients(id, name) {
+  const rt = _routerCache.find(x => x.id === id);
+  const n = rt ? rt.clients : 0;
+  if (!confirm(`Sync ${n} client(s) for "${name}"?\n\n• Pull PPPoE users from MikroTik → billing\n• Push missing billing accounts → MikroTik\n\nThis fixes missing live counts and out-of-sync accounts.`)) return;
+  setRtMsg("Syncing " + name + "… please wait.");
+  const r = await api("/api/billing/routers/" + id + "/sync-clients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pull: true, push: true }) });
+  if (!r.ok) { setRtMsg(""); return alert(r.error || "Sync failed."); }
+  const d = r.data || {};
+  const pull = d.pull || {};
+  const push = d.push || {};
+  setRtMsg(`Sync done — pulled ${pull.pulled || 0} from router (${pull.matched || 0} matched, ${pull.created || 0} new) · pushed ${(push.ok || []).length} to router, ${(push.failed || []).length} failed.`);
+  if ((push.failed || []).length) alert("Some failed:\n" + push.failed.slice(0, 20).map(f => "• " + (f.user || f.name) + ": " + f.error).join("\n"));
+  loadRouters();
+}
+async function reprovisionRouter(id, name) {
   const period = new Date().toISOString().slice(0, 7);
   const [r, salesR] = await Promise.all([
-    api("/api/billing/routers"),
+    api("/api/billing/routers?refresh=1"),
     api("/api/billing/report/sales-by-router?period=" + encodeURIComponent(period)),
   ]);
   const box = $("rt-cards");
