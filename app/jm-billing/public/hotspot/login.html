@@ -40,7 +40,8 @@ input{width:100%;padding:13px 14px;border-radius:11px;border:1px solid #3d2a66;b
     <input name="password" type="password" placeholder="Voucher code" autocomplete="current-password" id="p">
     <input type="submit" class="btn" value="Connect">
   </form>
-  <a class="buy" href="https://jmwifi.pro/voucher?gw=$(hostname)" target="_blank" rel="noopener">🎫 Buy Centralized Voucher</a>
+  <a class="buy" id="buy-gcash" href="https://jmwifi.pro/voucher?gw=$(hostname)&amp;link-login=$(link-login-only)&amp;back=$(link-orig)&amp;from=hotspot">🎫 Buy with GCash (auto-connect)</a>
+  <p class="hint" style="margin-top:10px">After GCash payment your phone connects <b>automatically</b> — no need to copy the voucher code.</p>
   <p id="jmwifi-cloud-remaining" style="display:none;text-align:center;font-size:12px;color:#34d399;margin-top:10px"></p>
   <p id="jmwifi-remain-badge" style="display:none;text-align:center;font-size:12px;color:#22d3ee;margin-top:10px"></p>
   <p id="remainTime" style="display:none" data-session-time-left="0"></p>

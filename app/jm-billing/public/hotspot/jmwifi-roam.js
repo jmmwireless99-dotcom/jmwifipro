@@ -7,8 +7,53 @@
   var PENDING_GW_KEY = "jmwifi_pending_gw";
   var PENDING_AT_KEY = "jmwifi_pending_at";
   var PAY_POLL_KEY = "jmwifi_pay_poll";
+  var HOTSPOT_CTX_KEY = "jmwifi_hotspot_ctx";
   var API = "https://jmwifi.pro/api/voucher/remaining";
   var RESULT_API = "/api/voucher/result";
+
+  function saveHotspotContext(ctx) {
+    if (!ctx) return;
+    try {
+      var prev = getHotspotContext() || {};
+      localStorage.setItem(HOTSPOT_CTX_KEY, JSON.stringify({
+        gw: String(ctx.gw || prev.gw || "").replace(/^https?:\/\//, "").split("/")[0],
+        linkLogin: String(ctx.linkLogin || ctx.link_login || prev.linkLogin || ""),
+        back: String(ctx.back || prev.back || ""),
+        savedAt: Date.now(),
+      }));
+    } catch (e) {}
+  }
+
+  function getHotspotContext() {
+    try {
+      var raw = localStorage.getItem(HOTSPOT_CTX_KEY);
+      if (!raw) return null;
+      var o = JSON.parse(raw);
+      if (!o || !o.savedAt || Date.now() - Number(o.savedAt) > 60 * 60 * 1000) return null;
+      return o;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function resolveConnectCtx(gw, dst, linkLogin) {
+    var ctx = getHotspotContext() || {};
+    return {
+      gw: String(gw || ctx.gw || "10.0.0.1").replace(/^https?:\/\//, "").split("/")[0],
+      linkLogin: String(linkLogin || ctx.linkLogin || ""),
+      back: String(dst || ctx.back || ""),
+    };
+  }
+
+  function loginActionUrl(ctx) {
+    ctx = ctx || {};
+    var ll = String(ctx.linkLogin || "").trim();
+    if (ll && ll.indexOf("$(") !== 0) {
+      if (/^https?:\/\//i.test(ll)) return ll;
+      return "http://" + (ctx.gw || "10.0.0.1") + (ll.charAt(0) === "/" ? ll : "/" + ll);
+    }
+    return "http://" + (ctx.gw || "10.0.0.1") + "/login";
+  }
 
   function save(code) {
     code = String(code || "").trim();
@@ -125,26 +170,43 @@
     return /\$\(error\)/.test(document.body.innerHTML);
   }
 
-  function gatewayLoginUrl(code, gw, dst) {
-    gw = String(gw || "10.0.0.10").replace(/^https?:\/\//, "").split("/")[0];
+  function gatewayLoginUrl(code, gw, dst, linkLogin) {
+    code = String(code || "").trim();
+    var ctx = resolveConnectCtx(gw, dst, linkLogin);
+    var ll = ctx.linkLogin;
+    if (ll && ll.indexOf("$(") !== 0) {
+      try {
+        var base = /^https?:\/\//i.test(ll) ? ll : ("http://" + ctx.gw + (ll.charAt(0) === "/" ? ll : "/" + ll));
+        var u = new URL(base);
+        u.searchParams.set("username", code);
+        u.searchParams.set("password", code);
+        u.searchParams.set("popup", "true");
+        if (ctx.back) u.searchParams.set("dst", ctx.back);
+        return u.toString();
+      } catch (e) {}
+    }
     var q = new URLSearchParams();
     q.set("username", code);
     q.set("password", code);
     q.set("popup", "true");
-    if (dst) q.set("dst", dst);
-    return "http://" + gw + "/login?" + q.toString();
+    if (ctx.back) q.set("dst", ctx.back);
+    return "http://" + ctx.gw + "/login?" + q.toString();
   }
 
-  function goGatewayLogin(code, gw, dst) {
+  function goGatewayLogin(code, gw, dst, linkLogin) {
     save(code);
-    global.location.assign(gatewayLoginUrl(code, gw, dst));
+    var ctx = resolveConnectCtx(gw, dst, linkLogin);
+    saveHotspotContext(ctx);
+    global.location.assign(gatewayLoginUrl(code, ctx.gw, ctx.back, ctx.linkLogin));
     return true;
   }
 
   /** Hidden iframe POST — starts hotspot login without waiting for user tap. */
-  function silentGatewayLogin(code, gw, dst) {
+  function silentGatewayLogin(code, gw, dst, linkLogin) {
     save(code);
-    gw = String(gw || "10.0.0.10").replace(/^https?:\/\//, "").split("/")[0];
+    var ctx = resolveConnectCtx(gw, dst, linkLogin);
+    saveHotspotContext(ctx);
+    var action = loginActionUrl(ctx);
     var frameName = "jmwifi_hlogin_" + Date.now();
     var iframe = global.document.createElement("iframe");
     iframe.name = frameName;
@@ -153,7 +215,7 @@
     global.document.body.appendChild(iframe);
     var form = global.document.createElement("form");
     form.method = "POST";
-    form.action = "http://" + gw + "/login";
+    form.action = action;
     form.target = frameName;
     form.style.display = "none";
     function field(name, val) {
@@ -166,7 +228,7 @@
     field("username", code);
     field("password", code);
     field("popup", "true");
-    if (dst) field("dst", dst);
+    if (ctx.back) field("dst", ctx.back);
     global.document.body.appendChild(form);
     try { form.submit(); } catch (e) {}
     setTimeout(function () {
@@ -175,24 +237,27 @@
     return true;
   }
 
-  /** Silent iframe login + main-window redirect (best for GCash auto-connect). */
-  function autoConnectGateway(code, gw, dst) {
+  /** Silent iframe login + main-window redirect (best for GCash auto-connect on JM WIFI). */
+  function autoConnectGateway(code, gw, dst, linkLogin) {
     code = String(code || "").trim();
     if (!code) return false;
-    gw = gw || "10.0.0.10";
+    var ctx = resolveConnectCtx(gw, dst, linkLogin);
+    saveHotspotContext(ctx);
     save(code);
-    silentGatewayLogin(code, gw, dst || "");
+    silentGatewayLogin(code, ctx.gw, ctx.back, ctx.linkLogin);
     setTimeout(function () {
-      goGatewayLogin(code, gw, dst || "");
-    }, 350);
+      goGatewayLogin(code, ctx.gw, ctx.back, ctx.linkLogin);
+    }, 300);
     return true;
   }
 
-  function savePendingPayment(pi, gw) {
+  function savePendingPayment(pi, gw, linkLogin, back) {
     if (!pi) return;
+    var ctx = resolveConnectCtx(gw, back, linkLogin);
+    saveHotspotContext(ctx);
     try {
       localStorage.setItem(PENDING_PI_KEY, String(pi));
-      localStorage.setItem(PENDING_GW_KEY, String(gw || "10.0.0.10"));
+      localStorage.setItem(PENDING_GW_KEY, ctx.gw);
       localStorage.setItem(PENDING_AT_KEY, String(Date.now()));
     } catch (e) {}
   }
@@ -214,7 +279,7 @@
         clearPendingPayment();
         return null;
       }
-      return { pi: pi, gw: localStorage.getItem(PENDING_GW_KEY) || "10.0.0.10" };
+      return { pi: pi, gw: localStorage.getItem(PENDING_GW_KEY) || "10.0.0.1", ctx: getHotspotContext() };
     } catch (e) {
       return null;
     }
@@ -228,10 +293,11 @@
   }
 
   /** Poll PayMongo until voucher is issued, then auto-connect to hotspot gateway. */
-  function watchVoucherPayment(pi, gw, onPaid) {
+  function watchVoucherPayment(pi, gw, onPaid, linkLogin, back) {
     stopPaymentPoll();
     if (!pi) return;
-    savePendingPayment(pi, gw);
+    var ctx = resolveConnectCtx(gw, back, linkLogin);
+    savePendingPayment(pi, ctx.gw, ctx.linkLogin, ctx.back);
     var tries = 0;
     function tick() {
       tries++;
@@ -242,8 +308,8 @@
             stopPaymentPoll();
             clearPendingPayment();
             save(d.code);
-            if (typeof onPaid === "function") onPaid(d.code, gw);
-            else autoConnectGateway(d.code, gw);
+            if (typeof onPaid === "function") onPaid(d.code, ctx.gw, ctx.linkLogin, ctx.back);
+            else autoConnectGateway(d.code, ctx.gw, ctx.back, ctx.linkLogin);
             return;
           }
           if (tries > 120) stopPaymentPoll();
@@ -257,7 +323,41 @@
   function resumePendingPayment(onPaid) {
     var pending = getPendingPayment();
     if (!pending) return false;
-    watchVoucherPayment(pending.pi, pending.gw, onPaid);
+    var ctx = pending.ctx || getHotspotContext() || { gw: pending.gw };
+    watchVoucherPayment(pending.pi, ctx.gw, onPaid, ctx.linkLogin, ctx.back);
+    return true;
+  }
+
+  function captureHotspotFromPage() {
+    try {
+      var qs = new URLSearchParams(global.location.search);
+      var gw = qs.get("gw") || "";
+      var linkLogin = qs.get("link-login") || qs.get("link_login") || qs.get("login") || "";
+      var back = qs.get("back") || "";
+      if (gw || linkLogin || back) saveHotspotContext({ gw: gw, linkLogin: linkLogin, back: back });
+    } catch (e) {}
+  }
+
+  /** URL for captive portal → GCash voucher shop (Kitifi / MikroTik). */
+  function buildVoucherShopUrl(base, ctx) {
+    base = String(base || "https://jmwifi.pro/voucher").replace(/\/$/, "");
+    ctx = ctx || getHotspotContext() || {};
+    var qs = new URLSearchParams(global.location.search);
+    var gw = ctx.gw || qs.get("gw") || global.location.hostname || "";
+    var linkLogin = ctx.linkLogin || qs.get("link-login") || qs.get("link_login") || "";
+    var back = ctx.back || qs.get("back") || "";
+    var params = new URLSearchParams();
+    if (gw) params.set("gw", String(gw).replace(/^https?:\/\//, "").split("/")[0]);
+    if (linkLogin) params.set("link-login", linkLogin);
+    if (back) params.set("back", back);
+    params.set("from", "hotspot");
+    var q = params.toString();
+    return q ? base + "?" + q : base;
+  }
+
+  function goVoucherShop(base) {
+    captureHotspotFromPage();
+    global.location.href = buildVoucherShopUrl(base || "https://jmwifi.pro/voucher");
     return true;
   }
 
@@ -391,6 +491,7 @@
 
   function init() {
     syncFromQuery();
+    captureHotspotFromPage();
     wireKitifiCloudSubmit();
     var v = load();
     if (v && v.code) startRemainingPoll();
@@ -402,6 +503,11 @@
     load: load,
     clear: clear,
     syncFromQuery: syncFromQuery,
+    saveHotspotContext: saveHotspotContext,
+    getHotspotContext: getHotspotContext,
+    captureHotspotFromPage: captureHotspotFromPage,
+    buildVoucherShopUrl: buildVoucherShopUrl,
+    goVoucherShop: goVoucherShop,
     gatewayLoginUrl: gatewayLoginUrl,
     goGatewayLogin: goGatewayLogin,
     silentGatewayLogin: silentGatewayLogin,

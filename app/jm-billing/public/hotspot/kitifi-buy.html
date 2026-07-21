@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buy GCash voucher — JM WIFI</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#1a0e2e;color:#f4eefe;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px;text-align:center}
+.box{max-width:360px}
+.spin{width:40px;height:40px;border:3px solid #3d2a66;border-top-color:#34d399;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="spin"></div>
+  <p>Opening GCash voucher shop…</p>
+  <p style="font-size:13px;color:#b9a9d6;margin-top:8px">After payment, your WiFi connects automatically.</p>
+</div>
+<script src="https://jmwifi.pro/hotspot/jmwifi-roam.js"></script>
+<script>
+(function(){
+  var qs=new URLSearchParams(location.search);
+  var gw=qs.get("gw")||"";
+  if(!gw&&typeof hs_address==="string"&&hs_address.trim()) gw=hs_address.trim().split("/")[0];
+  if(!gw) gw="10.0.0.1";
+  var linkLogin=qs.get("link-login")||qs.get("link_login")||qs.get("login")||"";
+  var back=qs.get("back")||"";
+  if(window.JmWifiRoam){
+    JmWifiRoam.saveHotspotContext({gw:gw,linkLogin:linkLogin,back:back});
+    location.replace(JmWifiRoam.buildVoucherShopUrl("https://jmwifi.pro/voucher",{gw:gw,linkLogin:linkLogin,back:back}));
+  }else{
+    var p=new URLSearchParams({gw:gw.replace(/^https?:\/\//,"").split("/")[0],from:"kitifi"});
+    if(linkLogin) p.set("link-login",linkLogin);
+    if(back) p.set("back",back);
+    location.replace("https://jmwifi.pro/voucher?"+p.toString());
+  }
+})();
+</script>
+</body>
+</html>
