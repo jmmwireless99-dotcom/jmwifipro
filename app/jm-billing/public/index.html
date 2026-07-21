@@ -3763,7 +3763,7 @@ async function openSettings() {
   if ($("set-backup_telegram")) $("set-backup_telegram").checked = s.backup_telegram === "1";
   if ($("set-keep_backups")) $("set-keep_backups").value = s.keep_backups || "";
   if ($("set-dry_run")) $("set-dry_run").checked = s.dry_run === "1";
-  if ($("set-hotspot_central")) $("set-hotspot_central").checked = s.hotspot_central === "1";
+  if ($("set-hotspot_central")) $("set-hotspot_central").checked = s.hotspot_central === "1" || s.cloud_hotspot_enabled === "1";
   if ($("set-radius_host")) $("set-radius_host").value = s.radius_host || "";
   if ($("set-radius_secret")) $("set-radius_secret").value = s.radius_secret === "***" ? "" : (s.radius_secret || "");
   if ($("set-radius_port")) $("set-radius_port").value = s.radius_port || "1812";
@@ -5875,6 +5875,7 @@ async function saveSettings(silent) {
   body.auto_backup = $("set-auto_backup") && $("set-auto_backup").checked ? "1" : "0";
   body.dry_run = $("set-dry_run") && $("set-dry_run").checked ? "1" : "0";
   body.hotspot_central = $("set-hotspot_central") && $("set-hotspot_central").checked ? "1" : "0";
+  body.cloud_hotspot_enabled = body.hotspot_central;
   if ($("set-radius_host")) body.radius_host = $("set-radius_host").value.trim();
   if ($("set-radius_secret")) body.radius_secret = $("set-radius_secret").value.trim();
   if ($("set-radius_port")) body.radius_port = $("set-radius_port").value.trim();

@@ -4938,6 +4938,7 @@ async function handleBilling(req, res, pathname) {
       if ("vendo_alerts" in patch || "vendo_check_mins" in patch) rescheduleVendoCheck();
       if ("portal_url" in patch || "portal_token" in patch || "portal_sync_enabled" in patch || "portal_sync_mins" in patch) reschedulePortalSync();
       if ("hotspot_central" in patch || "cloud_hotspot_enabled" in patch || "radius_secret" in patch || "radius_port" in patch || "radius_acct_port" in patch) startCentralHotspotRadius();
+      if ("hotspot_central" in patch && patch.hotspot_central !== "1") Settings.set("cloud_hotspot_enabled", "0");
       Audit.add({ type: "manual", action: "settings-update", detail: Object.keys(patch).join(","), ok: true });
       const s = Settings.all();
       for (const k of ["smtp_pass", "paymongo_secret", "paymongo_webhook_secret", "xendit_secret", "xendit_callback_token", "telegram_bot_token", "semaphore_api_key", "mikrotik_password", "ai_api_key", "portal_token", "radius_secret"]) if (s[k]) s[k] = "***";
@@ -7812,13 +7813,20 @@ server.listen(PORT, () => {
   const portalMins = reschedulePortalSync();
   if (portalMins > 0) { console.log(`  >> client portal sync every ${portalMins} min`); setTimeout(() => { runPortalSync().catch(() => {}); pushCustomerSummary().catch(() => {}); pushPortalConfig().catch(() => {}); }, 5000); }
   tgPollLoop(); // listens for Telegram approve/reject (no-op until a bot token is set)
+  ensureCloudRadiusDisabled();
   startCentralHotspotRadius();
 });
 
 let _radiusServer = null;
 function cloudHotspotRadiusEnabled() {
-  return Settings.get("hotspot_central", "0") === "1"
-    || Settings.get("cloud_hotspot_enabled", "0") === "1";
+  return Settings.get("hotspot_central", "0") === "1";
+}
+
+function ensureCloudRadiusDisabled() {
+  if (Settings.get("cloud_hotspot_enabled", "0") === "1") {
+    Settings.set("cloud_hotspot_enabled", "0");
+    console.log("  >> cloud_hotspot_enabled=0 (Kitifi/local hotspot only — no cloud RADIUS)");
+  }
 }
 
 function voucherRadiusAuth({ username, password, nas, chapOk }) {
