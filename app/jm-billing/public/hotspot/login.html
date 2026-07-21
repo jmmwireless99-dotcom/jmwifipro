@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<title>JM WIFI — Sign in</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(160deg,#1a0e2e,#2a1850);color:#f4eefe;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{width:100%;max-width:380px;background:rgba(42,24,80,.95);border:1px solid #3d2a66;border-radius:20px;padding:28px 24px;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.logo{text-align:center;margin-bottom:20px}
+.logo span{display:inline-block;width:48px;height:48px;border-radius:12px;background:linear-gradient(120deg,#e8195f,#7c3aed);line-height:48px;font-size:24px}
+h1{text-align:center;font-size:22px;font-weight:800;margin:10px 0 4px}
+.sub{text-align:center;font-size:13px;color:#b9a9d6;margin-bottom:22px}
+.err{background:rgba(251,113,133,.15);border:1px solid #fb7185;color:#fecdd3;padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center}
+label{font-size:12px;color:#b9a9d6;display:block;margin-bottom:5px}
+input{width:100%;padding:13px 14px;border-radius:11px;border:1px solid #3d2a66;background:#21123d;color:#fff;font-size:16px;margin-bottom:14px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(120deg,#e8195f,#7c3aed);color:#fff;font-size:16px;font-weight:800;cursor:pointer;margin-top:4px}
+.buy{display:block;text-align:center;margin-top:18px;padding:14px 16px;border-radius:12px;border:2px solid #7c3aed;color:#fff;font-weight:800;font-size:15px;text-decoration:none;background:rgba(124,58,237,.2)}
+.buy:hover{background:rgba(124,58,237,.35)}
+.hint{text-align:center;font-size:11px;color:#b9a9d6;margin-top:16px;line-height:1.5}
+.site{color:#22d3ee;font-size:11px;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><span>📡</span></div>
+  <h1>JM WIFI NETWORK</h1>
+  <p class="sub">Enter your voucher code to connect</p>
+  <p id="jmwifi-roam-note" style="display:none;text-align:center;font-size:12px;color:#22d3ee;margin-bottom:12px">☁️ Reconnecting you at this JM WIFI site…</p>
+  $(if error)<div class="err">$(error)</div>$(endif)
+  <form name="login" action="$(link-login-only)" method="post" onsubmit="return doLogin();">
+    <input type="hidden" name="dst" value="$(link-orig)">
+    <input type="hidden" name="popup" value="true">
+    <label>Voucher / Username</label>
+    <input name="username" type="text" value="$(username)" placeholder="e.g. JMXXXXXXXX" autocomplete="username" id="u">
+    <label>Password <span style="font-weight:400">(same as voucher if you have one)</span></label>
+    <input name="password" type="password" placeholder="Voucher code" autocomplete="current-password" id="p">
+    <input type="submit" class="btn" value="Connect">
+  </form>
+  <a class="buy" href="https://jmwifi.pro/voucher?gw=$(hostname)" target="_blank" rel="noopener">🎫 Buy Centralized Voucher</a>
+  <p id="jmwifi-cloud-remaining" style="display:none;text-align:center;font-size:12px;color:#34d399;margin-top:10px"></p>
+  <p id="jmwifi-remain-badge" style="display:none;text-align:center;font-size:12px;color:#22d3ee;margin-top:10px"></p>
+  <p id="remainTime" style="display:none" data-session-time-left="0"></p>
+  <p class="hint">One voucher works on <b>all JM WIFI sites</b> — time <b>pauses when you disconnect</b> (Kitifi-style). Buy online with GCash; remaining time shows on every site.</p>
+  <p class="site">☁️ Central cloud hotspot · jmwifi.pro</p>
+</div>
+<script src="https://jmwifi.pro/hotspot/jmwifi-roam.js"></script>
+<script>
+function doLogin(){
+  var u=document.getElementById('u').value.trim();
+  var p=document.getElementById('p').value;
+  if(!p && u) document.getElementById('p').value=u;
+  if(u && window.JmWifiRoam) JmWifiRoam.save(u);
+  return true;
+}
+document.addEventListener('DOMContentLoaded',function(){
+  if(!window.JmWifiRoam) return;
+  JmWifiRoam.init();
+  JmWifiRoam.wireMikrotikSave();
+  JmWifiRoam.tryAutoLoginMikrotik();
+});
+</script>
+</body>
+</html>

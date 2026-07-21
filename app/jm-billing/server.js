@@ -1202,6 +1202,44 @@ const requestHandler = async (req, res) => {
         return send(res, 502, { ok: false, error: e.message });
       }
     }
+    // Kitifi / cloud hotspot — remaining time (pauses when disconnected; polled by jmwifi-roam.js).
+    if (pathname === "/api/voucher/remaining" && req.method === "GET") {
+      const code = (new URL(req.url, "http://localhost").searchParams.get("code") || "").trim();
+      if (!code) return send(res, 400, { ok: false, error: "Missing voucher code." });
+      const order = VoucherOrders.byCode(code);
+      if (!order || order.status === "pending" || order.status === "failed") {
+        return send(res, 404, { ok: false, error: "Unknown voucher." });
+      }
+      const e = VoucherOrders.enrich(order);
+      return send(res, 200, {
+        ok: true,
+        code: order.code,
+        remaining_seconds: e.remaining_seconds,
+        remaining_label: e.remaining_label,
+        total_seconds: e.total_seconds,
+        used_seconds: e.used_seconds,
+        exhausted: e.exhausted,
+        paused: e.paused,
+        connected: e.connected,
+      });
+    }
+    // RADIUS accounting callback (optional — built-in UDP RADIUS is preferred).
+    if (pathname === "/api/voucher/accounting" && req.method === "POST") {
+      const raw = (await readBody(req)) || "";
+      let b; try { b = JSON.parse(raw || "{}"); } catch { return send(res, 400, { ok: false, error: "Bad data." }); }
+      const secret = Settings.get("radius_secret", "") || "jmwifi-radius";
+      if (!b.secret || String(b.secret) !== String(secret)) {
+        return send(res, 403, { ok: false, error: "Invalid secret." });
+      }
+      const out = VoucherOrders.applyAccounting({
+        username: b.username || b.code,
+        sessionSecs: b.session_secs ?? b.sessionSecs ?? 0,
+        acctStatus: b.acct_status ?? b.acctStatus ?? 3,
+        nas: b.nas || "",
+      });
+      if (!out.ok) return send(res, 404, { ok: false, error: "Unknown voucher." });
+      return send(res, 200, { ok: true, ...out });
+    }
     if (pathname === "/api/apply/info" && req.method === "GET") {
       const biz = Settings.get("biz_name", "Internet Service");
       const logo = Settings.get("brand_logo", "");
@@ -2212,7 +2250,6 @@ const requestHandler = async (req, res) => {
       const isReferrals = pathname.startsWith("/api/billing/referrals");
       const isAgents = pathname.startsWith("/api/billing/agents");
       const isRoutersRead = pathname.startsWith("/api/billing/routers") && req.method === "GET";
-      const isRouterSiteOps = /^\/api\/billing\/routers\/\d+\/(sync-clients|reprovision|test)$/.test(pathname) && req.method === "POST";
       const isAdminOnly = pathname === "/api/billing/settings" || pathname === "/api/billing/automation" || pathname === "/api/billing/sales/reset" || pathname === "/api/billing/import-users";
       const agentSelfPath = pathname === "/api/billing/agents/me" || pathname === "/api/billing/agents/me/withdraw";
       const opsRoles = ["operator", "cashier", "staff", "technician", "helper"];
@@ -2236,7 +2273,6 @@ const requestHandler = async (req, res) => {
       }
       else if (isJobOrders || isInventory || isTechs || isMapInfra) { if (!need(...opsRoles)) return denied(); }
       else if (isHelpdeskOps) { if (!need("cashier", "staff", "helper", "technician", "operator")) return denied(); }
-      else if (isRouterSiteOps) { if (!need("operator", "staff", "technician", "helper", "admin")) return denied(); }
       else if (isCustomers || isCustomerTools) { if (!need("cashier", "staff", "operator")) return denied(); }
       else if (isRoutersRead) { if (!need("operator", "cashier", "staff", "technician", "helper", "admin")) return denied(); }
       else { if (!need("cashier", "operator")) return denied(); }                    // payments, expenses, plans…
@@ -4900,7 +4936,7 @@ async function handleBilling(req, res, pathname) {
       if ("router_sync_secs" in patch) rescheduleRouterPoll();
       if ("vendo_alerts" in patch || "vendo_check_mins" in patch) rescheduleVendoCheck();
       if ("portal_url" in patch || "portal_token" in patch || "portal_sync_enabled" in patch || "portal_sync_mins" in patch) reschedulePortalSync();
-      if ("hotspot_central" in patch || "radius_secret" in patch || "radius_port" in patch) startCentralHotspotRadius();
+      if ("hotspot_central" in patch || "cloud_hotspot_enabled" in patch || "radius_secret" in patch || "radius_port" in patch || "radius_acct_port" in patch) startCentralHotspotRadius();
       Audit.add({ type: "manual", action: "settings-update", detail: Object.keys(patch).join(","), ok: true });
       const s = Settings.all();
       for (const k of ["smtp_pass", "paymongo_secret", "paymongo_webhook_secret", "xendit_secret", "xendit_callback_token", "telegram_bot_token", "semaphore_api_key", "mikrotik_password", "ai_api_key", "portal_token", "radius_secret"]) if (s[k]) s[k] = "***";
@@ -7779,17 +7815,42 @@ server.listen(PORT, () => {
 });
 
 let _radiusServer = null;
+function cloudHotspotRadiusEnabled() {
+  return Settings.get("hotspot_central", "0") === "1"
+    || Settings.get("cloud_hotspot_enabled", "0") === "1";
+}
+
+function voucherRadiusAuth({ username, password, nas, chapOk }) {
+  const v = VoucherOrders.authenticate({ username, password, chapOk });
+  if (v.ok) return v;
+  if (hotspotCentralEnabled()) return HotspotCentral.authenticate({ username, password, chapOk });
+  return v;
+}
+
+function voucherRadiusAccounting({ username, sessionSecs, nas, acctStatus }) {
+  const order = VoucherOrders.byCode(username);
+  if (order && order.status === "issued") {
+    return VoucherOrders.applyAccounting({ username, sessionSecs, acctStatus, nas });
+  }
+  if (hotspotCentralEnabled()) {
+    return HotspotCentral.accounting({ username, sessionSecs, acctStatus, nas });
+  }
+  return { ok: false };
+}
+
 function startCentralHotspotRadius() {
   if (_radiusServer) { try { _radiusServer.close(); } catch {} _radiusServer = null; }
-  if (!hotspotCentralEnabled()) return;
+  if (!cloudHotspotRadiusEnabled()) return;
   const secret = Settings.get("radius_secret", "") || "jmwifi-radius";
   const authPort = Number(Settings.get("radius_port", "1812")) || 1812;
+  const acctPort = Number(Settings.get("radius_acct_port", "1813")) || 1813;
   try {
     _radiusServer = startRadiusServer({
       secret,
       authPort,
-      onAuth: ({ username, password, nas, chapOk }) => HotspotCentral.authenticate({ username, password, chapOk }),
-      onAccounting: ({ username, sessionSecs, nas }) => HotspotCentral.accounting({ username, sessionSecs, nas }),
+      acctPort,
+      onAuth: voucherRadiusAuth,
+      onAccounting: voucherRadiusAccounting,
     });
   } catch (e) {
     console.log("  !! Central RADIUS failed to start:", e.message);
