@@ -33,7 +33,7 @@ const FILES = [
   "server.js",
   "public/hotspot/jmwifi-roam.js",
   "public/hotspot/login.html",
-  "deploy/enable-cloud-hotspot-radius.mjs",
+  "deploy/disable-cloud-hotspot-radius.mjs",
 ];
 
 if (!PASS) {
@@ -89,11 +89,11 @@ conn.on("ready", () => {
         process.stdout.write("  " + rel + "\n");
         await uploadFile(sftp, local, `${REMOTE}/${rel}`);
       }
-      console.log("\nEnabling cloud_hotspot_enabled...");
-      await exec(conn, `cd ${REMOTE} && node deploy/enable-cloud-hotspot-radius.mjs`);
+      console.log("\nEnsuring cloud RADIUS stays OFF (local MikroTik users)...");
+      await exec(conn, `cd ${REMOTE} && node deploy/disable-cloud-hotspot-radius.mjs`);
       console.log("\nRestarting jm-billing...");
       await exec(conn, "systemctl restart jm-billing && sleep 2 && systemctl is-active jm-billing");
-      console.log("\nDeploy OK. Kitifi servers should send RADIUS accounting to UDP 1813.");
+      console.log("\nDeploy OK. Vouchers push to each router's /ip/hotspot/user (no cloud RADIUS).");
       conn.end();
     } catch (e) {
       console.error("\nDeploy failed:", e.message);

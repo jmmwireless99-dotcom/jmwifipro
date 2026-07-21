@@ -3534,7 +3534,7 @@ function minsToHotspotUptime(mins) {
 }
 
 async function createHotspotVoucher({ code, password = "", profile = "default", uptime = "", routerId = null, source = "voucher", planId = 0, planName = "", amount = 0, paymentRef = "" }) {
-  if (["online", "panel", "voucher"].includes(String(source || ""))) {
+  if (cloudHotspotRadiusEnabled() && ["online", "panel", "voucher"].includes(String(source || ""))) {
     await issueCloudRadiusVoucher({
       code, password: password || code, limitUptime: uptime || "1h",
       planId, planName, amount, paymentRef,
@@ -3572,8 +3572,8 @@ async function fulfillOnlineVoucher({ planId, routerId, ref, amountPeso }) {
   for (let i = 0; i < 5; i++) {
     try {
       await createHotspotVoucher({
-        code, password: code, profile: CLOUD_VOUCHER_PROFILE, uptime,
-        source: "online", planId, planName: plan.name || "", amount: amountPeso || plan.price || 0, paymentRef: ref || "",
+        code, password: code, profile: plan.profile || "default", uptime,
+        routerId, source: "online", planId, planName: plan.name || "", amount: amountPeso || plan.price || 0, paymentRef: ref || "",
       });
       lastErr = null;
       break;
@@ -3583,10 +3583,11 @@ async function fulfillOnlineVoucher({ planId, routerId, ref, amountPeso }) {
     }
   }
   if (lastErr) throw lastErr;
-  Audit.add({ type: "auto", action: "voucher-online", detail: `code=${code} plan=${plan.name} \u20B1${amountPeso || plan.price || 0} ${refTag} @ cloud-RADIUS/${CLOUD_VOUCHER_PROFILE}`, ok: true });
+  const via = cloudHotspotRadiusEnabled() ? `cloud-RADIUS/${CLOUD_VOUCHER_PROFILE}` : (routerId ? `router#${routerId}` : "local-router");
+  Audit.add({ type: "auto", action: "voucher-online", detail: `code=${code} plan=${plan.name} \u20B1${amountPeso || plan.price || 0} ${refTag} @ ${via}`, ok: true });
   try { Payments.record({ amount: amountPeso || Number(plan.price) || 0, method: "online-voucher", reference: ref || "", note: `Hotspot ${plan.name} \u2192 ${code}` }); } catch {}
-  tgNotify(`\uD83C\uDF9F <b>Hotspot voucher sold</b>\nPlan: ${escapeHtml(plan.name)}\nCode: <code>${escapeHtml(code)}</code>\n\u20B1${amountPeso || plan.price || 0}\nProfile: ${CLOUD_VOUCHER_PROFILE} (all sites via RADIUS)`).catch(() => {});
-  return { code, plan: plan.name, skipped: false, central: true, profile: CLOUD_VOUCHER_PROFILE };
+  tgNotify(`\uD83C\uDF9F <b>Hotspot voucher sold</b>\nPlan: ${escapeHtml(plan.name)}\nCode: <code>${escapeHtml(code)}</code>\n\u20B1${amountPeso || plan.price || 0}\nVia: ${escapeHtml(via)}`).catch(() => {});
+  return { code, plan: plan.name, skipped: false, central: cloudHotspotRadiusEnabled() || hotspotCentralEnabled(), profile: plan.profile || "default" };
 }
 
 async function handleRouter(req, res, pathname) {
