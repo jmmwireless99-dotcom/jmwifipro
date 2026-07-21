@@ -58,14 +58,15 @@
     if (!code) return false;
     saveCode(code);
 
+    var ctx = ctxFromPage();
+    var ret = opts.returnUrl || ctx.returnUrl;
+    // Prefer portal return (Kitifi #v_code + Submit) when we have a captive portal URL.
+    if (ret && portalBack(ret, code, true)) return true;
+
     if (opts.connect_url) {
       global.location.replace(opts.connect_url);
       return true;
     }
-
-    var ctx = ctxFromPage();
-    var ret = opts.returnUrl || ctx.returnUrl;
-    if (ret && portalBack(ret, code, true)) return true;
 
     if (global.JmWifiRoam && global.JmWifiRoam.autoConnectGateway) {
       global.JmWifiRoam.captureHotspotFromPage && global.JmWifiRoam.captureHotspotFromPage();

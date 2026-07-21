@@ -31,7 +31,6 @@
     if (!input || !btn) return false;
     try { sessionStorage.setItem(STORE, code); } catch (e) {}
     input.value = code;
-    try { sessionStorage.setItem(TRIED, "1"); } catch (e2) {}
     setTimeout(function () {
       try { btn.click(); } catch (e3) {}
     }, 350);
@@ -39,11 +38,14 @@
   }
 
   function run() {
-    if (sessionStorage.getItem(TRIED)) return;
     if (!wantsAuto()) return;
     var code = qsVoucher();
     if (!code) return;
-    if (kitifiPortalLogin(code)) return;
+    if (sessionStorage.getItem(TRIED) === code) return;
+    if (kitifiPortalLogin(code)) {
+      try { sessionStorage.setItem(TRIED, code); } catch (e2) {}
+      return;
+    }
     if (global.JmWifiRoam) {
       global.JmWifiRoam.save(code);
       if (global.JmWifiRoam.tryAutoLoginKitifi && global.JmWifiRoam.tryAutoLoginKitifi()) return;

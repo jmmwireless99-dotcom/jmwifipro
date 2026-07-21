@@ -9,7 +9,6 @@ import {
   kitifiGenerateBatch,
   kitifiTestLogin,
   kitifiGeneratorRatesDisplay,
-  kitifiConnectUrl,
   kitifiDefaultProfile,
   kitifiSellerName,
 } from "./kitifi-server.js";
@@ -20,6 +19,7 @@ import {
   kitifiGenChar,
   kitifiGenNameLength,
   kitifiRemoteRates,
+  kitifiAdminBase,
 } from "./kitifi-remote.js";
 import { kitifiPlans, kitifiPlanById, kitifiPortalRouterId } from "./kitifi-vouchers.js";
 import { hotspotCentralEnabled, mikrotikCentralRadiusScript } from "./hotspot-central.js";
@@ -49,6 +49,32 @@ export function createKitifiApi(deps) {
     if (!row) throw new Error("Router #" + rid + " not found.");
     const conn = connForRouter(row);
     return { conn, row, routerId: rid };
+  }
+
+  function kitifiHotspotLoginForRouter(routerId) {
+    const rid = routerId != null && routerId !== "" ? String(routerId) : "";
+    if (rid) {
+      const per = Settings.get("kitifi_hotspot_login_" + rid, "");
+      if (per) return String(per).replace(/\/$/, "");
+    }
+    return String(Settings.get("kitifi_hotspot_login", "http://10.0.0.1/login")).replace(/\/$/, "");
+  }
+
+  function connectUrlForRouter(voucherCode, routerId) {
+    const code = String(voucherCode || "").trim();
+    return kitifiHotspotLoginForRouter(routerId) + "?username=" + encodeURIComponent(code);
+  }
+
+  function kitifiConfigForRouter(routerId) {
+    const rid = Number(routerId) || kitifiPortalRouterId();
+    const cfg = kitifiConfig();
+    return {
+      ...cfg,
+      controller_url: kitifiAdminBase(rid),
+      hotspot_login: kitifiHotspotLoginForRouter(rid),
+      router_id: rid,
+      portal_router_id: rid,
+    };
   }
 
   async function fulfillKitifiOrder(order) {
@@ -112,11 +138,8 @@ export function createKitifiApi(deps) {
     const q = Object.fromEntries(url.searchParams);
 
     if (pathname === "/api/kitifi/config" && req.method === "GET") {
-      const cfg = kitifiConfig();
       const rid = q.router_id ? Number(q.router_id) : kitifiPortalRouterId();
-      const loginKey = rid ? "kitifi_hotspot_login_" + rid : "";
-      const login = (loginKey && Settings.get(loginKey, "")) || cfg.hotspot_login;
-      return ok(res, { data: { ...cfg, hotspot_login: login } });
+      return ok(res, { data: kitifiConfigForRouter(rid) });
     }
 
     if (pathname === "/api/kitifi/plans" && req.method === "GET") {
@@ -188,7 +211,7 @@ export function createKitifiApi(deps) {
         return ok(res, {
           status: "ready",
           voucher: order.voucher_code,
-          connect_url: kitifiConnectUrl(order.voucher_code) + "&autoconnect=1",
+          connect_url: connectUrlForRouter(order.voucher_code, order.router_id),
         });
       }
       if (order.status === "paid" || order.status === "generating" || (order.status === "pending" && order.payment_intent_id)) {
@@ -201,7 +224,7 @@ export function createKitifiApi(deps) {
             return ok(res, {
               status: "ready",
               voucher: result.code,
-              connect_url: kitifiConnectUrl(result.code) + "&autoconnect=1",
+              connect_url: connectUrlForRouter(result.code, order.router_id),
             });
           } catch (e) {
             if (order.status === "generating") {

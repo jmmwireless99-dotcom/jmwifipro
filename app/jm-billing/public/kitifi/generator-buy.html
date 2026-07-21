@@ -155,7 +155,7 @@
     $("autoHint").textContent="Payment OK — connecting your WiFi now…";
     setTimeout(function(){
       if(window.KitifiConnect){
-        KitifiConnect.autoConnectAfterPay({voucher:pendingCode,connect_url:d.connect_url,returnUrl:returnUrl,loginBase:loginBase});
+        KitifiConnect.autoConnectAfterPay({voucher:pendingCode,returnUrl:returnUrl,loginBase:loginBase});
       }else{
         connectVoucher(pendingCode);
       }

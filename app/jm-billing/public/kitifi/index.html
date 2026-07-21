@@ -262,7 +262,7 @@
     }
     setTimeout(function(){
       if (window.KitifiConnect) {
-        KitifiConnect.autoConnectAfterPay({ voucher: code, connect_url: d.connect_url, loginBase: loginBase });
+        KitifiConnect.autoConnectAfterPay({ voucher: code, returnUrl: returnUrl || "", loginBase: loginBase });
       } else if (window.JmWifiRoam && JmWifiRoam.autoConnectGateway) {
         JmWifiRoam.autoConnectGateway(code, gw, back, linkLogin);
       } else {
