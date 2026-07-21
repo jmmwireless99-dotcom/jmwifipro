@@ -33,8 +33,6 @@ const FILES = [
   "public/hotspot/kitifi-autoconnect.js",
   "public/hotspot/kitifi-buy.html",
   "public/hotspot/jmwifi-roam.js",
-  "lib/cloud-hotspot.js",
-  "server.js",
 ];
 
 if (!PASS) {
