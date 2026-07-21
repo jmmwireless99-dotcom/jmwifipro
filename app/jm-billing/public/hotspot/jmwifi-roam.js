@@ -3,7 +3,12 @@
   var KEY = "jmwifi_cloud_voucher";
   var TRY_KEY = "jmwifi_auto_tried";
   var POLL_KEY = "jmwifi_remain_poll";
+  var PENDING_PI_KEY = "jmwifi_pending_pi";
+  var PENDING_GW_KEY = "jmwifi_pending_gw";
+  var PENDING_AT_KEY = "jmwifi_pending_at";
+  var PAY_POLL_KEY = "jmwifi_pay_poll";
   var API = "https://jmwifi.pro/api/voucher/remaining";
+  var RESULT_API = "/api/voucher/result";
 
   function save(code) {
     code = String(code || "").trim();
@@ -133,6 +138,126 @@
   function goGatewayLogin(code, gw, dst) {
     save(code);
     global.location.assign(gatewayLoginUrl(code, gw, dst));
+    return true;
+  }
+
+  /** Hidden iframe POST — starts hotspot login without waiting for user tap. */
+  function silentGatewayLogin(code, gw, dst) {
+    save(code);
+    gw = String(gw || "10.0.0.10").replace(/^https?:\/\//, "").split("/")[0];
+    var frameName = "jmwifi_hlogin_" + Date.now();
+    var iframe = global.document.createElement("iframe");
+    iframe.name = frameName;
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.cssText = "position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none";
+    global.document.body.appendChild(iframe);
+    var form = global.document.createElement("form");
+    form.method = "POST";
+    form.action = "http://" + gw + "/login";
+    form.target = frameName;
+    form.style.display = "none";
+    function field(name, val) {
+      var inp = global.document.createElement("input");
+      inp.type = "hidden";
+      inp.name = name;
+      inp.value = val;
+      form.appendChild(inp);
+    }
+    field("username", code);
+    field("password", code);
+    field("popup", "true");
+    if (dst) field("dst", dst);
+    global.document.body.appendChild(form);
+    try { form.submit(); } catch (e) {}
+    setTimeout(function () {
+      try { form.remove(); iframe.remove(); } catch (e2) {}
+    }, 10000);
+    return true;
+  }
+
+  /** Silent iframe login + main-window redirect (best for GCash auto-connect). */
+  function autoConnectGateway(code, gw, dst) {
+    code = String(code || "").trim();
+    if (!code) return false;
+    gw = gw || "10.0.0.10";
+    save(code);
+    silentGatewayLogin(code, gw, dst || "");
+    setTimeout(function () {
+      goGatewayLogin(code, gw, dst || "");
+    }, 350);
+    return true;
+  }
+
+  function savePendingPayment(pi, gw) {
+    if (!pi) return;
+    try {
+      localStorage.setItem(PENDING_PI_KEY, String(pi));
+      localStorage.setItem(PENDING_GW_KEY, String(gw || "10.0.0.10"));
+      localStorage.setItem(PENDING_AT_KEY, String(Date.now()));
+    } catch (e) {}
+  }
+
+  function clearPendingPayment() {
+    try {
+      localStorage.removeItem(PENDING_PI_KEY);
+      localStorage.removeItem(PENDING_GW_KEY);
+      localStorage.removeItem(PENDING_AT_KEY);
+    } catch (e) {}
+  }
+
+  function getPendingPayment() {
+    try {
+      var pi = localStorage.getItem(PENDING_PI_KEY);
+      if (!pi) return null;
+      var at = Number(localStorage.getItem(PENDING_AT_KEY) || 0);
+      if (at && Date.now() - at > 30 * 60 * 1000) {
+        clearPendingPayment();
+        return null;
+      }
+      return { pi: pi, gw: localStorage.getItem(PENDING_GW_KEY) || "10.0.0.10" };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function stopPaymentPoll() {
+    if (global[PAY_POLL_KEY]) {
+      clearInterval(global[PAY_POLL_KEY]);
+      global[PAY_POLL_KEY] = null;
+    }
+  }
+
+  /** Poll PayMongo until voucher is issued, then auto-connect to hotspot gateway. */
+  function watchVoucherPayment(pi, gw, onPaid) {
+    stopPaymentPoll();
+    if (!pi) return;
+    savePendingPayment(pi, gw);
+    var tries = 0;
+    function tick() {
+      tries++;
+      fetch(RESULT_API + "?pi=" + encodeURIComponent(pi), { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.ok && d.paid && d.code) {
+            stopPaymentPoll();
+            clearPendingPayment();
+            save(d.code);
+            if (typeof onPaid === "function") onPaid(d.code, gw);
+            else autoConnectGateway(d.code, gw);
+            return;
+          }
+          if (tries > 120) stopPaymentPoll();
+        })
+        .catch(function () {});
+    }
+    tick();
+    global[PAY_POLL_KEY] = setInterval(tick, 2000);
+  }
+
+  function resumePendingPayment(onPaid) {
+    var pending = getPendingPayment();
+    if (!pending) return false;
+    watchVoucherPayment(pending.pi, pending.gw, onPaid);
     return true;
   }
 
@@ -277,6 +402,16 @@
     load: load,
     clear: clear,
     syncFromQuery: syncFromQuery,
+    gatewayLoginUrl: gatewayLoginUrl,
+    goGatewayLogin: goGatewayLogin,
+    silentGatewayLogin: silentGatewayLogin,
+    autoConnectGateway: autoConnectGateway,
+    savePendingPayment: savePendingPayment,
+    clearPendingPayment: clearPendingPayment,
+    getPendingPayment: getPendingPayment,
+    watchVoucherPayment: watchVoucherPayment,
+    resumePendingPayment: resumePendingPayment,
+    stopPaymentPoll: stopPaymentPoll,
     tryAutoLoginMikrotik: tryAutoLoginMikrotik,
     tryAutoLoginKitifi: tryAutoLoginKitifi,
     wireKitifiSave: wireKitifiSave,
