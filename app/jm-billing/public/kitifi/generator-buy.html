@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>KiTifi Voucher Generator · GCash</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Segoe UI,system-ui,sans-serif;background:#1a2332;color:#e8eef7;min-height:100vh;padding:12px}
+  .wrap{max-width:420px;margin:0 auto}
+  .head{text-align:center;padding:16px 8px 12px}
+  .head h1{font-size:18px;font-weight:800;color:#5eb3ff}
+  .head p{font-size:12px;color:#8fa3bc;margin-top:6px}
+  .card{background:#243044;border:1px solid #334155;border-radius:10px;padding:16px;margin-bottom:12px}
+  label{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin:10px 0 4px}
+  label:first-child{margin-top:0}
+  select,input[type=tel]{width:100%;padding:10px 12px;border:1px solid #475569;border-radius:6px;background:#1e293b;color:#f1f5f9;font-size:14px}
+  select option{color:#111}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .meta{font-size:11px;color:#64748b;margin-top:8px;line-height:1.4}
+  .btn{width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;margin-top:12px}
+  .btn-go{background:linear-gradient(120deg,#007dff,#00b4ff);color:#fff}
+  .btn-go:disabled{opacity:.45;cursor:not-allowed}
+  .btn-back{background:#334155;color:#cbd5e1;margin-top:8px}
+  .err{color:#f87171;font-size:12px;margin-top:8px;display:none}
+  .err.show{display:block}
+  .panel{display:none}
+  .panel.on{display:block}
+  .qrbox{text-align:center;padding:8px 0}
+  .amt{font-size:28px;font-weight:900;color:#38bdf8;margin:6px 0}
+  .qrbox img{width:min(92vw,320px);height:min(92vw,320px);max-width:100%;background:#fff;border-radius:8px;padding:10px}
+  .wait{font-size:13px;color:#94a3b8;margin:10px 0}
+  .pay-steps{text-align:left;background:#1e293b;border:1px solid #475569;border-radius:8px;padding:12px 14px;margin:12px 0;font-size:12.5px;color:#cbd5e1;line-height:1.55}
+  .pay-steps strong{color:#5eb3ff;display:block;margin-bottom:8px;font-size:13px}
+  .pay-steps ol{margin:0;padding-left:18px}
+  .pay-steps li{margin-bottom:6px}
+  .pay-steps li:last-child{margin-bottom:0}
+  .pay-note{font-size:11px;color:#64748b;margin-top:8px;line-height:1.45}
+  .countdown{font-size:22px;font-weight:900;color:#38bdf8;margin:12px 0;line-height:1.3}
+  .countdown small{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-top:6px}
+  .done{text-align:center}
+  .code{font-size:26px;font-weight:900;letter-spacing:2px;color:#4ade80;font-family:monospace;margin:12px 0;padding:12px;border:2px dashed #4ade80;border-radius:8px}
+  .hint{font-size:11px;color:#64748b;margin-top:6px}
+  .btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .btn-row .btn{margin-top:0;flex:1;min-width:120px}
+  a.gcash{display:inline-block;margin-top:10px;color:#38bdf8;font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>Voucher Generator</h1>
+    <p>Same Wifi Rates as KiTifi admin · Pay with GCash QR · Voucher created on KiTifi</p>
+  </div>
+
+  <div id="stepBuy" class="panel on">
+    <div class="card">
+      <label>Rates (Amount | Time | Expiry | Pause Limit)</label>
+      <select id="rates"><option>Loading KiTifi rates…</option></select>
+      <button type="button" class="btn btn-go" id="buyBtn" disabled style="margin-top:14px">BUY VOUCHER (GCash QR)</button>
+      <p class="err" id="err"></p>
+      <button type="button" class="btn btn-back" id="backPortal">← Back to portal</button>
+    </div>
+  </div>
+
+  <div id="stepQr" class="panel">
+    <div class="card qrbox">
+      <div class="amt" id="qrAmt">₱0</div>
+      <div id="qrPlan" style="font-size:13px;color:#94a3b8;margin-bottom:8px"></div>
+      <img id="qrImg" alt="GCash QR">
+      <div class="pay-steps">
+        <strong>How to pay (one phone only)</strong>
+        <ol>
+          <li><b>Screenshot</b> this QR code (power + volume down).</li>
+          <li>Open <b>GCash</b> or <b>Maya</b> app (use mobile data).</li>
+          <li>Tap <b>Scan QR</b> → choose <b>Upload from Gallery</b> → pick the screenshot.</li>
+          <li>Pay the exact amount shown above.</li>
+          <li>When GCash shows <b>Payment successful</b>, switch back here — WiFi connects <b>automatically</b> (no copy/paste).</li>
+        </ol>
+      </div>
+      <p class="wait" id="qrWait">Waiting for your payment…</p>
+      <p class="pay-note">Tip: Keep this page open. Do not press Cancel until payment is done.</p>
+      <a href="gcash://" class="gcash">Open GCash App</a>
+      <button type="button" class="btn btn-back" id="cancelQr" style="margin-top:14px">Cancel</button>
+    </div>
+  </div>
+
+  <div id="stepDone" class="panel">
+    <div class="card done">
+      <div style="color:#4ade80;font-weight:800;font-size:16px;margin-bottom:6px">✓ Voucher generated</div>
+      <p style="font-size:13px;color:#94a3b8">Your KiTifi voucher code:</p>
+      <div class="code" id="vcode"></div>
+      <p id="doneMeta" style="font-size:12px;color:#64748b;margin-bottom:8px"></p>
+      <p class="hint" id="autoHint">Connecting to WiFi automatically…</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-back" id="copyBtn">Copy code</button>
+        <button type="button" class="btn btn-go" id="connectBtn">Connect</button>
+      </div>
+      <button type="button" class="btn btn-back" id="laterBtn" style="margin-top:10px">Back to portal</button>
+    </div>
+  </div>
+</div>
+<script src="/hotspot/jmwifi-roam.js"></script>
+<script src="/kitifi/kitifi-connect.js"></script>
+<script>
+(function(){
+  var API="https://jmwifi.pro";
+  var qs=new URLSearchParams(location.search);
+  var mac=qs.get("mac")||"";
+  var returnUrl=qs.get("return")||"";
+  var routerId=qs.get("router_id")||"";
+  var plans=[], selected=null, token=null, poll=null, loginBase="http://10.0.0.1/login";
+
+  function $(id){return document.getElementById(id)}
+  function show(id){["stepBuy","stepQr","stepDone"].forEach(function(s){$(s).classList.toggle("on",s===id)})}
+  function err(m){$("err").textContent=m||"";$("err").classList.toggle("show",!!m)}
+  function peso(n){return "\u20B1 "+(Number(n)||0)}
+  function rateLabel(p){
+    if(p.label) return p.label;
+    return (p.amount_display||peso(p.price))+" | "+(p.time||p.name||"")+" | "+(p.expiry||"N/A")+" | "+(p.pause_limit||"0");
+  }
+  var STORE_KEY="kitifi_pending_voucher";
+  var pendingCode="";
+
+  function portalBack(voucher, autoconnect){
+    if(!returnUrl){ history.back(); return; }
+    var u=returnUrl;
+    try{
+      var url=new URL(returnUrl);
+      if(voucher){
+        url.searchParams.set("voucher",voucher);
+        try{sessionStorage.setItem(STORE_KEY,voucher)}catch(e){}
+        if(autoconnect) url.searchParams.set("autoconnect","1");
+      }
+      u=url.toString();
+    }catch(e){
+      if(voucher){
+        try{sessionStorage.setItem(STORE_KEY,voucher)}catch(e2){}
+        u+=(returnUrl.indexOf("?")>=0?"&":"?")+"voucher="+encodeURIComponent(voucher);
+        if(autoconnect) u+="&autoconnect=1";
+      }
+    }
+    location.href=u;
+  }
+      function connectVoucher(code){
+    portalBack(code, true);
+  }
+  function showVoucherDone(d){
+    pendingCode=String(d.voucher||"").trim();
+    $("vcode").textContent=pendingCode;
+    var meta=(d.plan_name||selected?.name||"")+(d.amount?" · ₱"+d.amount:"");
+    if(selected&&(selected.time||selected.label)) meta+=(meta?" · ":"")+(selected.time||selected.label);
+    $("doneMeta").textContent=meta;
+    show("stepDone");
+    $("autoHint").textContent="Payment OK — connecting your WiFi now…";
+    setTimeout(function(){
+      if(window.KitifiConnect){
+        KitifiConnect.autoConnectAfterPay({voucher:pendingCode,connect_url:d.connect_url,returnUrl:returnUrl,loginBase:loginBase});
+      }else{
+        connectVoucher(pendingCode);
+      }
+    },500);
+  }
+  function copyVoucher(code){
+    code=String(code||pendingCode||"").trim();
+    if(!code)return;
+    navigator.clipboard.writeText(code).then(function(){
+      $("copyBtn").textContent="Copied!";
+      setTimeout(function(){$("copyBtn").textContent="Copy code"},2000);
+    }).catch(function(){ prompt("Copy voucher code:", code); });
+  }
+
+  fetch(API+"/api/kitifi/config").then(function(r){return r.json()}).then(function(d){
+    if(d.hotspot_login) loginBase=d.hotspot_login.replace(/\/$/,"");
+  }).catch(function(){});
+
+  fetch(API+"/api/kitifi/generator-rates"+(routerId?("?router_id="+encodeURIComponent(routerId)):"")).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.rates||!d.rates.length){err("Could not load KiTifi rates.");return;}
+    plans=d.rates.filter(function(p){return Number(p.price)>=20;});
+    if(!plans.length){err("No GCash rates (₱20+) available.");return;}
+    $("rates").innerHTML=plans.map(function(p){
+      return '<option value="'+p.id+'">'+rateLabel(p)+'</option>';
+    }).join("");
+    selected=plans[0];
+    $("rates").onchange=function(){
+      selected=plans.find(function(x){return x.id===$("rates").value})||null;
+    };
+    $("buyBtn").disabled=false;
+  }).catch(function(){err("Network error loading rates.");});
+
+  $("backPortal").onclick=function(){portalBack("")};
+  $("laterBtn").onclick=function(){portalBack($("vcode").textContent||pendingCode,false)};
+  $("connectBtn").onclick=function(){connectVoucher($("vcode").textContent||pendingCode)};
+  $("copyBtn").onclick=function(){copyVoucher($("vcode").textContent||pendingCode)};
+  $("cancelQr").onclick=function(){
+    if(poll)clearInterval(poll);
+    show("stepBuy");
+  };
+
+  $("buyBtn").onclick=function(){
+    err("");
+    if(!selected)return err("Select a rate.");
+    if(Number(selected.price)<20)return err("GCash minimum is ₱20. Pick ₱20 or higher rate.");
+    $("buyBtn").disabled=true;
+    fetch(API+"/api/kitifi/buy",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        plan_id:selected.id, mac:mac, phone:"", router_id:routerId||undefined,
+        redirect:false, flow:"qr",
+        return_url:returnUrl||location.href,
+        back_url:returnUrl||location.href
+      })
+    }).then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d}})}).then(function(res){
+      $("buyBtn").disabled=false;
+      if(!res.ok||!res.d.ok)return err(res.d.error||"Could not start payment.");
+      token=res.d.token;
+      if(!res.d.qr_image_url)return err("QR not available.");
+      $("qrAmt").textContent=peso(res.d.amount);
+      $("qrPlan").textContent=res.d.plan||selected.name||"";
+      $("qrImg").src=res.d.qr_image_url;
+      show("stepQr");
+      if(poll)clearInterval(poll);
+      poll=setInterval(checkStatus,1200);
+      checkStatus();
+    }).catch(function(){$("buyBtn").disabled=false;err("Network error.");});
+  };
+
+  function checkStatus(){
+    if(!token)return;
+    fetch(API+"/api/kitifi/status?token="+encodeURIComponent(token)).then(function(r){return r.json()}).then(function(s){
+      if(!s.ok)return;
+      if(s.status==="ready"&&s.voucher){
+        if(poll)clearInterval(poll);
+        showVoucherDone(s);
+      }else if(s.status==="paid"||s.status==="pending"){
+        $("qrWait").textContent="Payment received — generating your voucher…";
+      }else if(s.status==="failed"){
+        if(poll)clearInterval(poll);
+        show("stepBuy");
+        err("Payment OK but KiTifi voucher failed. Contact support.");
+      }
+    }).catch(function(){});
+  }
+
+  document.addEventListener("visibilitychange",function(){
+    if(document.visibilityState==="visible"&&token){
+      $("qrWait").textContent="Welcome back — checking your GCash payment…";
+      checkStatus();
+      if(!poll)poll=setInterval(checkStatus,800);
+    }
+  });
+})();
+</script>
+</body>
+</html>

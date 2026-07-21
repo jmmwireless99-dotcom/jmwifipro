@@ -6,7 +6,7 @@ export function cloudHotspotConfig(opts = {}) {
   const radiusSecret = opts.radiusSecret || "JmWifi@Radius2026!";
   const site = opts.routerName || "site";
   const wan = opts.wanInterface || "ether1";
-  const files = ["login.html", "alogin.html", "logout.html", "error.html", "kitifi-buy.html"];
+  const files = ["login.html", "alogin.html", "logout.html", "error.html", "kitifi-buy.html", "kitifi-autoconnect.js"];
   const fetchLines = files.map((f) =>
     ':do { /tool fetch url="' + portal + "/hotspot/" + f + '" dst-path=flash/hotspot/' + f + ' mode=https check-certificate=no' +
     ' } on-error={ :log warning ("JM WIFI: fetch ' + f + ' failed") }'

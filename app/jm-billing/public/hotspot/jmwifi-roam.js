@@ -441,6 +441,28 @@
     );
   }
 
+  function kitifiAutoConnectFromUrl() {
+    if (sessionStorage.getItem(TRY_KEY)) return false;
+    var qs = new URLSearchParams(global.location.search);
+    var voucher = qs.get("voucher") || qs.get("code") || "";
+    try {
+      if (!voucher) voucher = sessionStorage.getItem("kitifi_pending_voucher") || "";
+    } catch (e) {}
+    voucher = String(voucher || "").trim();
+    if (!voucher) return false;
+    if (qs.get("autoconnect") !== "1" && qs.get("paid") !== "1") return false;
+    save(voucher);
+    var input = global.document.getElementById("v_code");
+    var btn = global.document.getElementById("submit");
+    if (input && btn) {
+      sessionStorage.setItem(TRY_KEY, "1");
+      input.value = voucher.toUpperCase();
+      setTimeout(function () { btn.click(); }, 400);
+      return true;
+    }
+    return tryAutoLoginKitifi();
+  }
+
   function tryAutoLoginKitifi() {
     if (sessionStorage.getItem(TRY_KEY)) return false;
     var v = load();
@@ -493,6 +515,7 @@
     syncFromQuery();
     captureHotspotFromPage();
     wireKitifiCloudSubmit();
+    kitifiAutoConnectFromUrl();
     var v = load();
     if (v && v.code) startRemainingPoll();
   }
@@ -520,6 +543,7 @@
     stopPaymentPoll: stopPaymentPoll,
     tryAutoLoginMikrotik: tryAutoLoginMikrotik,
     tryAutoLoginKitifi: tryAutoLoginKitifi,
+    kitifiAutoConnectFromUrl: kitifiAutoConnectFromUrl,
     wireKitifiSave: wireKitifiSave,
     wireMikrotikSave: wireMikrotikSave,
     startRemainingPoll: startRemainingPoll,

@@ -854,6 +854,28 @@ function serveHotspotAsset(res, file) {
   }
 }
 
+function serveKitifiPage(res, file) {
+  const safe = String(file || "index.html").replace(/\\/g, "/").split("/").filter((p) => p && p !== "..").join("/") || "index.html";
+  const full = path.join(__dirname, "public", "kitifi", safe);
+  if (!full.startsWith(path.join(__dirname, "public", "kitifi"))) {
+    res.writeHead(403, { "Content-Type": "text/plain" });
+    return res.end("forbidden");
+  }
+  try {
+    const buf = fs.readFileSync(full);
+    const ext = path.extname(safe).toLowerCase();
+    const type = ext === ".js" ? "application/javascript"
+      : ext === ".css" ? "text/css"
+      : ext === ".html" ? "text/html; charset=utf-8"
+      : "application/octet-stream";
+    res.writeHead(200, { "Content-Type": type, "Cache-Control": "public, max-age=120" });
+    return res.end(buf);
+  } catch {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    return res.end("not found");
+  }
+}
+
 function servePortalPage(res, file) {
   try {
     const buf = fs.readFileSync(path.join(__dirname, "public", "portal", file));
@@ -1150,6 +1172,15 @@ const requestHandler = async (req, res) => {
     }
     if (pathname === "/voucher" && req.method === "GET") {
       return servePortalPage(res, "voucher.html");
+    }
+    if (req.method === "GET" && pathname === "/kitifi") {
+      return serveKitifiPage(res, "index.html");
+    }
+    if (req.method === "GET" && pathname.startsWith("/kitifi/")) {
+      const kf = pathname.slice("/kitifi/".length);
+      if (kf === "generator-buy" || kf === "payment-return") return serveKitifiPage(res, kf + ".html");
+      if (kf === "kitifi-connect.js") return serveKitifiPage(res, "kitifi-connect.js");
+      return serveKitifiPage(res, kf);
     }
     if (pathname === "/api/voucher/pay-start" && req.method === "POST") {
       const raw = (await readBody(req)) || "";

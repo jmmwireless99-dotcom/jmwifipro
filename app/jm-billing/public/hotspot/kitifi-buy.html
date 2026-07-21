@@ -25,15 +25,24 @@ body{font-family:system-ui,sans-serif;background:#1a0e2e;color:#f4eefe;display:f
   if(!gw&&typeof hs_address==="string"&&hs_address.trim()) gw=hs_address.trim().split("/")[0];
   if(!gw) gw="10.0.0.1";
   var linkLogin=qs.get("link-login")||qs.get("link_login")||qs.get("login")||"";
-  var back=qs.get("back")||"";
+  var back=qs.get("back")||qs.get("return")||"";
+  var mac=qs.get("mac")||"";
+  var routerId=qs.get("router_id")||"";
+  var ret=encodeURIComponent(back||("http://"+gw.replace(/^https?:\/\//,"").split("/")[0]+"/"));
   if(window.JmWifiRoam){
     JmWifiRoam.saveHotspotContext({gw:gw,linkLogin:linkLogin,back:back});
-    location.replace(JmWifiRoam.buildVoucherShopUrl("https://jmwifi.pro/voucher",{gw:gw,linkLogin:linkLogin,back:back}));
+    var url=JmWifiRoam.buildVoucherShopUrl("https://jmwifi.pro/kitifi/generator-buy",{gw:gw,linkLogin:linkLogin,back:back});
+    url+=(url.indexOf("?")>=0?"&":"?")+"return="+ret;
+    if(mac) url+="&mac="+encodeURIComponent(mac);
+    if(routerId) url+="&router_id="+encodeURIComponent(routerId);
+    location.replace(url);
   }else{
     var p=new URLSearchParams({gw:gw.replace(/^https?:\/\//,"").split("/")[0],from:"kitifi"});
     if(linkLogin) p.set("link-login",linkLogin);
-    if(back) p.set("back",back);
-    location.replace("https://jmwifi.pro/voucher?"+p.toString());
+    if(back) p.set("return",back);
+    if(mac) p.set("mac",mac);
+    if(routerId) p.set("router_id",routerId);
+    location.replace("https://jmwifi.pro/kitifi/generator-buy?"+p.toString());
   }
 })();
 </script>
