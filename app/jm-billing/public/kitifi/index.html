@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Buy WiFi Voucher — GCash</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    min-height:100vh;padding:16px;
+    background:#1a1a2e url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 30h60M30 0v60' stroke='%23222' stroke-width='1'/%3E%3C/svg%3E");
+    color:#222;
+  }
+  .wrap{max-width:400px;margin:0 auto}
+  .site-title{text-align:center;color:#fff;font-size:22px;font-weight:800;margin:12px 0 18px;text-shadow:0 2px 4px rgba(0,0,0,.4)}
+  .card{background:#fff;border-radius:12px;padding:20px 18px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+  label{display:block;font-size:13px;font-weight:700;color:#444;margin-bottom:6px}
+  .field{margin-bottom:16px}
+  select,input[type=tel],input[type=text]{
+    width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:8px;
+    font-size:16px;font-weight:500;background:#fff;
+  }
+  #amountDropdown{color:#16a34a;font-weight:600}
+  .btn-buy{
+    display:block;width:100%;padding:14px;border:none;border-radius:8px;
+    font-size:17px;font-weight:800;color:#fff;cursor:pointer;
+    background:#ff4d4d;box-shadow:0 3px 0 #ff3838;text-shadow:0 1px 2px rgba(0,0,0,.3);
+    animation:btnWiggle 3s infinite;
+  }
+  .btn-buy:disabled{opacity:.5;animation:none;cursor:not-allowed}
+  @keyframes btnWiggle{
+    0%,23%,100%{transform:rotate(0)}
+    2%{transform:rotate(-5deg)}3.5%{transform:rotate(3deg)}
+    10.5%{transform:rotate(-5deg)}20%{transform:rotate(3deg)}
+  }
+  .divider{border-top:1px dashed #ddd;margin:20px 0;padding-top:18px}
+  .section-title{font-size:14px;font-weight:800;color:#333;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+  .btn-connect{
+    display:block;width:100%;padding:13px;border:none;border-radius:8px;
+    font-size:16px;font-weight:800;color:#fff;cursor:pointer;
+    background:linear-gradient(120deg,#007dff,#00b4ff);margin-top:10px;
+  }
+  .foot{text-align:center;font-size:11px;color:#aaa;margin-top:14px}
+  .err{color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px;font-size:13px;display:none;margin-top:12px}
+  .err.show{display:block}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center;padding:16px}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:14px;padding:22px 18px;max-width:360px;width:100%;text-align:center;position:relative}
+  .modal h3{font-size:18px;margin-bottom:4px}
+  .modal .sub{font-size:13px;color:#666;margin-bottom:14px}
+  .modal .amt{font-size:28px;font-weight:900;color:#007dff;margin:8px 0}
+  .qrbox{background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:10px;margin:10px auto;display:inline-block}
+  .qrbox img{width:min(72vw,260px);height:min(72vw,260px);object-fit:contain}
+  .wait{font-size:13px;color:#666;line-height:1.5;margin-top:10px}
+  .spin{display:inline-block;width:18px;height:18px;border:2px solid #ddd;border-top-color:#007dff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .btn-gcash{display:inline-block;margin-top:12px;padding:12px 20px;border-radius:10px;background:#007dff;color:#fff;font-weight:800;text-decoration:none;font-size:15px}
+  .btn-close{position:absolute;top:10px;right:14px;background:none;border:none;font-size:24px;color:#999;cursor:pointer;line-height:1}
+  .vcode{font-size:26px;font-weight:900;letter-spacing:3px;font-family:"Courier New",monospace;color:#16a34a;padding:14px;background:#f0fdf4;border:2px dashed #16a34a;border-radius:10px;margin:12px 0}
+  .ok{color:#16a34a;font-weight:800;font-size:17px;margin-bottom:6px}
+  .countdown{font-size:13px;color:#007dff;font-weight:700;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="site-title" id="siteTitle">KiTifi WiFi · GCash Voucher</div>
+
+  <div class="card" id="formCard">
+    <div class="field">
+      <label for="amountDropdown">Select Promo:</label>
+      <select class="form-control" id="amountDropdown" name="amount">
+        <option value="">Loading plans…</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="mobileInput">Mobile Number:</label>
+      <input type="tel" id="mobileInput" name="mobile" placeholder="09XXXXXXXXX" maxlength="11" inputmode="numeric" autocomplete="tel">
+    </div>
+    <button type="button" class="btn-buy" id="buyBtn" disabled>BUY NOW</button>
+    <div class="err" id="err"></div>
+
+    <div class="divider">
+      <div class="section-title">Voucher</div>
+      <p style="font-size:12px;color:#666;margin-bottom:8px">Already have a code? Enter below and connect.</p>
+      <input type="text" id="voucherInput" placeholder="Voucher code" autocomplete="off" style="text-transform:uppercase">
+      <button type="button" class="btn-connect" id="connectVoucherBtn">CONNECT</button>
+    </div>
+  </div>
+
+  <div class="foot">Powered by jmwifi.pro · KiTifi Voucher Generator</div>
+</div>
+
+<div class="overlay" id="payOverlay">
+  <div class="modal">
+    <button type="button" class="btn-close" id="closePay" aria-label="Close">&times;</button>
+    <h3>Purchase Voucher via GCash</h3>
+    <div class="sub" id="planLabel">Scan QR with GCash app</div>
+    <div class="amt" id="amt">₱0</div>
+    <div class="qrbox"><img id="qr" alt="GCash QR Ph"></div>
+    <div class="wait" id="status"><span class="spin"></span>Waiting for payment…</div>
+    <a class="btn-gcash" id="gcashBtn" href="gcash://">Open GCash app</a>
+    <div class="wait" style="margin-top:12px"><b>Tip:</b> Keep mobile data ON while paying.</div>
+  </div>
+</div>
+
+<div class="overlay" id="doneOverlay">
+  <div class="modal">
+    <div class="ok">✓ Payment successful!</div>
+    <div class="sub" id="planDone"></div>
+    <div class="vcode" id="vcode"></div>
+    <button type="button" class="btn-connect" id="copyBtn" style="background:#334155;margin-bottom:8px">Copy voucher code</button>
+    <a class="btn-connect" id="connectBtn" href="#">Connect to WiFi now</a>
+    <div class="countdown" id="countdown"></div>
+  </div>
+</div>
+
+<div class="overlay" id="connectOverlay">
+  <div class="modal">
+    <div class="ok">✓ Payment successful!</div>
+    <p class="sub">Connecting your WiFi automatically…</p>
+    <div class="spin" style="width:34px;height:34px;border:3px solid #ddd;border-top-color:#007dff;border-radius:50%;margin:16px auto;animation:spin .8s linear infinite"></div>
+  </div>
+</div>
+
+<script src="/hotspot/jmwifi-roam.js"></script>
+<script src="/kitifi/kitifi-connect.js"></script>
+<script>
+(function(){
+  const API = "";
+  const params = new URLSearchParams(location.search);
+  const clientMac = params.get("mac") || "";
+  const gw = (params.get("gw") || "10.0.0.1").replace(/^https?:\/\//, "").split("/")[0];
+  const linkLogin = params.get("link-login") || params.get("link_login") || "";
+  const back = params.get("back") || "";
+  let orderToken = params.get("token") || null;
+  let selectedPlan = null;
+  let poll = null;
+  let countdownTimer = null;
+  let loginBase = "http://10.0.0.1/login";
+
+  function $(id){ return document.getElementById(id); }
+  function peso(n){ return "\u20B1" + (Number(n)||0).toLocaleString(undefined,{maximumFractionDigits:0}); }
+  function fail(msg){ $("err").textContent = msg; $("err").classList.add("show"); }
+  function clearErr(){ $("err").classList.remove("show"); }
+  function loginUrl(code){ return loginBase + "?username=" + encodeURIComponent(code) + "&password=" + encodeURIComponent(code) + "&popup=true"; }
+
+  function setUrl(token, paid){
+    const q = new URLSearchParams();
+    if (token) q.set("token", token);
+    if (paid) q.set("paid", "1");
+    if (clientMac) q.set("mac", clientMac);
+    history.replaceState(null, "", "/kitifi?" + q.toString());
+  }
+
+  $("gcashBtn").addEventListener("click", function(e){
+    if (/Android/i.test(navigator.userAgent||"")) {
+      e.preventDefault();
+      location.href = "intent://scan/#Intent;scheme=gcash;package=com.globe.gcash.android;S.browser_fallback_url=https://www.gcash.com/;end";
+      setTimeout(function(){ location.href = "gcash://"; }, 700);
+    }
+  });
+
+  $("closePay").onclick = function(){
+    $("payOverlay").classList.remove("show");
+    if (poll) clearInterval(poll);
+  };
+
+  $("connectVoucherBtn").onclick = function(){
+    const code = ($("voucherInput").value||"").trim();
+    if (!code) { fail("Enter your voucher code."); return; }
+    clearErr();
+    location.href = loginUrl(code);
+  };
+
+  async function loadConfig(){
+    try {
+      const r = await fetch(API + "/api/kitifi/config");
+      const d = await r.json();
+      if (d.hotspot_login) loginBase = d.hotspot_login.replace(/\/$/,"");
+      if (d.rates?.length) renderPlans(d.rates);
+    } catch {}
+    try {
+      const routerId = params.get("router_id") || "";
+      const r = await fetch(API + "/api/kitifi/plans" + (routerId ? ("?router_id=" + encodeURIComponent(routerId)) : ""));
+      const d = await r.json();
+      if (d.ok && d.plans?.length) renderPlans(d.plans);
+    } catch { fail("Could not load WiFi rates."); }
+  }
+
+  function renderPlans(plans){
+    const sel = $("amountDropdown");
+    sel.innerHTML = plans.map(function(p){
+      return '<option value="'+p.id+'">'+peso(p.price)+' - '+p.name+(p.uptime?' ('+p.uptime+')':'')+'</option>';
+    }).join("");
+    selectedPlan = plans[0];
+    sel.onchange = function(){
+      selectedPlan = plans.find(function(x){ return x.id === sel.value; }) || plans[0];
+    };
+    $("buyBtn").disabled = false;
+  }
+
+  async function startBuy(){
+    clearErr();
+    const mobile = ($("mobileInput").value||"").replace(/\D/g,"");
+    if (mobile && mobile.length < 10) { fail("Enter a valid mobile number (09XXXXXXXXX)."); return; }
+    if (!selectedPlan) { fail("Select a promo first."); return; }
+    $("buyBtn").disabled = true;
+    try {
+      const r = await fetch(API + "/api/kitifi/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan_id: selectedPlan.id, mac: clientMac, phone: mobile,
+          router_id: params.get("router_id") || undefined,
+          gw: gw, link_login: linkLogin, back: back,
+        }),
+      });
+      const d = await r.json();
+      if (!d.ok) { fail(d.error || "Could not start payment."); $("buyBtn").disabled = false; return; }
+      orderToken = d.token;
+      setUrl(orderToken, false);
+      $("amt").textContent = peso(d.amount);
+      $("planLabel").textContent = d.plan || selectedPlan.name;
+      $("qr").src = d.qr_image_url || "";
+      $("status").innerHTML = '<span class="spin"></span>Waiting for GCash payment…';
+      $("payOverlay").classList.add("show");
+      startPoll();
+    } catch { fail("Network error. Try again."); }
+    $("buyBtn").disabled = false;
+  }
+
+  function startPoll(){
+    if (poll) clearInterval(poll);
+    poll = setInterval(checkStatus, 1500);
+    checkStatus();
+  }
+
+  async function fetchStatus(){
+    if (!orderToken) return null;
+    try {
+      const r = await fetch(API + "/api/kitifi/status?token=" + encodeURIComponent(orderToken));
+      return await r.json();
+    } catch { return null; }
+  }
+
+  function showDone(d){
+    if (poll) clearInterval(poll);
+    if (countdownTimer) clearInterval(countdownTimer);
+    $("payOverlay").classList.remove("show");
+    $("doneOverlay").classList.remove("show");
+    $("connectOverlay").classList.add("show");
+    setUrl(orderToken, true);
+    const code = String(d.voucher || "").trim();
+    $("vcode").textContent = code;
+    $("planDone").textContent = (d.plan_name||"") + (d.amount ? " · "+peso(d.amount) : "");
+    const url = d.connect_url || loginUrl(code);
+    $("connectBtn").href = url;
+    if (window.JmWifiRoam) {
+      JmWifiRoam.saveHotspotContext({ gw: gw, linkLogin: linkLogin, back: back });
+      JmWifiRoam.save(code);
+    }
+    setTimeout(function(){
+      if (window.KitifiConnect) {
+        KitifiConnect.autoConnectAfterPay({ voucher: code, returnUrl: returnUrl || "", loginBase: loginBase });
+      } else if (window.JmWifiRoam && JmWifiRoam.autoConnectGateway) {
+        JmWifiRoam.autoConnectGateway(code, gw, back, linkLogin);
+      } else {
+        location.href = url;
+      }
+    }, 400);
+  }
+
+  async function checkStatus(){
+    const d = await fetchStatus();
+    if (!d || !d.ok) return;
+    if (d.status === "ready" && d.voucher) showDone(d);
+    else if (d.status === "failed") {
+      if (poll) clearInterval(poll);
+      $("payOverlay").classList.remove("show");
+      fail("Payment received but voucher generation failed. Contact support.");
+    }
+  }
+
+  async function resumeSession(){
+    if (!orderToken) return;
+    const d = await fetchStatus();
+    if (!d || !d.ok) return;
+    if (d.status === "ready" && d.voucher) showDone(d);
+    else if (d.status === "pending" || d.status === "paid") {
+      $("amt").textContent = peso(d.amount);
+      $("planLabel").textContent = d.plan_name || "";
+      $("payOverlay").classList.add("show");
+      startPoll();
+    }
+  }
+
+  document.addEventListener("visibilitychange", function(){
+    if (document.visibilityState === "visible" && orderToken) checkStatus();
+  });
+
+  $("buyBtn").onclick = startBuy;
+  loadConfig().then(resumeSession);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+  <title>Payment Complete · JM WiFi</title>
+
+  <style>
+
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #1a2332; color: #e8eef7; }
+
+    .wrap { max-width: 420px; margin: 0 auto; padding: 32px 16px; text-align: center; }
+
+    .card { background: #243044; border: 1px solid #334155; border-radius: 16px; padding: 24px 18px; }
+
+    .spin { width: 40px; height: 40px; border: 3px solid #475569; border-top-color: #38bdf8; border-radius: 50%; margin: 0 auto 14px; animation: spin .8s linear infinite; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    h1 { font-size: 20px; margin: 0 0 8px; color: #5eb3ff; }
+
+    p { color: #94a3b8; font-size: 14px; line-height: 1.5; }
+
+    .code { font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #4ade80; margin: 14px 0; font-family: monospace; padding: 12px; border: 2px dashed #4ade80; border-radius: 10px; }
+
+    .btn { display: inline-block; margin-top: 10px; padding: 12px 18px; border-radius: 12px; border: none; background: linear-gradient(120deg,#007dff,#00b4ff); color: #fff; font-weight: 700; text-decoration: none; cursor: pointer; font-size: 14px; }
+
+    .btn.secondary { background: #334155; color: #cbd5e1; margin-left: 8px; }
+
+    .btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+
+    .err { color: #f87171; }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <div class="card" id="card">
+
+      <div class="spin" id="spin"></div>
+
+      <h1 id="title">Checking your payment</h1>
+
+      <p id="msg">Please wait…</p>
+
+      <div id="done" style="display:none">
+
+        <p style="color:#4ade80;font-weight:800">✓ Payment successful</p>
+
+        <p>Your voucher code:</p>
+
+        <div class="code" id="vcode"></div>
+
+        <p id="plan"></p>
+
+        <p style="font-size:12px;color:#64748b">Copy the code or tap Connect to connect on the portal.</p>
+
+        <div class="btn-row">
+
+          <button type="button" class="btn secondary" id="copyBtn">Copy code</button>
+
+          <button type="button" class="btn" id="connectBtn">Connect</button>
+
+        </div>
+
+        <button type="button" class="btn secondary" id="portalBtn" style="margin-top:12px">Back to portal</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+  (function () {
+
+    var API = location.origin;
+
+    var qs = new URLSearchParams(location.search);
+
+    var token = (qs.get("external_id") || qs.get("token") || "").trim();
+
+    var back = (qs.get("back") || "").trim();
+
+    var tries = 0;
+
+    var STORE_KEY = "kitifi_pending_voucher";
+
+    var pendingCode = "";
+
+    var connectUrl = "";
+
+
+
+    function portalBack(voucher, autoconnect) {
+
+      voucher = String(voucher || pendingCode || "").trim();
+
+      if (!voucher) return;
+
+      try { sessionStorage.setItem(STORE_KEY, voucher); } catch (e) {}
+
+      if (back) {
+
+        try {
+
+          var url = new URL(back);
+
+          url.searchParams.set("voucher", voucher);
+          if (autoconnect) url.searchParams.set("autoconnect", "1");
+
+          location.href = url.toString();
+
+          return;
+
+        } catch (e2) {
+
+          var sep = back.indexOf("?") >= 0 ? "&" : "?";
+
+          location.href = back + sep + "voucher=" + encodeURIComponent(voucher) + (autoconnect ? "&autoconnect=1" : "");
+
+          return;
+
+        }
+
+      }
+
+      location.href = API + "/kitifi/generator-buy?voucher=" + encodeURIComponent(voucher);
+
+    }
+
+
+
+    function showDone(d) {
+      document.getElementById("spin").style.display = "none";
+      document.getElementById("title").textContent = "Connecting WiFi…";
+      document.getElementById("msg").textContent = "Payment OK — logging you in automatically.";
+      pendingCode = String(d.voucher || "").trim();
+      connectUrl = d.connect_url || (API + "/kitifi/generator-buy");
+      document.getElementById("vcode").textContent = pendingCode;
+      document.getElementById("plan").textContent = (d.plan_name || "") + (d.amount ? " · ₱" + d.amount : "");
+      document.getElementById("done").style.display = "block";
+      document.getElementById("connectBtn").onclick = function () { portalBack(pendingCode, true); };
+      document.getElementById("copyBtn").onclick = function () {
+        navigator.clipboard.writeText(pendingCode).then(function () {
+          document.getElementById("copyBtn").textContent = "Copied!";
+          setTimeout(function () { document.getElementById("copyBtn").textContent = "Copy code"; }, 2000);
+        }).catch(function () { prompt("Copy:", pendingCode); });
+      };
+      document.getElementById("portalBtn").onclick = function () { portalBack(pendingCode, false); };
+      setTimeout(function () { portalBack(pendingCode, true); }, 500);
+    }
+
+
+
+    function poll() {
+
+      if (!token) {
+
+        document.getElementById("spin").style.display = "none";
+
+        document.getElementById("title").textContent = "Missing payment reference";
+
+        document.getElementById("msg").textContent = "Return to the hotspot portal and try again.";
+
+        document.getElementById("msg").classList.add("err");
+
+        return;
+
+      }
+
+      fetch(API + "/api/kitifi/status?token=" + encodeURIComponent(token))
+
+        .then(function (r) { return r.json(); })
+
+        .then(function (d) {
+
+          if (!d.ok) throw new Error(d.error || "Order not found");
+
+          if (d.status === "ready" && d.voucher) { showDone(d); return; }
+
+          if (d.status === "failed") throw new Error("Voucher generation failed. Contact support.");
+
+          tries++;
+
+          if (tries > 40) throw new Error("Payment not confirmed yet. Return to the buy page in your browser.");
+
+          setTimeout(poll, 1200);
+
+        })
+
+        .catch(function (e) {
+
+          document.getElementById("spin").style.display = "none";
+
+          document.getElementById("title").textContent = "Still processing";
+
+          document.getElementById("msg").textContent = e.message || "Please wait and refresh.";
+
+          document.getElementById("msg").classList.add("err");
+
+        });
+
+    }
+
+    poll();
+
+    document.addEventListener("visibilitychange", function () {
+
+      if (document.visibilityState === "visible" && token && document.getElementById("done").style.display === "none") poll();
+
+    });
+
+  })();
+
+  </script>
+
+</body>
+
+</html>
+
