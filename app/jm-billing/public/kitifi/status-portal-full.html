@@ -45,7 +45,7 @@
                 {% if voucherInput == 1 %}
                 <div class="input-group" id="manualConnectBox">
                     <div class="d-flex flex-fill align-content-stretch">
-                        <input type="text" id="v_code" value="" placeholder="Voucher Here.." autocomplete="off" autocapitalize="characters" spellcheck="false" />
+                        <input type="text" id="v_code" value="" placeholder="Voucher Here.." autocomplete="one-time-code" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" />
                         <button type="button" id="submit" class="submit">Submit</button>
                     </div>
                 </div>
@@ -220,9 +220,13 @@
       var BUY = "https://jmwifi.pro/kitifi/generator-buy";
       var STORE_KEY = "kitifi_pending_voucher";
 
+      function kitifiNormCode(code) {
+        return String(code || "").trim().toUpperCase();
+      }
+
       /** Pre-fill portal paste field and scroll into view (manual connect). */
       function kitifiApplyPendingVoucher(code) {
-        code = String(code || "").trim();
+        code = kitifiNormCode(code);
         if (!code) return false;
         var vInput = document.getElementById("v_code");
         var box = document.getElementById("manualConnectBox");
@@ -246,29 +250,32 @@
       }
 
       function kitifiPortalLoginUrl(code) {
-        code = String(code || "").trim();
+        code = kitifiNormCode(code);
         if (!code) return "";
         var gw = (typeof hs_address !== "undefined" && hs_address) ? String(hs_address).replace(/\/$/, "") : "10.0.0.1";
         if (gw.indexOf("http") !== 0) gw = "http://" + gw;
         if (gw.indexOf("/login") === -1) gw = gw.replace(/\/?$/, "") + "/login";
-        return gw + "?username=" + encodeURIComponent(code) + "&password=" + encodeURIComponent(code);
+        return gw + "?username=" + encodeURIComponent(code) + "&password=" + encodeURIComponent(code) + "&popup=true";
       }
 
       function kitifiManualSubmit() {
-        var code = String((document.getElementById("v_code") && document.getElementById("v_code").value) || "").trim();
+        var vInput = document.getElementById("v_code");
+        var code = kitifiNormCode(vInput && vInput.value);
+        if (vInput) vInput.value = code;
         if (!code) {
           if (typeof toastr !== "undefined") toastr.error("Enter voucher code first");
           return false;
         }
         var url = kitifiPortalLoginUrl(code);
         if (!url) return false;
+        try { sessionStorage.removeItem(STORE_KEY); } catch (e) {}
         window.location.href = url;
         return true;
       }
 
       /** Fill #v_code then login via MikroTik hotspot URL (reliable submit). */
       function kitifiAutoConnect(code, attempt) {
-        code = String(code || "").trim();
+        code = kitifiNormCode(code);
         if (!code) return false;
         attempt = attempt || 0;
         var vInput = document.getElementById("v_code");
@@ -284,6 +291,7 @@
         }
         var url = kitifiPortalLoginUrl(code);
         if (url) {
+          try { sessionStorage.removeItem(STORE_KEY); } catch (e4) {}
           window.location.href = url;
           return true;
         }
@@ -294,7 +302,7 @@
       }
 
       function kitifiShowVoucherModal(code) {
-        code = String(code || "").trim();
+        code = kitifiNormCode(code);
         if (!code) return;
         kitifiApplyPendingVoucher(code);
         var modal = document.getElementById("gcashVoucherModal");
@@ -317,13 +325,13 @@
       function takePendingVoucher() {
         var qs = new URLSearchParams(location.search);
         var autoConnect = qs.get("autoconnect") === "1";
-        var code = qs.get("voucher") || qs.get("code") || "";
+        var code = kitifiNormCode(qs.get("voucher") || qs.get("code") || "");
         if (!code) {
-          try { code = sessionStorage.getItem(STORE_KEY) || ""; } catch (e) {}
+          try { code = kitifiNormCode(sessionStorage.getItem(STORE_KEY) || ""); } catch (e) {}
           if (code) autoConnect = true;
         }
         if (!code) return;
-        try { sessionStorage.removeItem(STORE_KEY); } catch (e2) {}
+        kitifiApplyPendingVoucher(code);
         if (qs.get("voucher") || qs.get("code") || qs.get("autoconnect")) {
           try {
             qs.delete("voucher");
@@ -337,7 +345,6 @@
           kitifiAutoConnect(code);
           return;
         }
-        kitifiApplyPendingVoucher(code);
       }
 
       function detectPortalRouterId() {
@@ -360,24 +367,50 @@
         var mac = (typeof mac_address !== "undefined" && mac_address) ? String(mac_address).trim() : "";
         var ret = encodeURIComponent(location.href.split("#")[0]);
         var rid = detectPortalRouterId();
-        location.href = BUY + "?mac=" + encodeURIComponent(mac) + "&return=" + ret + "&router_id=" + encodeURIComponent(rid);
+        var gw = (typeof hs_address !== "undefined" && hs_address) ? String(hs_address).replace(/^https?:\/\//, "").split("/")[0] : "10.0.0.1";
+        location.href = BUY + "?mac=" + encodeURIComponent(mac) + "&return=" + ret + "&router_id=" + encodeURIComponent(rid) + "&gw=" + encodeURIComponent(gw);
       }
 
       var buyBtn = document.getElementById("gcashBuyBtn");
       if (buyBtn) buyBtn.addEventListener("click", goBuyVoucher);
 
-      var submitBtn = document.getElementById("submit");
-      if (submitBtn) submitBtn.addEventListener("click", function (ev) {
-        ev.preventDefault();
-        kitifiManualSubmit();
-      });
-      var vCodeInput = document.getElementById("v_code");
-      if (vCodeInput) vCodeInput.addEventListener("keydown", function (ev) {
-        if (ev.key === "Enter") {
+      function kitifiBindSubmit() {
+        var submitBtn = document.getElementById("submit");
+        if (!submitBtn || submitBtn.getAttribute("data-kitifi-bound")) return;
+        submitBtn.setAttribute("data-kitifi-bound", "1");
+        submitBtn.addEventListener("click", function (ev) {
           ev.preventDefault();
+          ev.stopImmediatePropagation();
           kitifiManualSubmit();
-        }
-      });
+        }, true);
+      }
+      kitifiBindSubmit();
+      if (window.jQuery) {
+        try { window.jQuery(document).off("click", "#submit"); } catch (e) {}
+        setTimeout(kitifiBindSubmit, 600);
+        setTimeout(kitifiBindSubmit, 2000);
+      }
+      var vCodeInput = document.getElementById("v_code");
+      if (vCodeInput) {
+        vCodeInput.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+            kitifiManualSubmit();
+          }
+        }, true);
+        vCodeInput.addEventListener("input", function () {
+          var pos = vCodeInput.selectionStart;
+          var norm = kitifiNormCode(vCodeInput.value);
+          if (vCodeInput.value !== norm) {
+            vCodeInput.value = norm;
+            try { vCodeInput.setSelectionRange(pos, pos); } catch (e) {}
+          }
+        });
+        vCodeInput.addEventListener("blur", function () {
+          vCodeInput.value = kitifiNormCode(vCodeInput.value);
+        });
+      }
 
       window.kitifiAutoConnect = kitifiAutoConnect;
       window.kitifiApplyPendingVoucher = kitifiApplyPendingVoucher;
