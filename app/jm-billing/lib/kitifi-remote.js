@@ -10,12 +10,22 @@
  */
 import { Settings } from "./db.js";
 
+/** KiTifi LAN admin — all sites use 10.0.0.10 except CAWAYAN (39) → 11.0.0.3 */
+export const KITIFI_DEFAULT_ADMIN_URL = "http://10.0.0.10/admin";
+export const KITIFI_CAWAYAN_ROUTER_ID = 39;
+export const KITIFI_CAWAYAN_ADMIN_URL = "http://11.0.0.3/admin";
+
 export function kitifiAdminBase(routerId) {
+  const rid = Number(routerId);
+  if (rid === KITIFI_CAWAYAN_ROUTER_ID) {
+    const per = Settings.get("kitifi_controller_url_" + String(routerId), "");
+    return String(per || KITIFI_CAWAYAN_ADMIN_URL).replace(/\/$/, "");
+  }
   if (routerId != null && routerId !== "") {
     const per = Settings.get("kitifi_controller_url_" + String(routerId), "");
     if (per) return String(per).replace(/\/$/, "");
   }
-  return String(Settings.get("kitifi_controller_url", "http://10.0.0.10/admin")).replace(/\/$/, "");
+  return String(Settings.get("kitifi_controller_url", KITIFI_DEFAULT_ADMIN_URL)).replace(/\/$/, "");
 }
 
 export function kitifiAdminUser() {

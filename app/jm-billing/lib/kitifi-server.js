@@ -19,6 +19,7 @@ import {
   planToCustomGenerateFields,
   kitifiForceNoExpiry,
   kitifiResolveLiveRateId,
+  KITIFI_CAWAYAN_ROUTER_ID,
 } from "./kitifi-remote.js";
 
 export function kitifiControllerUrl(routerId) {
@@ -35,7 +36,7 @@ export function kitifiDefaultProfile() {
 
 /** Mikrotik hotspot gateway — captive portal lives here (NOT 10.0.0.10 admin). */
 export const KITIFI_PORTAL_HS = "10.0.0.1";
-export const KITIFI_CAWAYAN_ROUTER_ID = 39;
+export { KITIFI_CAWAYAN_ROUTER_ID } from "./kitifi-remote.js";
 
 export function kitifiPortalHost(routerId) {
   if (Number(routerId) === KITIFI_CAWAYAN_ROUTER_ID) return "11.0.0.1";
