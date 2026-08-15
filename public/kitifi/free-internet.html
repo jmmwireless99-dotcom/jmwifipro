@@ -42,6 +42,7 @@
   <div class="head">
     <h1>Register to get free internet</h1>
     <p id="headMsg">Fill up your details once on this device.</p>
+    <p style="font-size:11px;color:#64748b;margin-top:6px;line-height:1.4">Libreng internet: <b>1 beses lang bawat araw</b> bawat phone.</p>
     <div id="statusBadge" class="badge wait">Checking…</div>
   </div>
 
@@ -200,9 +201,11 @@
     if ($("welcomeName")) $("welcomeName").textContent = displayName(data.client);
     if ($("claimInfo")) {
       if (available) {
-        $("claimInfo").textContent = "Free internet available — claim " + (data.uptime || "your free time") + " now.";
+        $("claimInfo").textContent = "Free internet available — " + (data.uptime || "your free time") + " · 1 beses lang bawat araw.";
       } else if (!data.enabled) {
         $("claimInfo").textContent = "Free internet not available. Please wait until admin enables free WiFi.";
+      } else if (data.registered && data.claims_today >= (data.limit_per_day || 1)) {
+        $("claimInfo").textContent = data.message || "Na-claim mo na ngayong araw. Bumalik bukas para sa libreng internet.";
       } else {
         $("claimInfo").textContent = data.message || "Free internet not available.";
       }
@@ -251,7 +254,7 @@
     if (!last) { err($("regErr"), "Last name is required."); return; }
     if (!cp) { err($("regErr"), "CP number is required."); return; }
     $("registerBtn").disabled = true;
-    var shouldClaim = !!(statusData && statusData.enabled);
+    var shouldClaim = !!(statusData && statusData.enabled && statusData.can_claim !== false && (!statusData.registered || statusData.can_claim));
     var r = await api("/api/kitifi/free/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
