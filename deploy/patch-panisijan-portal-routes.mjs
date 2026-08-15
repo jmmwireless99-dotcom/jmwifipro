@@ -9,7 +9,33 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const serverPath = process.env.SERVER_JS || path.join(ROOT, "server.js");
 const marker = 'if (pathname === "/kitifi/free-internet"';
-const insert = `    if (pathname === "/hotspot/portal-music.js" && req.method === "GET") {
+const markers = [
+  'if (pathname === "/hotspot/panisijan-autoconnect.js"',
+  'if (pathname === "/kitifi/kitifi-connect.js"',
+  'if (pathname === "/hotspot/portal-music.js"',
+  '"/hotspot/audio/free-wifi-panisijan.mp3"',
+];
+const insert = `    if (pathname === "/kitifi/kitifi-connect.js" && req.method === "GET") {
+      try {
+        const buf = fs.readFileSync(path.join(__dirname, "public", "kitifi", "kitifi-connect.js"));
+        res.writeHead(200, { "Content-Type": "application/javascript; charset=utf-8", "Cache-Control": "public, max-age=300" });
+        return res.end(buf);
+      } catch {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        return res.end("not found");
+      }
+    }
+    if (pathname === "/hotspot/panisijan-autoconnect.js" && req.method === "GET") {
+      try {
+        const buf = fs.readFileSync(path.join(__dirname, "public", "hotspot", "panisijan-autoconnect.js"));
+        res.writeHead(200, { "Content-Type": "application/javascript; charset=utf-8", "Cache-Control": "public, max-age=300" });
+        return res.end(buf);
+      } catch {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        return res.end("not found");
+      }
+    }
+    if (pathname === "/hotspot/portal-music.js" && req.method === "GET") {
       try {
         const buf = fs.readFileSync(path.join(__dirname, "public", "hotspot", "portal-music.js"));
         res.writeHead(200, { "Content-Type": "application/javascript; charset=utf-8", "Cache-Control": "public, max-age=300" });
@@ -33,7 +59,7 @@ const insert = `    if (pathname === "/hotspot/portal-music.js" && req.method ==
 `;
 
 let src = fs.readFileSync(serverPath, "utf8");
-if (src.includes('"/hotspot/audio/free-wifi-panisijan.mp3"')) {
+if (markers.some((m) => src.includes(m))) {
   console.log("Routes already patched.");
   process.exit(0);
 }

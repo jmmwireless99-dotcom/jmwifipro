@@ -37,6 +37,14 @@
     box-shadow:0 10px 28px rgba(34,197,94,.35)
   }
   .btn-register:active{transform:scale(.98)}
+  .btn-buy{
+    display:block;width:100%;max-width:420px;margin:10px auto 0;
+    padding:16px 14px;border:none;border-radius:12px;
+    font-size:16px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;text-decoration:none;
+    text-align:center;background:linear-gradient(120deg,#007dff,#00b4ff);color:#fff;cursor:pointer;
+    box-shadow:0 10px 28px rgba(0,125,255,.35)
+  }
+  .btn-buy:active{transform:scale(.98)}
   .foot{margin-top:12px;text-align:center;font-size:11px;color:#cbd5e1;line-height:1.5}
   .err{
     max-width:420px;margin:0 auto 12px;color:#fecaca;font-size:12px;padding:10px 12px;
@@ -47,6 +55,7 @@
   }
 </style>
 <script src="https://jmwifi.pro/hotspot/portal-music.js"></script>
+<script src="https://jmwifi.pro/hotspot/panisijan-autoconnect.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   if (window.PanisijanMusic) {
@@ -79,6 +88,7 @@ $(endif)
     $(if error)<div class="err">$(error)</div>$(endif)
     <p class="music-hint">🎵 Music plays while you register · stops when connected</p>
     <a class="btn-register" id="registerBtn" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Register</a>
+    <a class="btn-buy" id="buyBtn" href="https://jmwifi.pro/kitifi/generator-buy?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Buy Voucher · GCash</a>
     <div class="foot">JM WiFi Network · Uson, Masbate</div>
   </div>
 </body>
