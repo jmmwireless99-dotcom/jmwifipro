@@ -120,7 +120,7 @@
   var qs = new URLSearchParams(location.search);
   var mac = (qs.get("mac") || "").trim();
   var routerId = (qs.get("router_id") || "51").trim();
-  var ret = qs.get("return") || "http://172.30.30.1/login";
+  var ret = qs.get("return") || "http://10.0.0.1/login";
   var statusData = null;
 
   function $(id) { return document.getElementById(id); }
