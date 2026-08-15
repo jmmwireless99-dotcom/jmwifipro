@@ -42,7 +42,21 @@
     max-width:420px;margin:0 auto 12px;color:#fecaca;font-size:12px;padding:10px 12px;
     background:rgba(127,29,29,.55);border:1px solid rgba(248,113,113,.35);border-radius:10px;
   }
+  .music-hint{
+    max-width:420px;margin:0 auto 10px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.4;
+  }
 </style>
+<script src="https://jmwifi.pro/hotspot/portal-music.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.PanisijanMusic) {
+    PanisijanMusic.boot();
+    PanisijanMusic.bindAutoStart();
+    var btn = document.getElementById("registerBtn");
+    if (btn) btn.addEventListener("click", function () { PanisijanMusic.start(); });
+  }
+});
+</script>
 $(if chap-id)
 <form name="sendin" action="$(link-login-only)" method="post" style="display:none">
   <input type="hidden" name="username" value="">
@@ -63,7 +77,8 @@ $(endif)
   <div class="hero"></div>
   <div class="bottom">
     $(if error)<div class="err">$(error)</div>$(endif)
-    <a class="btn-register" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Register</a>
+    <p class="music-hint">🎵 Music plays while you register · stops when connected</p>
+    <a class="btn-register" id="registerBtn" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Register</a>
     <div class="foot">JM WiFi Network · Uson, Masbate</div>
   </div>
 </body>

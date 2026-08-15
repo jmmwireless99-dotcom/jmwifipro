@@ -35,6 +35,7 @@
   .hint{font-size:11px;color:#64748b;margin-top:6px;line-height:1.45}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 </style>
+<script src="/hotspot/portal-music.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -229,9 +230,11 @@
   }
 
   function showDone(code, connectUrl) {
+    if (window.PanisijanMusic && String(routerId) === "51") PanisijanMusic.stop();
     $("voucherCode").textContent = code;
     show("stepDone");
     var go = function () {
+      if (window.PanisijanMusic && String(routerId) === "51") PanisijanMusic.stop();
       if (connectUrl) location.href = connectUrl;
       else location.href = portalUrl("username=" + encodeURIComponent(code) + "&password=" + encodeURIComponent(code));
     };
@@ -288,6 +291,12 @@
   };
 
   loadStatus();
+
+  if (String(routerId) === "51" && window.PanisijanMusic) {
+    PanisijanMusic.boot();
+    PanisijanMusic.bindAutoStart();
+    PanisijanMusic.start();
+  }
 })();
 </script>
 </body>
