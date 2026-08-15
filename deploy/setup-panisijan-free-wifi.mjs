@@ -8,6 +8,7 @@ import dns from "node:dns/promises";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { RouterOSAPI } from "../lib/routeros-api.js";
+import { applyPaymentWalledGarden } from "../lib/payment-whitelist-hosts.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -16,7 +17,6 @@ const ROUTER_ID = 51;
 const HS_GW = "10.0.0.1";
 const PORTAL_HOST = "jmwifi.pro";
 const LOGIN_FILE = "flash/hotspot/login.html";
-const JM = "JM ";
 
 const db = new DatabaseSync(DB);
 const row = db.prepare("SELECT * FROM routers WHERE id=?").get(ROUTER_ID);
@@ -57,27 +57,14 @@ async function setFile(c, name, contents) {
 }
 
 async function ensureWalledGarden(conn, portalIps) {
-  const wg = await conn.print("/ip/hotspot/walled-garden");
-  for (const e of wg || []) {
-    if (String(e.comment || "").startsWith(JM)) {
-      try { await conn.talk(["/ip/hotspot/walled-garden/remove", "=.id=" + e[".id"]]); } catch {}
-    }
-  }
-  const wgIp = await conn.print("/ip/hotspot/walled-garden/ip");
-  for (const e of wgIp || []) {
-    if (String(e.comment || "").startsWith(JM)) {
-      try { await conn.talk(["/ip/hotspot/walled-garden/ip/remove", "=.id=" + e[".id"]]); } catch {}
-    }
-  }
-  const hosts = [PORTAL_HOST, "www." + PORTAL_HOST];
-  for (const host of hosts) {
-    await conn.talk(["/ip/hotspot/walled-garden/add", "=dst-host=" + host, "=action=allow", "=comment=" + JM + "free register"]);
-    console.log("  walled-garden host:", host);
-  }
-  for (const ip of portalIps) {
-    await conn.talk(["/ip/hotspot/walled-garden/ip/add", "=dst-address=" + ip, "=action=accept", "=comment=" + JM + "jmwifi.pro"]);
-    console.log("  walled-garden ip:", ip);
-  }
+  const portalIp = portalIps[0] || "187.77.145.131";
+  const result = await applyPaymentWalledGarden(conn, {
+    portalHost: PORTAL_HOST,
+    portalIp,
+    resolveHostIps,
+    commentTag: "GCash PayMongo",
+  });
+  console.log("  payment walled-garden: +" + result.addedHosts + " hosts, +" + result.addedIps + " IPs");
 }
 
 async function ensureFreeProfile(conn) {
