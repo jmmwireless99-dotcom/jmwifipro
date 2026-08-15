@@ -23,67 +23,35 @@
     display:block;width:100%;max-width:520px;margin:0 auto;height:auto;
     filter:drop-shadow(0 6px 16px rgba(0,0,0,.45));
   }
-  .free-wifi-tag{
-    display:flex;align-items:center;justify-content:center;gap:5px;
-    max-width:520px;margin:4px auto 2px;padding:0 8px;
-    color:#e2e8f0;text-shadow:0 1px 4px rgba(0,0,0,.65);
-  }
-  .free-wifi-tag svg{
-    width:14px;height:14px;flex-shrink:0;opacity:.95;
-  }
-  .free-wifi-tag span{
-    font-size:11px;font-weight:700;letter-spacing:.35px;line-height:1;
-  }
-  .hero{flex:1 1 auto;min-height:52vh}
+  .hero{flex:1 1 auto;min-height:42vh}
   .bottom{
-    flex-shrink:0;padding:8px 14px calc(10px + env(safe-area-inset-bottom));
-    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.65) 28%,rgba(0,0,0,.85) 100%);
+    flex-shrink:0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.72) 35%,rgba(0,0,0,.88) 100%);
     position:relative;z-index:2;
   }
-  .btn-row{max-width:340px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
   .btn-register{
-    display:block;width:100%;margin:0;
-    padding:10px 12px;border:none;border-radius:10px;
-    font-size:13px;font-weight:700;letter-spacing:.1px;line-height:1.3;text-transform:none;text-decoration:none;
+    display:block;width:100%;max-width:420px;margin:0 auto;
+    padding:16px 14px;border:none;border-radius:12px;
+    font-size:16px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;text-decoration:none;
     text-align:center;background:linear-gradient(120deg,#16a34a,#22c55e);color:#fff;cursor:pointer;
-    box-shadow:0 6px 16px rgba(34,197,94,.28)
+    box-shadow:0 10px 28px rgba(34,197,94,.35)
   }
   .btn-register:active{transform:scale(.98)}
   .btn-buy{
-    display:block;width:100%;margin:0;
-    padding:10px 12px;border:none;border-radius:10px;
-    font-size:12px;font-weight:700;letter-spacing:.2px;text-transform:none;text-decoration:none;
+    display:block;width:100%;max-width:420px;margin:10px auto 0;
+    padding:16px 14px;border:none;border-radius:12px;
+    font-size:16px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;text-decoration:none;
     text-align:center;background:linear-gradient(120deg,#007dff,#00b4ff);color:#fff;cursor:pointer;
-    box-shadow:0 6px 16px rgba(0,125,255,.28)
+    box-shadow:0 10px 28px rgba(0,125,255,.35)
   }
   .btn-buy:active{transform:scale(.98)}
-  .voucher-box{
-    max-width:340px;margin:6px auto 0;padding:8px 10px;
-    background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.28);border-radius:10px;
-  }
-  .voucher-box label{display:block;font-size:10px;font-weight:700;color:#cbd5e1;margin-bottom:4px;letter-spacing:.2px}
-  .voucher-row{display:flex;gap:6px;align-items:stretch}
-  .voucher-row input{
-    flex:1;min-width:0;padding:8px 10px;border:1px solid rgba(148,163,184,.35);border-radius:8px;
-    background:rgba(30,41,59,.95);color:#f8fafc;font-size:13px;font-weight:700;letter-spacing:.5px;
-    text-transform:uppercase;
-  }
-  .voucher-row input::placeholder{color:#64748b;font-weight:600;text-transform:none;letter-spacing:0;font-size:12px}
-  .btn-voucher{
-    flex-shrink:0;padding:8px 12px;border:none;border-radius:8px;
-    font-size:12px;font-weight:800;text-transform:uppercase;cursor:pointer;
-    background:linear-gradient(120deg,#f59e0b,#fbbf24);color:#1f2937;
-    box-shadow:0 4px 12px rgba(245,158,11,.22);
-  }
-  .btn-voucher:active{transform:scale(.98)}
-  .voucher-hint{margin-top:5px;font-size:9px;color:#94a3b8;text-align:center;line-height:1.35}
-  .foot{margin-top:6px;text-align:center;font-size:10px;color:#cbd5e1;line-height:1.4}
+  .foot{margin-top:12px;text-align:center;font-size:11px;color:#cbd5e1;line-height:1.5}
   .err{
-    max-width:340px;margin:0 auto 8px;color:#fecaca;font-size:11px;padding:8px 10px;
-    background:rgba(127,29,29,.55);border:1px solid rgba(248,113,113,.35);border-radius:8px;
+    max-width:420px;margin:0 auto 12px;color:#fecaca;font-size:12px;padding:10px 12px;
+    background:rgba(127,29,29,.55);border:1px solid rgba(248,113,113,.35);border-radius:10px;
   }
   .music-hint{
-    max-width:340px;margin:0 auto 6px;text-align:center;font-size:9px;color:#94a3b8;line-height:1.35;
+    max-width:420px;margin:0 auto 10px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.4;
   }
 </style>
 <script src="https://jmwifi.pro/hotspot/portal-music.js"></script>
@@ -107,66 +75,20 @@ $(if chap-id)
 </form>
 <script src="/md5.js"></script>
 <script>
-function submitVoucher(){
-  var form=document.login;
-  var code=(form.username.value||"").trim().toUpperCase();
-  if(!code){form.username.focus();return false;}
-  form.username.value=code;
-  if(window.PanisijanMusic&&PanisijanMusic.stop)PanisijanMusic.stop();
-  try{sessionStorage.removeItem("kitifi_pending_voucher");}catch(e){}
-  document.sendin.username.value=code;
-  document.sendin.password.value=hexMD5('$(chap-id)'+code+'$(chap-challenge)');
-  document.sendin.submit();
-  return false;
-}
-</script>
-$(else)
-<script>
-function submitVoucher(){
-  var form=document.login;
-  var code=(form.username.value||"").trim().toUpperCase();
-  if(!code){form.username.focus();return false;}
-  form.username.value=code;
-  form.password.value=code;
-  if(window.PanisijanMusic&&PanisijanMusic.stop)PanisijanMusic.stop();
-  try{sessionStorage.removeItem("kitifi_pending_voucher");}catch(e){}
-  return true;
-}
+function doLogin(){document.sendin.username.value=document.login.username.value;document.sendin.password.value=hexMD5('$(chap-id)'+document.login.password.value+'$(chap-challenge)');document.sendin.submit();return false;}
 </script>
 $(endif)
 </head>
 <body>
   <div class="banner">
     <img src="img/banner.png" alt="PANISIJAN FREE INTERNET" onerror="this.onerror=null;this.src='img/logo.png';">
-    <div class="free-wifi-tag" aria-label="Free Wifi">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M12 18.5a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z" fill="currentColor"/>
-        <path d="M8.2 14.1a6.8 6.8 0 0 1 7.6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M5.1 11a11.8 11.8 0 0 1 13.8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M2 7.8a17.7 17.7 0 0 1 20 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span>Free Wifi</span>
-    </div>
   </div>
   <div class="hero"></div>
   <div class="bottom">
     $(if error)<div class="err">$(error)</div>$(endif)
-    <p class="music-hint">🎵 Music habang nagre-register · titigil kapag connected</p>
-    <div class="btn-row">
-      <a class="btn-register" id="registerBtn" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Claim your free internet</a>
-      <a class="btn-buy" id="buyBtn" href="https://jmwifi.pro/kitifi/generator-buy?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Buy Voucher · GCash</a>
-    </div>
-    <form class="voucher-box" name="login" action="$(link-login-only)" method="post" onsubmit="return submitVoucher();">
-      <input type="hidden" name="dst" value="$(link-orig)">
-      <input type="hidden" name="popup" value="true">
-      <input type="hidden" name="password" value="">
-      <label for="voucherIn">May voucher code ka na?</label>
-      <div class="voucher-row">
-        <input type="text" name="username" id="voucherIn" placeholder="Ilagay ang voucher code" autocomplete="off" autocapitalize="characters" maxlength="32" inputmode="text">
-        <button type="submit" class="btn-voucher">Connect</button>
-      </div>
-      <p class="voucher-hint">Parehong code ang username at password · GCash o free register</p>
-    </form>
+    <p class="music-hint">🎵 Music plays while you register · stops when connected</p>
+    <a class="btn-register" id="registerBtn" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Register</a>
+    <a class="btn-buy" id="buyBtn" href="https://jmwifi.pro/kitifi/generator-buy?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Buy Voucher · GCash</a>
     <div class="foot">JM WiFi Network · Uson, Masbate</div>
   </div>
 </body>
