@@ -1,16 +1,16 @@
 /**
- * PANISIJAN (router 51) — fix GCash voucher profile + retry failed paid orders + auto-connect.
- *
- * Root cause: plans use profile KITIFI but MikroTik only has default/FREE → voucher gen fails after pay.
+ * PANISIJAN (router 51) — fix GCash voucher profile + retry failed paid orders.
+ * Scoped to router 51 settings/orders only. Shared kitifi-server.js is NOT modified.
  *
  * Usage on VPS:
  *   cd /opt/jm-billing
- *   git pull   # get lib/kitifi-server.js with kitifiPaidHotspotProfile
+ *   node deploy/patch-server-panisijan-only.mjs
  *   node deploy/fix-panisijan-voucher-profile.mjs
  *   systemctl restart jm-billing
  */
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { RouterOSAPI } from "../lib/routeros-api.js";
@@ -24,6 +24,10 @@ const db = new DatabaseSync(DB);
 
 function upsertSetting(k, v) {
   db.prepare("INSERT INTO settings (k,v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v").run(k, String(v));
+}
+
+function panisijanProfile() {
+  return "default";
 }
 
 function fixPlansInSettings() {
@@ -54,46 +58,13 @@ function fixPlansInSettings() {
 }
 
 function patchServerJs() {
-  const serverPath = path.join(ROOT, "server.js");
-  if (!fs.existsSync(serverPath)) {
-    console.log("  server.js not found — skip inline patch (lib/kitifi-server.js fix is enough if imported)");
+  const script = path.join(ROOT, "deploy", "patch-server-panisijan-only.mjs");
+  if (!fs.existsSync(script)) {
+    console.log("  patch-server-panisijan-only.mjs not found — skip");
     return;
   }
-  let src = fs.readFileSync(serverPath, "utf8");
-  const marker = "kitifiPaidHotspotProfile";
-  if (src.includes(marker)) {
-    console.log("  server.js already references kitifiPaidHotspotProfile");
-    return;
-  }
-
-  const oldProf =
-    'const prof = String(profile || p.profile || Settings.get("kitifi_gen_profile_" + rid, "") || kitifiGenProfile(rid) || "default").trim();';
-  const newProf = "const prof = kitifiPaidHotspotProfile(rid, profile || p.profile);";
-  if (src.includes(oldProf)) {
-    src = src.replace(oldProf, newProf);
-    if (!/kitifiPaidHotspotProfile/.test(src.split("kitifiMikrotikGenerateVoucher")[0] || "")) {
-      src = src.replace(
-        /(import \{[^}]*)(} from "\.\/lib\/kitifi-server\.js";)/,
-        (m, a, b) => (a.includes("kitifiPaidHotspotProfile") ? m : a + ", kitifiPaidHotspotProfile" + b)
-      );
-    }
-    fs.writeFileSync(serverPath, src);
-    console.log("  patched server.js kitifiMikrotikGenerateVoucher profile line");
-    return;
-  }
-
-  const orderProf = "profile: plan.profile || kitifiDefaultProfile()";
-  if (src.includes(orderProf)) {
-    src = src.replace(
-      orderProf,
-      "profile: kitifiPaidHotspotProfile(Number(order.router_id), plan.profile)"
-    );
-    fs.writeFileSync(serverPath, src);
-    console.log("  patched server.js order profile assignment");
-    return;
-  }
-
-  console.log("  server.js: no known profile pattern — rely on lib/kitifi-server.js import");
+  const r = spawnSync("node", [script], { cwd: ROOT, stdio: "inherit" });
+  if (r.status !== 0) console.log("  server patch exited", r.status);
 }
 
 function connFor(row) {
@@ -149,7 +120,6 @@ async function retryFailedOrders() {
   const {
     kitifiMikrotikGenerateVoucher,
     kitifiMikrotikVoucherConnect,
-    kitifiPaidHotspotProfile,
     kitifiConnectUrl,
   } = await import("../lib/kitifi-server.js");
 
@@ -178,7 +148,7 @@ async function retryFailedOrders() {
       const gen = await kitifiMikrotikGenerateVoucher(conn, {
         plan,
         routerId: ROUTER_ID,
-        profile: kitifiPaidHotspotProfile(ROUTER_ID, plan.profile),
+        profile: panisijanProfile(),
         uptime: plan.uptime || plan.time || row.uptime,
       });
       const code = gen.code;
