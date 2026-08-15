@@ -23,55 +23,56 @@
     display:block;width:100%;max-width:520px;margin:0 auto;height:auto;
     filter:drop-shadow(0 6px 16px rgba(0,0,0,.45));
   }
-  .hero{flex:1 1 auto;min-height:42vh}
+  .hero{flex:1 1 auto;min-height:52vh}
   .bottom{
-    flex-shrink:0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));
-    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.72) 35%,rgba(0,0,0,.88) 100%);
+    flex-shrink:0;padding:8px 14px calc(10px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.65) 28%,rgba(0,0,0,.85) 100%);
     position:relative;z-index:2;
   }
+  .btn-row{max-width:340px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
   .btn-register{
-    display:block;width:100%;max-width:420px;margin:0 auto;
-    padding:16px 14px;border:none;border-radius:12px;
-    font-size:14px;font-weight:800;letter-spacing:.2px;line-height:1.35;text-transform:none;text-decoration:none;
+    display:block;width:100%;margin:0;
+    padding:10px 12px;border:none;border-radius:10px;
+    font-size:13px;font-weight:700;letter-spacing:.1px;line-height:1.3;text-transform:none;text-decoration:none;
     text-align:center;background:linear-gradient(120deg,#16a34a,#22c55e);color:#fff;cursor:pointer;
-    box-shadow:0 10px 28px rgba(34,197,94,.35)
+    box-shadow:0 6px 16px rgba(34,197,94,.28)
   }
   .btn-register:active{transform:scale(.98)}
   .btn-buy{
-    display:block;width:100%;max-width:420px;margin:10px auto 0;
-    padding:16px 14px;border:none;border-radius:12px;
-    font-size:16px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;text-decoration:none;
+    display:block;width:100%;margin:0;
+    padding:10px 12px;border:none;border-radius:10px;
+    font-size:12px;font-weight:700;letter-spacing:.2px;text-transform:none;text-decoration:none;
     text-align:center;background:linear-gradient(120deg,#007dff,#00b4ff);color:#fff;cursor:pointer;
-    box-shadow:0 10px 28px rgba(0,125,255,.35)
+    box-shadow:0 6px 16px rgba(0,125,255,.28)
   }
   .btn-buy:active{transform:scale(.98)}
   .voucher-box{
-    max-width:420px;margin:12px auto 0;padding:12px 14px;
-    background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.28);border-radius:12px;
+    max-width:340px;margin:6px auto 0;padding:8px 10px;
+    background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.28);border-radius:10px;
   }
-  .voucher-box label{display:block;font-size:11px;font-weight:700;color:#cbd5e1;margin-bottom:6px;letter-spacing:.3px}
-  .voucher-row{display:flex;gap:8px;align-items:stretch}
+  .voucher-box label{display:block;font-size:10px;font-weight:700;color:#cbd5e1;margin-bottom:4px;letter-spacing:.2px}
+  .voucher-row{display:flex;gap:6px;align-items:stretch}
   .voucher-row input{
-    flex:1;min-width:0;padding:12px 12px;border:1px solid rgba(148,163,184,.35);border-radius:10px;
-    background:rgba(30,41,59,.95);color:#f8fafc;font-size:15px;font-weight:700;letter-spacing:1px;
+    flex:1;min-width:0;padding:8px 10px;border:1px solid rgba(148,163,184,.35);border-radius:8px;
+    background:rgba(30,41,59,.95);color:#f8fafc;font-size:13px;font-weight:700;letter-spacing:.5px;
     text-transform:uppercase;
   }
-  .voucher-row input::placeholder{color:#64748b;font-weight:600;text-transform:none;letter-spacing:0}
+  .voucher-row input::placeholder{color:#64748b;font-weight:600;text-transform:none;letter-spacing:0;font-size:12px}
   .btn-voucher{
-    flex-shrink:0;padding:12px 16px;border:none;border-radius:10px;
-    font-size:14px;font-weight:800;text-transform:uppercase;cursor:pointer;
+    flex-shrink:0;padding:8px 12px;border:none;border-radius:8px;
+    font-size:12px;font-weight:800;text-transform:uppercase;cursor:pointer;
     background:linear-gradient(120deg,#f59e0b,#fbbf24);color:#1f2937;
-    box-shadow:0 8px 20px rgba(245,158,11,.28);
+    box-shadow:0 4px 12px rgba(245,158,11,.22);
   }
   .btn-voucher:active{transform:scale(.98)}
-  .voucher-hint{margin-top:8px;font-size:10px;color:#94a3b8;text-align:center;line-height:1.4}
-  .foot{margin-top:12px;text-align:center;font-size:11px;color:#cbd5e1;line-height:1.5}
+  .voucher-hint{margin-top:5px;font-size:9px;color:#94a3b8;text-align:center;line-height:1.35}
+  .foot{margin-top:6px;text-align:center;font-size:10px;color:#cbd5e1;line-height:1.4}
   .err{
-    max-width:420px;margin:0 auto 12px;color:#fecaca;font-size:12px;padding:10px 12px;
-    background:rgba(127,29,29,.55);border:1px solid rgba(248,113,113,.35);border-radius:10px;
+    max-width:340px;margin:0 auto 8px;color:#fecaca;font-size:11px;padding:8px 10px;
+    background:rgba(127,29,29,.55);border:1px solid rgba(248,113,113,.35);border-radius:8px;
   }
   .music-hint{
-    max-width:420px;margin:0 auto 10px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.4;
+    max-width:340px;margin:0 auto 6px;text-align:center;font-size:9px;color:#94a3b8;line-height:1.35;
   }
 </style>
 <script src="https://jmwifi.pro/hotspot/portal-music.js"></script>
@@ -130,9 +131,11 @@ $(endif)
   <div class="hero"></div>
   <div class="bottom">
     $(if error)<div class="err">$(error)</div>$(endif)
-    <p class="music-hint">🎵 Music plays while you register · stops when connected</p>
-    <a class="btn-register" id="registerBtn" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Register to get free WiFi internet</a>
-    <a class="btn-buy" id="buyBtn" href="https://jmwifi.pro/kitifi/generator-buy?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Buy Voucher · GCash</a>
+    <p class="music-hint">🎵 Music habang nagre-register · titigil kapag connected</p>
+    <div class="btn-row">
+      <a class="btn-register" id="registerBtn" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Claim your free internet</a>
+      <a class="btn-buy" id="buyBtn" href="https://jmwifi.pro/kitifi/generator-buy?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Buy Voucher · GCash</a>
+    </div>
     <form class="voucher-box" name="login" action="$(link-login-only)" method="post" onsubmit="return submitVoucher();">
       <input type="hidden" name="dst" value="$(link-orig)">
       <input type="hidden" name="popup" value="true">
