@@ -115,6 +115,45 @@ async function restartHotspot(conn) {
   }
 }
 
+async function ensureBanner(conn) {
+  const files = await conn.print("/file");
+  const hasBanner = files.some((f) => f.name === "flash/hotspot/img/banner.png");
+  if (hasBanner) {
+    console.log("  banner.png already on router");
+    return;
+  }
+  const bannerLocal = path.join(ROOT, "public", "hotspot", "img", "panisijan-banner.png");
+  const bannerUrl = "https://jmwifi.pro/hotspot/img/panisijan-banner.png";
+  if (fs.existsSync(bannerLocal)) {
+    try {
+      await conn.talk([
+        "/tool/fetch",
+        "=url=" + bannerUrl,
+        "=dst-path=flash/hotspot/img/banner.png",
+        "=mode=https",
+        "=check-certificate=no",
+      ]);
+      console.log("  fetched banner.png from jmwifi.pro");
+      return;
+    } catch (e) {
+      console.log("  fetch banner warn:", e.message);
+    }
+  }
+  const logo = files.find((f) => f.name === "flash/hotspot/img/logo.png");
+  if (logo) {
+    try {
+      await conn.talk([
+        "/file/copy",
+        "=source=flash/hotspot/img/logo.png",
+        "=destination=flash/hotspot/img/banner.png",
+      ]);
+      console.log("  copied logo.png -> banner.png");
+    } catch (e) {
+      console.log("  banner copy warn:", e.message);
+    }
+  }
+}
+
 console.log("=== PANISIJAN free WiFi setup (router", ROUTER_ID + ") ===");
 
 const loginPath = path.join(ROOT, "public", "hotspot", "panisijan-login.html");
@@ -153,6 +192,9 @@ await ensureFreeProfile(conn);
 
 console.log("\n=== Walled garden ===");
 await ensureWalledGarden(conn, portalIps);
+
+console.log("\n=== Banner image ===");
+await ensureBanner(conn);
 
 console.log("\n=== Upload login page ===");
 const action = await setFile(conn, LOGIN_FILE, loginHtml);
