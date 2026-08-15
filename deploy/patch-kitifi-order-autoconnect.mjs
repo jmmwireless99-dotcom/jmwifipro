@@ -19,30 +19,13 @@ if (src.includes("kitifiAutoConnectAfterOrder")) {
   process.exit(0);
 }
 
-const importNeedle = 'from "./kitifi-server.js";';
-const importIdx = src.indexOf(importNeedle);
-if (importIdx < 0) throw new Error('Could not find kitifi-server import in kitifi-api.js');
-
-if (!src.includes("kitifiMikrotikVoucherConnect")) {
+const serverImport = /import \{[^}]+\} from "\.\/kitifi-server\.js";/;
+if (!serverImport.test(src)) throw new Error('Could not find kitifi-server import in kitifi-api.js');
+if (!src.includes("kitifi-order-autoconnect")) {
   src = src.replace(
-    importNeedle,
-    importNeedle +
-      "\nimport { kitifiAutoConnectAfterOrder, kitifiConnectUrlForOrder } from \"./kitifi-order-autoconnect.js\";"
+    serverImport,
+    (m) => m + '\nimport { kitifiAutoConnectAfterOrder, kitifiConnectUrlForOrder } from "./kitifi-order-autoconnect.js";'
   );
-  if (!src.includes("kitifiMikrotikVoucherConnect")) {
-    src = src.replace(
-      /import \{([^}]+)\} from "\.\/kitifi-server\.js";/,
-      (m, inner) => {
-        if (inner.includes("kitifiPlanById")) return m;
-        return m;
-      }
-    );
-  }
-} else {
-  const block = '\nimport { kitifiAutoConnectAfterOrder, kitifiConnectUrlForOrder } from "./kitifi-order-autoconnect.js";';
-  if (!src.includes("kitifi-order-autoconnect")) {
-    src = src.slice(0, importIdx + importNeedle.length) + block + src.slice(importIdx + importNeedle.length);
-  }
 }
 
 const helperFn = `
