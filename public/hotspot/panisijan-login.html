@@ -23,6 +23,17 @@
     display:block;width:100%;max-width:520px;margin:0 auto;height:auto;
     filter:drop-shadow(0 6px 16px rgba(0,0,0,.45));
   }
+  .free-wifi-tag{
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    max-width:520px;margin:4px auto 2px;padding:0 8px;
+    color:#e2e8f0;text-shadow:0 1px 4px rgba(0,0,0,.65);
+  }
+  .free-wifi-tag svg{
+    width:14px;height:14px;flex-shrink:0;opacity:.95;
+  }
+  .free-wifi-tag span{
+    font-size:11px;font-weight:700;letter-spacing:.35px;line-height:1;
+  }
   .hero{flex:1 1 auto;min-height:52vh}
   .bottom{
     flex-shrink:0;padding:8px 14px calc(10px + env(safe-area-inset-bottom));
@@ -127,6 +138,15 @@ $(endif)
 <body>
   <div class="banner">
     <img src="img/banner.png" alt="PANISIJAN FREE INTERNET" onerror="this.onerror=null;this.src='img/logo.png';">
+    <div class="free-wifi-tag" aria-label="Free Wifi">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 18.5a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z" fill="currentColor"/>
+        <path d="M8.2 14.1a6.8 6.8 0 0 1 7.6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5.1 11a11.8 11.8 0 0 1 13.8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M2 7.8a17.7 17.7 0 0 1 20 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Free Wifi</span>
+    </div>
   </div>
   <div class="hero"></div>
   <div class="bottom">
