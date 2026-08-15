@@ -27,6 +27,7 @@ function run(script, args = []) {
 run("apply-panisijan-gcash-walled-garden.mjs");
 run("fix-gcash-app-hotspot.mjs", [ROUTER]);
 run("fix-panisijan-captive-portal.mjs");
+run("fix-panisijan-voucher-profile.mjs");
 
 console.log("\n=== PANISIJAN GCash fix complete ===");
 console.log("Test: connect WiFi (no login) → open GCash app → should load.");

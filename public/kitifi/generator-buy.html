@@ -275,9 +275,21 @@
       }else if(s.status==="pending"){
         $("qrWait").textContent="Naghihintay ng bayad… auto-connect pagkatapos magbayad";
       }else if(s.status==="failed"){
-        if(poll)clearInterval(poll);
-        show("stepBuy");
-        err("Payment OK but KiTifi voucher failed. Contact support.");
+        $("qrWait").textContent="Bayad OK — sinusubukang i-redeem ang voucher…";
+        fetch(API+"/api/kitifi/redeem?token="+encodeURIComponent(token)).then(function(r){return r.json()}).then(function(re){
+          if(re.voucher){
+            if(poll)clearInterval(poll);
+            redeemAndDone(Object.assign({}, s, re));
+          }else{
+            if(poll)clearInterval(poll);
+            show("stepBuy");
+            err("Bayad OK pero hindi nag-generate ang voucher. Subukan ulit o contact support.");
+          }
+        }).catch(function(){
+          if(poll)clearInterval(poll);
+          show("stepBuy");
+          err("Bayad OK pero hindi nag-generate ang voucher. Subukan ulit o contact support.");
+        });
       }
     }).catch(function(){});
   }

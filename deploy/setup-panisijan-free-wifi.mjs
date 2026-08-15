@@ -163,6 +163,28 @@ const settings = {
   kitifi_default_profile_51: "default",
 };
 for (const [k, v] of Object.entries(settings)) upsertSetting(k, v);
+
+const plansKey = "kitifi_plans_" + ROUTER_ID;
+const plansRow = db.prepare("SELECT v FROM settings WHERE k=?").get(plansKey);
+if (plansRow?.v) {
+  try {
+    const plans = JSON.parse(plansRow.v);
+    if (Array.isArray(plans)) {
+      let n = 0;
+      for (const p of plans) {
+        if (String(p.profile || "").toUpperCase() === "KITIFI" || !p.profile) {
+          p.profile = "default";
+          n++;
+        }
+      }
+      if (n) {
+        upsertSetting(plansKey, JSON.stringify(plans));
+        console.log("  fixed", n, "GCash plan profile(s) KITIFI → default");
+      }
+    }
+  } catch {}
+}
+
 console.log("Billing settings updated for PANISIJAN");
 
 const portalIps = await resolveHostIps(PORTAL_HOST);
