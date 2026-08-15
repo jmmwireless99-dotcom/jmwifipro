@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<title>JM WiFi · Free Internet</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100vh;font-family:Segoe UI,system-ui,sans-serif}
+  body{
+    background:#07111f url('img/bg.jpg') center/cover no-repeat fixed;
+    display:flex;align-items:center;justify-content:center;padding:16px;
+  }
+  .overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(4,12,28,.55),rgba(4,12,28,.82));z-index:0}
+  .card{
+    position:relative;z-index:1;width:100%;max-width:380px;text-align:center;
+    padding:28px 22px 24px;background:rgba(12,20,38,.9);
+    border:1px solid rgba(255,255,255,.12);border-radius:18px;
+    box-shadow:0 24px 60px rgba(0,0,0,.45)
+  }
+  .logo{width:118px;height:auto;margin:0 auto 14px;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+  h1{font-size:19px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.2px}
+  .sub{font-size:13px;color:#94a3b8;line-height:1.55;margin-bottom:22px}
+  .btn-register{
+    display:block;width:100%;padding:16px 14px;border:none;border-radius:12px;
+    font-size:16px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;text-decoration:none;
+    background:linear-gradient(120deg,#16a34a,#22c55e);color:#fff;cursor:pointer;
+    box-shadow:0 10px 28px rgba(34,197,94,.35)
+  }
+  .btn-register:active{transform:scale(.98)}
+  .foot{margin-top:18px;font-size:11px;color:#64748b;line-height:1.5}
+  .err{
+    color:#fecaca;font-size:12px;margin-bottom:14px;padding:10px 12px;
+    background:rgba(127,29,29,.45);border:1px solid rgba(248,113,113,.35);border-radius:10px
+  }
+</style>
+$(if chap-id)
+<form name="sendin" action="$(link-login-only)" method="post" style="display:none">
+  <input type="hidden" name="username" value="">
+  <input type="hidden" name="password" value="">
+  <input type="hidden" name="dst" value="$(link-orig)">
+  <input type="hidden" name="popup" value="true">
+</form>
+<script src="/md5.js"></script>
+<script>
+function doLogin(){document.sendin.username.value=document.login.username.value;document.sendin.password.value=hexMD5('$(chap-id)'+document.login.password.value+'$(chap-challenge)');document.sendin.submit();return false;}
+</script>
+$(endif)
+</head>
+<body>
+<div class="overlay"></div>
+<div class="card">
+  <img src="img/logo.png" alt="JM WiFi" class="logo">
+  <h1>Free WiFi · Panisijan</h1>
+  <p class="sub">Mag-register para makakuha ng libreng internet.<br>Register to get free internet.</p>
+  $(if error)<div class="err">$(error)</div>$(endif)
+  <a class="btn-register" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Register</a>
+  <div class="foot">JM WiFi Network<br>Uson, Masbate</div>
+</div>
+</body>
+</html>
