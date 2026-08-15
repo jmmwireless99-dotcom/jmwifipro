@@ -51,7 +51,7 @@
 <div class="wrap">
   <div class="head">
     <h1>Voucher Generator</h1>
-    <p>Same Wifi Rates as KiTifi admin · Pay with GCash QR · Voucher created on KiTifi</p>
+    <p>PANISIJAN WiFi · GCash QR · Auto-connect pagkatapos magbayad</p>
   </div>
 
   <div id="stepBuy" class="panel on">
@@ -70,18 +70,18 @@
       <div id="qrPlan" style="font-size:13px;color:#94a3b8;margin-bottom:8px"></div>
       <img id="qrImg" alt="GCash QR">
       <div class="pay-steps">
-        <strong>How to pay (one phone only)</strong>
+        <strong>Paano magbayad (isang phone lang)</strong>
         <ol>
-          <li><b>Screenshot</b> this QR code (power + volume down).</li>
-          <li>Open <b>GCash</b> or <b>Maya</b> app (use mobile data).</li>
-          <li>Tap <b>Scan QR</b> → choose <b>Upload from Gallery</b> → pick the screenshot.</li>
-          <li>Pay the exact amount shown above.</li>
-          <li>When GCash shows <b>Payment successful</b>, switch back to this browser tab — your voucher will appear here.</li>
-          <li>Tap <b>Copy code</b> or <b>Connect</b> to return to the portal and connect automatically.</li>
+          <li><b>Screenshot</b> ang QR code (power + volume down).</li>
+          <li>Buksan ang <b>GCash</b> o <b>Maya</b> (mobile data OK).</li>
+          <li><b>Scan QR</b> → <b>Upload from Gallery</b> → piliin ang screenshot.</li>
+          <li>Bayaran ang eksaktong halaga sa taas.</li>
+          <li><b>Pwede ka nang mag-GCash — huwag i-close ang WiFi.</b> Pag successful ang bayad, <b>kusa nang mag-connect</b> ang phone mo sa WiFi (hindi kailangan bumalik dito).</li>
+          <li>Kung gusto mo, balik lang dito para makita ang voucher code.</li>
         </ol>
       </div>
-      <p class="wait" id="qrWait">Waiting for your payment…</p>
-      <p class="pay-note">Tip: Keep this page open. Do not press Cancel until payment is done.</p>
+      <p class="wait" id="qrWait">Naghihintay ng bayad… auto-connect pagkatapos magbayad</p>
+      <p class="pay-note">Tip: Manatiling naka-WiFi habang nagbabayad. Pwede lumipat sa GCash app — server ang mag-a-auto connect sa device mo.</p>
       <a href="gcash://" class="gcash">Open GCash App</a>
       <button type="button" class="btn btn-back" id="cancelQr" style="margin-top:14px">Cancel</button>
     </div>
@@ -89,8 +89,8 @@
 
   <div id="stepDone" class="panel">
     <div class="card done">
-      <div style="color:#4ade80;font-weight:800;font-size:16px;margin-bottom:6px">✓ Voucher generated</div>
-      <p style="font-size:13px;color:#94a3b8">Your KiTifi voucher code:</p>
+      <div style="color:#4ade80;font-weight:800;font-size:16px;margin-bottom:6px" id="doneTitle">✓ Voucher generated</div>
+      <p style="font-size:13px;color:#94a3b8" id="doneSub">Your WiFi voucher code:</p>
       <div class="code" id="vcode"></div>
       <p id="doneMeta" style="font-size:12px;color:#64748b;margin-bottom:8px"></p>
       <p class="hint">Copy the code or tap Connect to connect on the portal.</p>
@@ -122,6 +122,7 @@
   var STORE_KEY="kitifi_pending_voucher";
   var pendingCode="";
   var lastConnectUrl="";
+  var autoConnected=false;
 
   function portalBack(voucher, autoconnect){
     if(!returnUrl){ history.back(); return; }
@@ -170,14 +171,33 @@
   function showVoucherDone(d){
     pendingCode=String(d.voucher||"").trim();
     lastConnectUrl=String(d.connect_url||"").trim();
+    autoConnected=!!(d.auto_connected||d.connected);
     $("vcode").textContent=pendingCode;
     var meta=(d.plan_name||selected?.name||"")+(d.amount?" · ₱"+d.amount:"");
     if(selected&&(selected.time||selected.label)) meta+=(meta?" · ":"")+(selected.time||selected.label);
     $("doneMeta").textContent=meta;
+    if(autoConnected){
+      $("doneTitle").textContent="✓ Connected to WiFi";
+      $("doneSub").textContent="Bayad received — naka-connect na ang phone mo. Pwede ka nang mag-internet.";
+    }else{
+      $("doneTitle").textContent="✓ Voucher generated";
+      $("doneSub").textContent="Kino-connect ang phone mo…";
+    }
     show("stepDone");
     if(pendingCode){
-      setTimeout(function(){ connectVoucher(pendingCode); }, 1500);
+      try{sessionStorage.setItem(STORE_KEY,pendingCode);}catch(e){}
+      if(!autoConnected){
+        setTimeout(function(){ connectVoucher(pendingCode); }, 1200);
+      }
     }
+  }
+  function redeemAndDone(s){
+    fetch(API+"/api/kitifi/redeem?token="+encodeURIComponent(token)).then(function(r){return r.json()}).then(function(re){
+      if(re.connect_url) lastConnectUrl=re.connect_url;
+      showVoucherDone(Object.assign({}, s, re));
+    }).catch(function(){
+      showVoucherDone(s);
+    });
   }
   function copyVoucher(code){
     code=String(code||pendingCode||"").trim();
@@ -249,14 +269,11 @@
       if(!s.ok)return;
       if(s.status==="ready"&&s.voucher){
         if(poll)clearInterval(poll);
-        fetch(API+"/api/kitifi/redeem?token="+encodeURIComponent(token)).then(function(r){return r.json()}).then(function(re){
-          if(re.connect_url) lastConnectUrl=re.connect_url;
-          showVoucherDone(Object.assign({}, s, re));
-        }).catch(function(){
-          showVoucherDone(s);
-        });
-      }else if(s.status==="paid"||s.status==="pending"){
-        $("qrWait").textContent="Payment received — generating your voucher…";
+        redeemAndDone(s);
+      }else if(s.status==="paid"||s.status==="generating"){
+        $("qrWait").textContent="Bayad received — ginagawa ang voucher at auto-connect…";
+      }else if(s.status==="pending"){
+        $("qrWait").textContent="Naghihintay ng bayad… auto-connect pagkatapos magbayad";
       }else if(s.status==="failed"){
         if(poll)clearInterval(poll);
         show("stepBuy");
@@ -267,10 +284,13 @@
 
   document.addEventListener("visibilitychange",function(){
     if(document.visibilityState==="visible"&&token){
-      $("qrWait").textContent="Welcome back — checking your GCash payment…";
+      $("qrWait").textContent="Bumalik ka — tinitignan ang bayad mo…";
       checkStatus();
       if(!poll)poll=setInterval(checkStatus,800);
     }
+  });
+  window.addEventListener("pageshow",function(){
+    if(token) checkStatus();
   });
 })();
 </script>

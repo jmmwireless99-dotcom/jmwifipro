@@ -172,6 +172,8 @@ const settings = {
   kitifi_free_rate_time_51: "5 Hours",
   kitifi_hotspot_login_51: "http://" + HS_GW + "/login",
   kitifi_free_mikrotik_routers: "51",
+  kitifi_gen_profile_51: "default",
+  kitifi_default_profile_51: "default",
 };
 for (const [k, v] of Object.entries(settings)) upsertSetting(k, v);
 console.log("Billing settings updated for PANISIJAN");
@@ -205,4 +207,4 @@ await restartHotspot(conn);
 
 conn.close?.();
 console.log("\nDone.");
-console.log("Flow: connect SSID -> REGISTER button -> jmwifi.pro/kitifi/free-internet -> auto connect");
+console.log("Flow: connect SSID -> REGISTER (free) or Buy Voucher GCash (QR + auto-connect) -> jmwifi.pro");
