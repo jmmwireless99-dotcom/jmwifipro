@@ -147,7 +147,7 @@ const loginPath = path.join(ROOT, "public", "hotspot", "panisijan-login.html");
 const loginHtml = fs.readFileSync(loginPath, "utf8");
 
 const settings = {
-  kitifi_free_enabled: "1",
+  kitifi_free_enabled_51: "1",
   kitifi_free_hours: "5",
   kitifi_free_limit_per_day_51: "1",
   kitifi_free_default_barangay_51: "Panisijan",

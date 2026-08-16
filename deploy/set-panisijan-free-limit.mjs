@@ -14,6 +14,6 @@ const db = new DatabaseSync(DB);
 const upsert = db.prepare("INSERT INTO settings (k,v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v");
 
 upsert.run("kitifi_free_limit_per_day_" + ROUTER_ID, LIMIT);
-upsert.run("kitifi_free_enabled", "1");
+upsert.run("kitifi_free_enabled_" + ROUTER_ID, "1");
 console.log("PANISIJAN free internet: max", LIMIT, "claim(s) per day (router", ROUTER_ID + ")");
 console.log("Setting: kitifi_free_limit_per_day_" + ROUTER_ID + "=" + LIMIT);
