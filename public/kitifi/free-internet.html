@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Register · Free internet · JM WiFi</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Segoe UI,system-ui,sans-serif;background:linear-gradient(160deg,#0f172a,#1e3a5f);color:#e8eef7;min-height:100vh;padding:12px}
+  .wrap{max-width:420px;margin:0 auto}
+  .head{text-align:center;padding:18px 8px 14px}
+  .head h1{font-size:20px;font-weight:800;color:#4ade80;line-height:1.35;padding:0 4px}
+  .head h1.panisijan{font-size:16px}
+  .head p{font-size:12.5px;color:#94a3b8;margin-top:8px;line-height:1.45}
+  .badge{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700}
+  .badge.ok{background:#14532d;color:#86efac}
+  .badge.off{background:#450a0a;color:#fca5a5}
+  .badge.wait{background:#1e3a5f;color:#93c5fd}
+  .card{background:#243044;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:12px}
+  label{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin:10px 0 4px}
+  label:first-child{margin-top:0}
+  input,select{width:100%;padding:11px 12px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#f1f5f9;font-size:14px}
+  input[readonly]{opacity:.85}
+  .meta{font-size:11px;color:#64748b;margin-top:8px;line-height:1.45}
+  .btn{width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-top:12px}
+  .btn-go{background:linear-gradient(120deg,#16a34a,#22c55e);color:#fff}
+  .btn-go:disabled{opacity:.45;cursor:not-allowed}
+  .btn-claim{background:linear-gradient(120deg,#007dff,#00b4ff);color:#fff}
+  .btn-back{background:#334155;color:#cbd5e1;margin-top:8px}
+  .err{color:#f87171;font-size:12px;margin-top:8px;display:none}
+  .err.show{display:block}
+  .panel{display:none}
+  .panel.on{display:block}
+  .done{text-align:center;padding:8px 0}
+  .code{font-size:24px;font-weight:900;letter-spacing:2px;color:#4ade80;font-family:monospace;margin:12px 0;padding:12px;border:2px dashed #4ade80;border-radius:8px}
+  .hint{font-size:11px;color:#64748b;margin-top:6px;line-height:1.45}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1 id="headTitle">Register to get free internet</h1>
+    <p id="headMsg">Fill up your details once on this device.</p>
+    <p id="headOnceDay" style="display:none;font-size:11px;color:#64748b;margin-top:6px;line-height:1.4">Libreng internet: <b>1 beses lang bawat araw</b> bawat phone.</p>
+    <div id="statusBadge" class="badge wait">Checking…</div>
+  </div>
+
+  <div id="stepLoading" class="panel on">
+    <div class="card" style="text-align:center;padding:24px;color:#94a3b8">Loading…</div>
+  </div>
+
+  <div id="stepDisabled" class="panel">
+    <div class="card">
+      <p id="disabledMsg" style="font-size:14px;line-height:1.5;color:#fca5a5">Free WiFi is not available right now.</p>
+      <button type="button" class="btn btn-back" id="backDisabled">← Back to portal</button>
+    </div>
+  </div>
+
+  <div id="stepRegister" class="panel">
+    <div class="card">
+      <p style="font-size:13px;color:#cbd5e1;margin-bottom:8px">Mag-register para makakuha ng libreng internet.</p>
+      <div class="row2">
+        <div>
+          <label>First name *</label>
+          <input id="fFirst" autocomplete="given-name" placeholder="Juan">
+        </div>
+        <div>
+          <label>Last name *</label>
+          <input id="fLast" autocomplete="family-name" placeholder="Dela Cruz">
+        </div>
+      </div>
+      <label>Date of birth</label>
+      <input id="fDob" type="date">
+      <label>CP number *</label>
+      <input id="fCp" type="tel" inputmode="tel" autocomplete="tel" placeholder="09XXXXXXXXX">
+      <label>Purok</label>
+      <input id="fPurok" placeholder="Purok 1">
+      <label>Barangay</label>
+      <input id="fBarangay" placeholder="Barangay">
+      <div class="row2">
+        <div>
+          <label>Municipal</label>
+          <input id="fMunicipal" placeholder="Uson" readonly>
+        </div>
+        <div>
+          <label>Province</label>
+          <input id="fProvince" placeholder="Masbate" readonly>
+        </div>
+      </div>
+      <p class="meta">Device MAC: <span id="macShow">—</span></p>
+      <button type="button" class="btn btn-go" id="registerBtn">Register</button>
+      <p class="err" id="regErr"></p>
+      <button type="button" class="btn btn-back" id="backRegister">← Back to portal</button>
+    </div>
+  </div>
+
+  <div id="stepClaim" class="panel">
+    <div class="card">
+      <p style="font-size:14px;color:#cbd5e1;line-height:1.5">Welcome back, <b id="welcomeName" style="color:#fff">—</b>.</p>
+      <p class="meta" id="claimInfo">Free internet not available.</p>
+      <button type="button" class="btn btn-claim" id="claimBtn" style="display:none">Get free internet</button>
+      <p class="err" id="claimErr"></p>
+      <button type="button" class="btn btn-back" id="backClaim">← Back to portal</button>
+    </div>
+  </div>
+
+  <div id="stepDone" class="panel">
+    <div class="card done">
+      <div style="width:56px;height:56px;border-radius:50%;background:#16a34a;color:#fff;font-size:30px;line-height:56px;margin:0 auto 8px">✓</div>
+      <div style="font-size:16px;font-weight:800;margin-bottom:6px">Free WiFi ready</div>
+      <div class="code" id="voucherCode">—</div>
+      <p class="hint" id="doneHint">Connecting you to free internet…</p>
+      <button type="button" class="btn btn-go" id="connectBtn">Connect now</button>
+      <button type="button" class="btn btn-back" id="backDone">← Back to portal</button>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  var qs = new URLSearchParams(location.search);
+  var mac = (qs.get("mac") || "").trim();
+  var routerId = (qs.get("router_id") || "34").trim();
+  var ret = qs.get("return") || (String(routerId) === "51" ? "http://10.0.0.1/login" : "http://172.30.30.1/login");
+  var statusData = null;
+  var isPanisijan = String(routerId) === "51";
+
+  function $(id) { return document.getElementById(id); }
+  function applyPortalBranding() {
+    var title = $("headTitle");
+    var onceDay = $("headOnceDay");
+    if (isPanisijan) {
+      if (title) {
+        title.textContent = "ONCE A DAY LANG PWEDE MAG CLAIM NG FREE INTERNET bawat cellphone";
+        title.classList.add("panisijan");
+      }
+      if (onceDay) onceDay.style.display = "block";
+    } else {
+      if (title) {
+        title.textContent = "Register to get free internet";
+        title.classList.remove("panisijan");
+      }
+      if (onceDay) onceDay.style.display = "none";
+    }
+  }
+  applyPortalBranding();
+  function show(id) {
+    ["stepLoading","stepDisabled","stepRegister","stepClaim","stepDone"].forEach(function (s) {
+      $(s).classList.toggle("on", s === id);
+    });
+  }
+  function err(el, msg) {
+    if (!el) return;
+    el.textContent = msg || "";
+    el.classList.toggle("show", !!msg);
+  }
+  function portalUrl(extra) {
+    var u = ret.split("#")[0];
+    if (extra) u += (u.indexOf("?") >= 0 ? "&" : "?") + extra;
+    return u;
+  }
+  function backPortal() { location.href = portalUrl(); }
+  function displayName(client) {
+    if (!client) return "Guest";
+    return [client.name, client.last_name].filter(Boolean).join(" ").trim() || client.name || "Guest";
+  }
+
+  ["backDisabled","backRegister","backClaim","backDone"].forEach(function (id) {
+    var b = $(id); if (b) b.onclick = backPortal;
+  });
+
+  if ($("macShow")) $("macShow").textContent = mac || "(missing — connect to WiFi first)";
+
+  async function api(path, opts) {
+    var ctrl = new AbortController();
+    var t = setTimeout(function () { ctrl.abort(); }, (opts && opts.timeoutMs) || 90000);
+    try {
+      var res = await fetch(path, Object.assign({}, opts || {}, { signal: ctrl.signal }));
+      return await res.json();
+    } catch (e) {
+      return { ok: false, error: e.name === "AbortError" ? "Request timed out." : (e.message || "Request failed") };
+    } finally { clearTimeout(t); }
+  }
+
+  function setBadge(data, available) {
+    var badge = $("statusBadge");
+    if (!badge) return;
+    badge.className = available ? "badge ok" : "badge off";
+    badge.textContent = available ? "Free internet available" : "Free internet not available";
+  }
+
+  function applyDefaults(data) {
+    if ($("fBarangay") && data.default_barangay && !$("fBarangay").value) $("fBarangay").value = data.default_barangay;
+    if ($("fMunicipal") && data.default_municipal) $("fMunicipal").value = data.default_municipal;
+    if ($("fProvince") && data.default_province) $("fProvince").value = data.default_province;
+  }
+
+  function applyStatus(data) {
+    statusData = data;
+    var head = $("headMsg");
+    applyDefaults(data);
+
+    if (!data.registered) {
+      setBadge(data, !!data.enabled);
+      if (head) {
+        head.textContent = data.enabled
+          ? "Fill up the form below, then tap Register to connect."
+          : "Registration is open. Free internet will activate when enabled by admin.";
+      }
+      show("stepRegister");
+      return;
+    }
+
+    var available = !!(data.enabled && data.can_claim);
+    setBadge(data, available);
+    if (head) head.textContent = available
+      ? ("Hello " + displayName(data.client) + " — free internet is available now.")
+      : "Your account is registered. Free internet is not available right now.";
+
+    if ($("welcomeName")) $("welcomeName").textContent = displayName(data.client);
+    if ($("claimInfo")) {
+      if (available) {
+        $("claimInfo").textContent = isPanisijan
+          ? ("Free internet available — " + (data.uptime || "your free time") + " · 1 beses lang bawat araw.")
+          : ("Free internet available — claim " + (data.uptime || "your free time") + " now.");
+      } else if (!data.enabled) {
+        $("claimInfo").textContent = "Free internet not available. Please wait until admin enables free WiFi.";
+      } else if (isPanisijan && data.registered && data.claims_today >= (data.limit_per_day || 1)) {
+        $("claimInfo").textContent = data.message || "Na-claim mo na ngayong araw. Bumalik bukas para sa libreng internet.";
+      } else {
+        $("claimInfo").textContent = data.message || "Free internet not available.";
+      }
+    }
+    if ($("claimBtn")) {
+      $("claimBtn").style.display = available ? "block" : "none";
+      $("claimBtn").disabled = !available;
+    }
+    show("stepClaim");
+  }
+
+  async function loadStatus() {
+    if (!mac) {
+      err($("regErr"), "Missing device MAC. Connect to WiFi and open from the captive portal.");
+      show("stepRegister");
+      return;
+    }
+    var r = await api("/api/kitifi/free/status?mac=" + encodeURIComponent(mac) + "&router_id=" + encodeURIComponent(routerId));
+    if (!r.ok) {
+      if ($("disabledMsg")) $("disabledMsg").textContent = r.error || "Could not load status.";
+      show("stepDisabled");
+      return;
+    }
+    applyStatus(r.data || r);
+  }
+
+  function showDone(code, connectUrl) {
+    if (window.PanisijanMusic && String(routerId) === "51") PanisijanMusic.stop();
+    $("voucherCode").textContent = code;
+    show("stepDone");
+    var go = function () {
+      if (window.PanisijanMusic && String(routerId) === "51") PanisijanMusic.stop();
+      if (connectUrl) location.href = connectUrl;
+      else location.href = portalUrl("username=" + encodeURIComponent(code) + "&password=" + encodeURIComponent(code));
+    };
+    $("connectBtn").onclick = go;
+    setTimeout(go, 2500);
+  }
+
+  $("registerBtn").onclick = async function () {
+    err($("regErr"), "");
+    var first = $("fFirst").value.trim();
+    var last = $("fLast").value.trim();
+    var cp = $("fCp").value.trim();
+    if (!first) { err($("regErr"), "First name is required."); return; }
+    if (!last) { err($("regErr"), "Last name is required."); return; }
+    if (!cp) { err($("regErr"), "CP number is required."); return; }
+    $("registerBtn").disabled = true;
+    var shouldClaim = !!(statusData && statusData.enabled && (!statusData.registered || statusData.can_claim));
+    var r = await api("/api/kitifi/free/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: first,
+        last_name: last,
+        dob: $("fDob").value,
+        cp_number: cp,
+        purok: $("fPurok").value.trim(),
+        barangay: $("fBarangay").value.trim(),
+        municipal: $("fMunicipal").value.trim(),
+        province: $("fProvince").value.trim(),
+        mac: mac,
+        router_id: routerId,
+        claim: shouldClaim,
+      }),
+    });
+    $("registerBtn").disabled = false;
+    if (!r.ok) { err($("regErr"), r.error); return; }
+    if (r.voucher) return showDone(r.voucher, r.connect_url);
+    if (r.claim_error) { err($("regErr"), r.claim_error); await loadStatus(); return; }
+    err($("regErr"), "");
+    await loadStatus();
+  };
+
+  $("claimBtn").onclick = async function () {
+    err($("claimErr"), "");
+    $("claimBtn").disabled = true;
+    var r = await api("/api/kitifi/free/claim", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mac: mac, router_id: routerId }),
+    });
+    $("claimBtn").disabled = false;
+    if (!r.ok) { err($("claimErr"), r.error); return; }
+    showDone(r.voucher, r.connect_url);
+  };
+
+  loadStatus();
+
+  if (isPanisijan) {
+    var music = document.createElement("script");
+    music.src = "/hotspot/portal-music.js";
+    music.onload = function () {
+      if (window.PanisijanMusic) {
+        PanisijanMusic.boot();
+        PanisijanMusic.bindAutoStart();
+        PanisijanMusic.start();
+      }
+    };
+    document.body.appendChild(music);
+  }
+})();
+</script>
+</body>
+</html>
