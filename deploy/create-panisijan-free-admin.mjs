@@ -26,6 +26,14 @@ function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
 const existing = db.prepare("SELECT id, username, role FROM users WHERE username=? COLLATE NOCASE").get(USERNAME);
 const { salt, hash } = hashPassword(PASSWORD);
 
+if (existing && existing.role === "admin") {
+  console.error(
+    `Refusing to overwrite billing super-admin "${USERNAME}" (id ${existing.id}). ` +
+      "Rename that account first, or choose a different PANISIJAN_ADMIN_USER."
+  );
+  process.exit(1);
+}
+
 if (existing) {
   db.prepare("UPDATE users SET salt=?, hash=?, role=? WHERE id=?").run(salt, hash, ROLE, existing.id);
   db.prepare("DELETE FROM user_sites WHERE user_id=?").run(existing.id);
