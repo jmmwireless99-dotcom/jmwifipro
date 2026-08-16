@@ -11,7 +11,7 @@ import { DatabaseSync } from "node:sqlite";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DB = process.env.BILLING_DB || path.join(ROOT, "billing.db");
-const USERNAME = String(process.env.PANISIJAN_ADMIN_USER || "panisijan").trim();
+const USERNAME = String(process.env.PANISIJAN_ADMIN_USER || "panisijan_admin").trim();
 const PASSWORD = String(process.env.PANISIJAN_ADMIN_PASS || "Panisijan@2026").trim();
 const ROUTER_ID = 51;
 const ROLE = "panisijan_free_admin";
