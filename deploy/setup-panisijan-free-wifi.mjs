@@ -149,9 +149,7 @@ const loginHtml = fs.readFileSync(loginPath, "utf8");
 const settings = {
   kitifi_free_enabled: "1",
   kitifi_free_hours: "5",
-  kitifi_free_limit_per_day: "1",
   kitifi_free_limit_per_day_51: "1",
-  kitifi_free_router_id: String(ROUTER_ID),
   kitifi_free_default_barangay_51: "Panisijan",
   kitifi_free_default_municipal_51: "Uson",
   kitifi_free_default_province_51: "Masbate",
