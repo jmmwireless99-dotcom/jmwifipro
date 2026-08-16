@@ -16,6 +16,11 @@ const PASSWORD = String(process.env.PANISIJAN_ADMIN_PASS || "Panisijan@2026").tr
 const ROUTER_ID = 51;
 const ROLE = "panisijan_free_admin";
 
+if (USERNAME.toLowerCase() === "admin") {
+  console.error('Refusing username "admin" — that is the main billing super-admin. Use panisijan_admin or another name.');
+  process.exit(1);
+}
+
 const db = new DatabaseSync(DB);
 
 function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
