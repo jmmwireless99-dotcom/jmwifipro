@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<title>PANISIJAN · Free Internet</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%;height:100%;font-family:Segoe UI,system-ui,sans-serif}
+  body{
+    min-height:100vh;
+    background:#6b0f14 url('img/bg.jpg') center 38% / cover no-repeat fixed;
+    display:flex;flex-direction:column;
+  }
+  .banner{
+    width:100%;flex-shrink:0;padding:6px 6px 0;
+    background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));
+    position:relative;z-index:2;
+  }
+  .banner img{
+    display:block;width:100%;max-width:520px;margin:0 auto;height:auto;
+    filter:drop-shadow(0 6px 16px rgba(0,0,0,.45));
+  }
+  .free-wifi-tag{
+    display:block;max-width:520px;margin:6px auto 4px;padding:0 8px;
+    text-align:center;font-size:14px;font-weight:800;letter-spacing:.5px;line-height:1.25;
+    color:#f8fafc;text-shadow:0 2px 6px rgba(0,0,0,.75);
+  }
+  .hero{flex:1 1 auto;min-height:42vh}
+  .bottom{
+    flex-shrink:0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.72) 35%,rgba(0,0,0,.88) 100%);
+    position:relative;z-index:2;
+  }
+  .btn-register{
+    display:block;width:100%;max-width:420px;margin:0 auto;
+    padding:16px 12px;border:none;border-radius:12px;
+    font-size:16px;font-weight:800;letter-spacing:.3px;line-height:1.35;text-transform:none;text-decoration:none;
+    text-align:center;background:linear-gradient(120deg,#16a34a,#22c55e);color:#fff;cursor:pointer;
+    box-shadow:0 10px 28px rgba(34,197,94,.35)
+  }
+  .btn-register:active{transform:scale(.98)}
+  .btn-buy{
+    display:block;width:100%;max-width:420px;margin:10px auto 0;
+    padding:16px 14px;border:none;border-radius:12px;
+    font-size:16px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;text-decoration:none;
+    text-align:center;background:linear-gradient(120deg,#007dff,#00b4ff);color:#fff;cursor:pointer;
+    box-shadow:0 10px 28px rgba(0,125,255,.35)
+  }
+  .btn-buy:active{transform:scale(.98)}
+  .foot{margin-top:12px;text-align:center;font-size:11px;color:#cbd5e1;line-height:1.5}
+  .err{
+    max-width:420px;margin:0 auto 12px;color:#fecaca;font-size:12px;padding:10px 12px;
+    background:rgba(127,29,29,.55);border:1px solid rgba(248,113,113,.35);border-radius:10px;
+  }
+  .music-hint{
+    max-width:420px;margin:0 auto 10px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.4;
+  }
+</style>
+<script src="https://jmwifi.pro/hotspot/portal-music.js"></script>
+<script src="https://jmwifi.pro/hotspot/panisijan-autoconnect.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.PanisijanMusic) {
+    PanisijanMusic.boot();
+    PanisijanMusic.bindAutoStart();
+    var btn = document.getElementById("registerBtn");
+    if (btn) btn.addEventListener("click", function () { PanisijanMusic.start(); });
+  }
+});
+</script>
+$(if chap-id)
+<form name="sendin" action="$(link-login-only)" method="post" style="display:none">
+  <input type="hidden" name="username" value="">
+  <input type="hidden" name="password" value="">
+  <input type="hidden" name="dst" value="$(link-orig)">
+  <input type="hidden" name="popup" value="true">
+</form>
+<script src="/md5.js"></script>
+<script>
+function doLogin(){document.sendin.username.value=document.login.username.value;document.sendin.password.value=hexMD5('$(chap-id)'+document.login.password.value+'$(chap-challenge)');document.sendin.submit();return false;}
+</script>
+$(endif)
+</head>
+<body>
+  <div class="banner">
+    <img src="img/banner.png" alt="PANISIJAN FREE INTERNET" onerror="this.onerror=null;this.src='img/logo.png';">
+    <p class="free-wifi-tag">&#128246; Free Wifi</p>
+  </div>
+  <div class="hero"></div>
+  <div class="bottom">
+    $(if error)<div class="err">$(error)</div>$(endif)
+    <p class="music-hint">🎵 Music plays while you register · stops when connected</p>
+    <a class="btn-register" id="registerBtn" href="https://jmwifi.pro/kitifi/free-internet?mac=$(mac)&amp;router_id=51&amp;return=$(link-login-only)">Register And CLAIM FREE INTERNET</a>
+    <a class="btn-buy" id="buyBtn" href="https://jmwifi.pro/kitifi/generator-buy?mac=$(mac)&amp;router_id=51&amp;plan_id=r1day&amp;return=$(link-login-only)">ONE DAY INTERNET</a>
+    <div class="foot">JM WiFi Network · Uson, Masbate</div>
+  </div>
+</body>
+</html>

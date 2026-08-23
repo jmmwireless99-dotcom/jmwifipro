@@ -42,4 +42,14 @@ Full **jmwifi.pro** billing backup and deployment files.
 
 Copy `databases/jm-billing-billing.db` to `/opt/jm-billing/billing.db` on the VPS, then restart `jm-billing`.
 
+## Cleanup (logs only — keeps customers/billing)
+
+On the VPS (`/opt/jm-billing`), copy `tools/` then run as root:
+
+```bash
+sudo bash tools/clean-all.sh
+```
+
+This clears panel activity logs, hotspot coin events, nginx logs, syncs legacy MikroTik settings from the default router, and resets MikroTik system log buffers. It does **not** delete customers, invoices, or payments.
+
 **Warning:** This repo contains customer data, credentials, and SSL private keys. Keep access restricted.
