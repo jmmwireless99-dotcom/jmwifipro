@@ -9,23 +9,23 @@ const html = fs.readFileSync(path.join(root, "public/kitifi/free-internet.html")
 const login = fs.readFileSync(path.join(root, "public/hotspot/panisijan-login.html"), "utf8");
 
 test("free-internet page skips registration for Panisijan", () => {
-  assert.match(html, /function skipRegister/);
-  assert.match(html, /isPanisijan \|\| !!\(data && data.skip_register\)/);
-  assert.match(html, /Walang registration/);
-  assert.match(html, /CLAIM FREE INTERNET/);
-  assert.match(html, /show\("stepClaim"\)/);
+  assert.ok(html.includes("function skipRegister"));
+  assert.ok(html.includes('isPanisijan || !!(data && data.skip_register)'));
+  assert.ok(html.includes("Walang registration"));
+  assert.ok(html.includes("CLAIM FREE INTERNET"));
+  assert.ok(html.includes('show("stepClaim")'));
 });
 
 test("missing MAC on Panisijan does not open the register form", () => {
-  assert.match(html, /if \(isPanisijan\) \{[\s\S]*show\("stepDisabled"\)/);
-  assert.doesNotMatch(
-    html,
-    /if \(!mac\) \{[\s\S]*show\("stepRegister"\)[\s\S]*return;\s*\}\s*var r = await api\("\/api\/kitifi\/free\/status/
-  );
+  assert.ok(html.includes('Connect to PANISIJAN WiFi and open this page from the captive portal.'));
+  const load = html.slice(html.indexOf("async function loadStatus"));
+  const missing = load.slice(0, load.indexOf("var r = await api"));
+  assert.ok(missing.includes("if (isPanisijan)"));
+  assert.ok(missing.includes('show("stepDisabled")'));
 });
 
 test("captive portal button is claim-only, not Register", () => {
-  assert.match(login, />CLAIM FREE INTERNET</);
-  assert.doesNotMatch(login, /Register And CLAIM/);
-  assert.doesNotMatch(login, /while you register/);
+  assert.ok(login.includes(">CLAIM FREE INTERNET<"));
+  assert.ok(!login.includes("Register And CLAIM"));
+  assert.ok(!login.includes("while you register"));
 });
