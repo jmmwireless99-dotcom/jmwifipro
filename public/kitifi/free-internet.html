@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Register · Free internet · JM WiFi</title>
+<title>Free internet · JM WiFi</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:Segoe UI,system-ui,sans-serif;background:linear-gradient(160deg,#0f172a,#1e3a5f);color:#e8eef7;min-height:100vh;padding:12px}
@@ -97,9 +97,9 @@
 
   <div id="stepClaim" class="panel">
     <div class="card">
-      <p style="font-size:14px;color:#cbd5e1;line-height:1.5">Welcome back, <b id="welcomeName" style="color:#fff">—</b>.</p>
+      <p id="welcomeLine" style="font-size:14px;color:#cbd5e1;line-height:1.5">Welcome back, <b id="welcomeName" style="color:#fff">—</b>.</p>
       <p class="meta" id="claimInfo">Free internet not available.</p>
-      <button type="button" class="btn btn-claim" id="claimBtn" style="display:none">Get free internet</button>
+      <button type="button" class="btn btn-claim" id="claimBtn" style="display:none">CLAIM FREE INTERNET</button>
       <p class="err" id="claimErr"></p>
       <button type="button" class="btn btn-back" id="backClaim">← Back to portal</button>
     </div>
@@ -135,6 +135,7 @@
         title.classList.add("panisijan");
       }
       if (onceDay) onceDay.style.display = "block";
+      document.title = "CLAIM FREE INTERNET · PANISIJAN";
     } else {
       if (title) {
         title.textContent = "Register to get free internet";
@@ -195,12 +196,17 @@
     if ($("fProvince") && data.default_province) $("fProvince").value = data.default_province;
   }
 
+  function skipRegister(data) {
+    return isPanisijan || !!(data && data.skip_register);
+  }
+
   function applyStatus(data) {
     statusData = data;
     var head = $("headMsg");
     applyDefaults(data);
+    var noAccount = skipRegister(data);
 
-    if (!data.registered) {
+    if (!data.registered && !noAccount) {
       setBadge(data, !!data.enabled);
       if (head) {
         head.textContent = data.enabled
@@ -213,25 +219,43 @@
 
     var available = !!(data.enabled && data.can_claim);
     setBadge(data, available);
-    if (head) head.textContent = available
-      ? ("Hello " + displayName(data.client) + " — free internet is available now.")
-      : "Your account is registered. Free internet is not available right now.";
+    if (head) {
+      if (noAccount) {
+        head.textContent = available
+          ? "Walang registration. I-tap lang ang CLAIM FREE INTERNET."
+          : (data.message || "Free internet is not available right now.");
+      } else {
+        head.textContent = available
+          ? ("Hello " + displayName(data.client) + " — free internet is available now.")
+          : "Your account is registered. Free internet is not available right now.";
+      }
+    }
 
-    if ($("welcomeName")) $("welcomeName").textContent = displayName(data.client);
+    if ($("welcomeLine")) {
+      if (noAccount) {
+        $("welcomeLine").textContent = available
+          ? "I-tap para mag-claim. Walang create account."
+          : (data.message || "Hindi available ang free internet ngayon.");
+      } else {
+        $("welcomeLine").innerHTML = 'Welcome back, <b id="welcomeName" style="color:#fff">' + displayName(data.client) + "</b>.";
+      }
+    }
+    if ($("welcomeName") && !noAccount) $("welcomeName").textContent = displayName(data.client);
     if ($("claimInfo")) {
       if (available) {
-        $("claimInfo").textContent = isPanisijan
+        $("claimInfo").textContent = noAccount
           ? ("Free internet available — " + (data.uptime || "your free time") + " · 1 beses lang bawat araw.")
           : ("Free internet available — claim " + (data.uptime || "your free time") + " now.");
       } else if (!data.enabled) {
         $("claimInfo").textContent = "Free internet not available. Please wait until admin enables free WiFi.";
-      } else if (isPanisijan && data.registered && data.claims_today >= (data.limit_per_day || 1)) {
+      } else if (noAccount && data.claims_today >= (data.limit_per_day || 1)) {
         $("claimInfo").textContent = data.message || "Na-claim mo na ngayong araw. Bumalik bukas para sa libreng internet.";
       } else {
         $("claimInfo").textContent = data.message || "Free internet not available.";
       }
     }
     if ($("claimBtn")) {
+      $("claimBtn").textContent = noAccount ? "CLAIM FREE INTERNET" : "Get free internet";
       $("claimBtn").style.display = available ? "block" : "none";
       $("claimBtn").disabled = !available;
     }
@@ -240,6 +264,11 @@
 
   async function loadStatus() {
     if (!mac) {
+      if (isPanisijan) {
+        if ($("disabledMsg")) $("disabledMsg").textContent = "Connect to PANISIJAN WiFi and open this page from the captive portal.";
+        show("stepDisabled");
+        return;
+      }
       err($("regErr"), "Missing device MAC. Connect to WiFi and open from the captive portal.");
       show("stepRegister");
       return;
