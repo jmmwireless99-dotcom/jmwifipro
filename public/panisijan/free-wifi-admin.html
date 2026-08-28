@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>PANISIJAN · Free WiFi Admin</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Segoe UI,system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+  .wrap{max-width:960px;margin:0 auto;padding:16px}
+  .head{text-align:center;padding:20px 8px 12px}
+  .head h1{font-size:20px;font-weight:800;color:#4ade80}
+  .head p{font-size:12px;color:#94a3b8;margin-top:6px}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:12px}
+  label{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin:8px 0 4px}
+  input{width:100%;padding:11px 12px;border:1px solid #475569;border-radius:8px;background:#0f172a;color:#f8fafc;font-size:14px}
+  .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;margin-top:10px;background:linear-gradient(120deg,#16a34a,#22c55e);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-sm{padding:6px 10px;width:auto;font-size:11px;margin:0;background:#334155;color:#e2e8f0}
+  .btn-sm.danger{background:#7f1d1d;color:#fecaca}
+  .err{color:#f87171;font-size:12px;margin-top:8px;min-height:16px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+  .toolbar input{max-width:240px;margin:0}
+  .stats{font-size:12px;color:#94a3b8;font-family:ui-monospace,monospace}
+  .tbl-wrap{overflow:auto;border:1px solid #334155;border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:8px 10px;border-bottom:1px solid #334155;text-align:left;vertical-align:top}
+  th{background:#0f172a;color:#94a3b8;font-weight:700;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  .mac{font-family:ui-monospace,monospace;font-size:11px}
+  .hidden{display:none!important}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+  .user{font-size:12px;color:#cbd5e1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>PANISIJAN Free WiFi</h1>
+    <p>Client list · admin access only</p>
+  </div>
+
+  <div id="loginPanel" class="card">
+    <label>Username</label>
+    <input id="loginUser" autocomplete="username" placeholder="panisijan admin username">
+    <label>Password</label>
+    <input id="loginPass" type="password" autocomplete="current-password" placeholder="Password">
+    <button type="button" class="btn" id="loginBtn">Sign in</button>
+    <p class="err" id="loginErr"></p>
+  </div>
+
+  <div id="appPanel" class="hidden">
+    <div class="topbar">
+      <div class="user" id="meLabel">—</div>
+      <button type="button" class="btn-sm" id="logoutBtn">Logout</button>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <input id="search" placeholder="Search name, last name, CP #, purok, MAC…">
+        <button type="button" class="btn-sm" id="refreshBtn">Refresh</button>
+        <span class="stats" id="stats">—</span>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Last name</th>
+              <th>CP #</th>
+              <th>Purok</th>
+              <th>Barangay</th>
+              <th>MAC</th>
+              <th>Registered</th>
+              <th>Last claim</th>
+              <th>Claims</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="list"><tr><td colspan="10">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <p class="err" id="appErr"></p>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var API = location.origin;
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+  async function api(path, opts){
+    var res = await fetch(API + path, Object.assign({ credentials:"same-origin" }, opts || {}));
+    var data = {};
+    try { data = await res.json(); } catch(e){}
+    if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+    return data;
+  }
+  function showApp(on){
+    $("loginPanel").classList.toggle("hidden", on);
+    $("appPanel").classList.toggle("hidden", !on);
+  }
+  async function loadClients(){
+    $("appErr").textContent = "";
+    var q = ($("search").value || "").trim();
+    var url = "/api/panisijan/free-admin/clients" + (q ? ("?q=" + encodeURIComponent(q)) : "");
+    var r = await api(url);
+    var rows = r.data.clients || [];
+    var st = r.data.stats || {};
+    var s = r.data.settings || {};
+    $("stats").textContent = (st.total||0) + " registered · " + (st.claims_today||0) + " claims today · " + (s.enabled ? "ENABLED" : "DISABLED");
+    var tb = $("list");
+    if (!rows.length){
+      tb.innerHTML = '<tr><td colspan="10" style="color:#64748b">No clients found.</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(function(c){
+      var first = String(c.name || "").trim() || "—";
+      var last = String(c.last_name || "").trim() || "—";
+      var blocked = c.status === "blocked";
+      return '<tr><td>' + esc(first) + '</td><td>' + esc(last) + '</td><td>' + esc(c.cp_number||"—") + '</td><td>' + esc(c.purok||"—") + '</td><td>' + esc(c.barangay||"—") + '</td><td class="mac">' + esc(c.mac) + '</td><td>' + esc((c.registered_at||"").slice(0,16)) + '</td><td>' + esc((c.last_claim_at||"—").slice(0,16)) + '</td><td>' + esc(String(c.claim_count||0)) + '</td><td><button type="button" class="btn-sm' + (blocked ? "" : " danger") + '" data-id="' + c.id + '" data-st="' + (blocked ? "active" : "blocked") + '">' + (blocked ? "Unblock" : "Block") + '</button></td></tr>';
+    }).join("");
+    tb.querySelectorAll("button[data-id]").forEach(function(btn){
+      btn.onclick = async function(){
+        try {
+          await api("/api/panisijan/free-admin/clients/" + btn.dataset.id, {
+            method:"PATCH",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ status: btn.dataset.st })
+          });
+          loadClients();
+        } catch(e){ $("appErr").textContent = e.message; }
+      };
+    });
+  }
+  async function boot(){
+    try {
+      var me = await api("/api/panisijan/free-admin/me");
+      if (me.user){
+        $("meLabel").textContent = me.user.username + " · PANISIJAN";
+        showApp(true);
+        await loadClients();
+        return;
+      }
+    } catch(e){}
+    showApp(false);
+  }
+  $("loginBtn").onclick = async function(){
+    $("loginErr").textContent = "";
+    $("loginBtn").disabled = true;
+    try {
+      var r = await api("/api/auth/login", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ username: $("loginUser").value.trim(), password: $("loginPass").value })
+      });
+      if (r.user && r.user.role !== "panisijan_free_admin"){
+        await api("/api/auth/logout", { method:"POST" });
+        throw new Error("This account is not a PANISIJAN Free WiFi admin.");
+      }
+      $("loginPass").value = "";
+      $("meLabel").textContent = r.user.username + " · PANISIJAN";
+      showApp(true);
+      await loadClients();
+    } catch(e){
+      $("loginErr").textContent = e.message || "Login failed";
+    }
+    $("loginBtn").disabled = false;
+  };
+  $("logoutBtn").onclick = async function(){
+    try { await api("/api/auth/logout", { method:"POST" }); } catch(e){}
+    showApp(false);
+  };
+  $("refreshBtn").onclick = function(){ loadClients().catch(function(e){ $("appErr").textContent = e.message; }); };
+  $("search").oninput = function(){
+    clearTimeout(window._ps);
+    window._ps = setTimeout(function(){ loadClients().catch(function(e){ $("appErr").textContent = e.message; }); }, 350);
+  };
+  boot();
+})();
+</script>
+</body>
+</html>
