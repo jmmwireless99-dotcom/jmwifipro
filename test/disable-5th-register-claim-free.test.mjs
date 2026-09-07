@@ -7,6 +7,7 @@ import {
   FIFTH_SERVER_ROUTER_ID,
   FREE_ENABLED_KEY,
   assertFifthPortalHtml,
+  patchFreeInternetHidesRegisterWhenDisabled,
   patchRegisterRejectsDisabled,
   stripRegisterClaimFree,
 } from "../deploy/disable-5th-register-claim-free.mjs";
@@ -58,4 +59,21 @@ test("register() is patched to reject when free WiFi is disabled", () => {
   assert.match(src, /kitifiFreeSettings\(rid\)\.enabled/);
   const again = patchRegisterRejectsDisabled(src);
   assert.equal(again.changed, false);
+});
+
+test("free-internet page hides Register when the site is disabled", () => {
+  const before = `    if (!data.registered) {
+      setBadge(data, !!data.enabled);
+      if (head) {
+        head.textContent = data.enabled
+          ? "Fill up the form below, then tap Register to connect."
+          : "Registration is open. Free internet will activate when enabled by admin.";
+      }
+      show("stepRegister");
+      return;
+    }`;
+  const { src, changed } = patchFreeInternetHidesRegisterWhenDisabled(before);
+  assert.equal(changed, true);
+  assert.match(src, /show\("stepDisabled"\)/);
+  assert.doesNotMatch(src, /Registration is open/);
 });

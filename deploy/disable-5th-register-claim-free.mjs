@@ -124,6 +124,65 @@ function patchLiveRegisterGate() {
   console.log("patched lib/kitifi-free-wifi.js register() to honor per-router enabled flag");
 }
 
+const FREE_PAGE_NEEDLE = `    if (!data.registered) {
+      setBadge(data, !!data.enabled);
+      if (head) {
+        head.textContent = data.enabled
+          ? "Fill up the form below, then tap Register to connect."
+          : "Registration is open. Free internet will activate when enabled by admin.";
+      }
+      show("stepRegister");
+      return;
+    }`;
+
+const FREE_PAGE_PATCH = `    if (!data.enabled) {
+      setBadge(data, false);
+      var title = $("headTitle");
+      if (title && !isPanisijan) title.textContent = "Free internet not available";
+      if (head) head.textContent = data.message || "Free internet not available.";
+      var dm = $("disabledMsg");
+      if (dm) dm.textContent = data.message || "Free WiFi is not available right now.";
+      show("stepDisabled");
+      return;
+    }
+
+    if (!data.registered) {
+      setBadge(data, true);
+      if (head) head.textContent = "Fill up the form below, then tap Register to connect.";
+      show("stepRegister");
+      return;
+    }`;
+
+export function patchFreeInternetHidesRegisterWhenDisabled(src) {
+  if (src.includes("if (!data.enabled)") && src.includes('title.textContent = "Free internet not available"')) {
+    return { src, changed: false };
+  }
+  if (!src.includes(FREE_PAGE_NEEDLE)) {
+    return { src, changed: false, missing: true };
+  }
+  return { src: src.split(FREE_PAGE_NEEDLE).join(FREE_PAGE_PATCH), changed: true };
+}
+
+function patchLiveFreeInternetPage() {
+  const p = path.join(ROOT, "public/kitifi/free-internet.html");
+  if (!fs.existsSync(p)) {
+    console.log("public/kitifi/free-internet.html not in this tree (ok on git-only checkout)");
+    return;
+  }
+  const cur = fs.readFileSync(p, "utf8");
+  const next = patchFreeInternetHidesRegisterWhenDisabled(cur);
+  if (next.missing) {
+    console.warn("applyStatus() register branch not found in free-internet.html");
+    return;
+  }
+  if (!next.changed) {
+    console.log("free-internet.html already hides Register when disabled");
+    return;
+  }
+  fs.writeFileSync(p, next.src);
+  console.log("patched public/kitifi/free-internet.html to hide Register when free WiFi is off");
+}
+
 async function pushPortalHtml() {
   const htmlPath = path.join(ROOT, HTML_REL);
   if (!fs.existsSync(htmlPath)) throw new Error("Missing " + HTML_REL);
@@ -208,6 +267,7 @@ async function main() {
 
   disableFreeSetting(DB);
   patchLiveRegisterGate();
+  patchLiveFreeInternetPage();
 
   if (SKIP_PORTAL) {
     console.log("SKIP_PORTAL_PUSH=1 — DB flag only. Re-run to push HTML.");
