@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>{{ brand }}</title>
+    <link rel="icon" href="{{ logo | raw }}" />
+    <link href="admin/assets/js/toastr/toastr.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="{{ portal_css | raw }}">
+    {% if chatBtn == 1 %}
+    <link rel="stylesheet" href="{{ chat_css | raw }}">
+    {% endif %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+
+<body id="body" class="{{ theme }}">
+    <div class="row">
+        <div class="banner">
+            <img id="image" src="{{ banner | raw }}" height="250" width="500">
+        </div>
+        <div class="container">
+            <div class="scroll-left"><span id="slidingtext">{{ bannerText }}</span></div>
+            <div class="details text-center">
+                <div class="time-wrapper">
+                    <h2 class="timer"><span id="remainTime" data-session-time-left="{{ session_time_sec }}">{{ session_time_left | raw }}</span></h2>
+                </div>
+                <small>Status: <span id="status" class="blinking1">{{ status }}</span></small><br>
+                <small>MAC: <span id="mac">{{ mac_address }}</span> | IP: <span id="ip">{{ ip_address }}</span></small><br>
+                <small id="Exp" class="text-danger {% if expiry == 0 %}d-none{% endif %}">Expiration: <span id="exp">{{ dateFormat(expiry) }}</span><br></small>
+                <small>Coins: {{ currency }} <span id="coins">{{ coins }}</span> | Points: <span id="points">{{ points }}</span></small>
+            </div>
+            <div class="btn-group">
+                {# 5thserver: free-internet button removed #}
+                {% if insertBtn == 1 %}
+                <button type="button" class="btn btn-primary" id="insertBtn">Insert Coin</button>
+                {% endif %}
+                <button type="button" class="btn btn-{% if int_status == 2 %}danger{% else %}success{% endif %} {% if (pauseBtn == 1 and session_time_sec > 0) or (int_status == 1) %}{% else %}d-none{% endif %}" id="pauseBtn">{{ pause_text }}</button>
+                <button type="button" class="btn btn-secondary {% if redeemBtn == 0 or points == 0 %}d-none{% endif %}" id="redeemBtn">Redeem</button>
+                {% if ratesBtn == 1 %}
+                <button type="button" class="btn btn-secondary" id="ratesBtn">Wifi Rates</button>
+                {% endif %}
+                <div class="kitifi-manual-connect input-group" id="manualConnectBox">
+                    <small class="kitifi-manual-label">Manual Connect — paste voucher code</small>
+                    <div class="d-flex flex-fill align-content-stretch">
+                        <input type="text" id="v_code" value="" placeholder="Paste voucher code here…" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+                        <button type="button" id="submit" class="submit">Submit</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="gcashBuyBtn" style="margin-top:8px;width:100%;font-weight:800;background:linear-gradient(120deg,#007dff,#00b4ff);border:none">BUY VOUCHER (GCash)</button>
+            </div>
+            <footer class="footer text-center">
+                <b>Powered by: <a href="{{ footerLink }}" target="_blank">{{ footerText }}</a>. © All rights reserved
+                2023</b><br>
+            </footer>
+        </div>
+        {% if chatBtn == 1 %}
+            <div class="chatbox" id="chatbox">
+                <div class="chatbox__support">
+                    <div class="chatbox__header">
+                        <div class="chatbox__content--header">
+                            <h4 class="chatbox__heading--header">Chat Admin</h4>
+                        </div>
+                    </div>
+                    <div class="chatbox__messages">
+                        <div id="chatMsg">
+                        </div>
+                    </div>
+                    <div class="chatbox__footer">
+                        <span class="textarea" id="userMsg" role="textbox" contenteditable></span>
+                        <button id="sendMsg" type="submit" class="send_message btn-primary d-none">
+                            Send
+                        </button>
+
+                    </div>
+                </div>
+                <div class="chatbox__button">
+                    <button id="chatbutton">button</button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="modal" id="icmodal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="header">Please Insert Coin</div>
+            <div class="progress-bar"><span></span></div>
+            <hr>
+            <div id="insBody">
+                <br>
+                <li><b>Amount: </b><span id="totalCoin">₱ 0</span>.00</li>
+                <li><b>Time: </b><span id="totalTime">--:--</span></li>
+                <br>
+            </div>
+            <hr>
+            <br>
+            <div class="-footer">
+                <div class="btn-flex">
+                    <button class="close btn btn-secondary">Cancel</button>
+                    <button id="donepaying" class="btn btn-primary {% if coins == 0 %}d-none{% endif %}">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="announcement_modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="header">Announcement</div>
+            <hr>
+            <div class="announcement">
+                <br>
+                {% include announcement %}
+                <br>
+            </div>
+            <hr>
+            <br>
+            <div class="text-left custom-control">
+                <input class="custom-control-input" type="checkbox" id="dontshow">
+                <label class="custom-control-label" for="dontshow">Don't show this again</label>
+            </div>
+            <br>
+            <div class="-footer">
+                <div class="btn-flex">
+                    <button class="close btn btn-secondary">Okay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="svmodal">
+        <div class="modal-dialog">
+            <div class="header">Chose Your Location</div>
+            <hr>
+            <div id="selectVendo">
+                <button class="close btn btn-primary selectVendo" data-id=""></button>
+            </div>
+            <hr>
+            <button class="close btn btn-secondary">Close</button>
+        </div>
+    </div>
+    <div class="modal" id="wrmodal">
+        <div class="modal-dialog">
+            <div class="header">Wifi Rates</div>
+            <div id="ratesBody">
+                <hr>
+                <br>
+                <table class="text-sm">
+                    <thead>
+                        <tr>
+                            <td>Amount</td>
+                            <td>Time</td>
+                            <td>Expiry</td>
+                        </tr>
+                    </thead>
+                    <tbody id="rates"></tbody>
+                </table>
+                <br>
+                <button type="button" class="close btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="pointsmodal">
+        <div class="modal-dialog">
+            <div class="header">Redeem Points</div>
+            <hr>
+            <div id="pointshtml">
+            <button class="close btn btn-primary redeempoints" data-id="" data-points="">(r_points) r_time</button>
+            </div>
+            <hr>
+            <button class="close btn btn-secondary">Close</button>
+        </div>
+    </div>
+    <div class="modal" id="gcashVoucherModal" tabindex="-1" style="display:none">
+        <div class="modal-dialog">
+            <div class="header" style="color:#16a34a">✓ Voucher Ready</div>
+            <hr>
+            <div style="text-align:center;padding:8px">
+                <div id="gcashVoucherCode" style="font-size:26px;font-weight:900;letter-spacing:2px;color:#16a34a;padding:12px;margin:8px 0;border:2px dashed #16a34a;border-radius:8px;font-family:monospace"></div>
+                <p style="font-size:12px;color:#666">Copy the code, go back to portal, paste above and tap Submit.</p>
+            </div>
+            <hr>
+            <div class="-footer">
+                <div class="btn-flex">
+                    <button type="button" class="btn btn-secondary" id="gcashVoucherCopy">Copy Code</button>
+                    <button type="button" class="btn btn-primary" id="gcashVoucherConnect">Connect</button>
+                </div>
+                <button type="button" class="btn btn-secondary close" id="gcashVoucherClose" style="margin-top:8px">Use later</button>
+            </div>
+        </div>
+    </div>
+    <script src="admin/assets/js/adminlte/jquery.min.js"></script>
+    <script src="admin/assets/js/toastr/toastr.min.js"></script>
+    <script type="application/javascript">
+        var timeleft = {{ insertcoin_timer }};
+        var timetotal = {{ insertcoin_timer }};
+        var announcement_modal = {{ announcement_modal }};
+        var insertcoinbg_mp3 = "{{ insertcoinbg_mp3 }}";
+        var coinCount_mp3 = "{{ coinCount_mp3 }}";
+        var hs_address = "{{ hs_address }}";
+        var freetimeBtn = {{ freetimeBtn }};
+        var pauseBtn = {{ pauseBtn }};
+        var login_option = {{ login_option }};
+        var reload = {{ reload }};
+        var type = "{{ type }}";
+        var ip_address = "{{ ip_address }}";
+        var mac_address = "{{ mac_address }}";
+        var user = "{{ user }}";
+        var server = "{{ server }}";
+        var brand = "{{ brand }}";
+        var int_status = {{ int_status }};
+        var pauseBtn = {{ pauseBtn }};
+        var redeemBtn = {{ redeemBtn }};
+        var isCaptivePortal = {{ isCaptivePortal }};
+    </script>
+    <script src="{{ portal_js | raw }}"></script>
+    {% if chatBtn == 1 %}
+    <script src="{{ chat_js | raw }}"></script>
+    {% endif %}
+    <script type="application/javascript">
+    (function () {
+      var BUY = "https://jmwifi.pro/kitifi/generator-buy";
+      var STORE_KEY = "kitifi_pending_voucher";
+
+      /** Pre-fill portal paste field and scroll into view (manual connect). */
+      function kitifiApplyPendingVoucher(code) {
+        code = String(code || "").trim();
+        if (!code) return false;
+        var vInput = document.getElementById("v_code");
+        var box = document.getElementById("manualConnectBox");
+        if (vInput) {
+          vInput.value = code;
+          ["input", "change", "keyup"].forEach(function (ev) {
+            try { vInput.dispatchEvent(new Event(ev, { bubbles: true })); } catch (e) {}
+          });
+          if (window.jQuery) {
+            try { window.jQuery(vInput).val(code).trigger("input").trigger("change"); } catch (e2) {}
+          }
+          try { vInput.focus(); vInput.select(); } catch (e3) {}
+        }
+        if (box) {
+          try { box.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e4) {}
+          box.classList.add("kitifi-voucher-highlight");
+          setTimeout(function () { box.classList.remove("kitifi-voucher-highlight"); }, 5000);
+        }
+        if (typeof toastr !== "undefined") toastr.success("Voucher ready — tap Submit to connect");
+        return true;
+      }
+
+      /** Fill #v_code and auto-click KiTifi Submit (retries until portal JS is ready). */
+      function kitifiAutoConnect(code, attempt) {
+        code = String(code || "").trim();
+        if (!code) return false;
+        attempt = attempt || 0;
+        var vInput = document.getElementById("v_code");
+        var submitBtn = document.getElementById("submit");
+        if (vInput) {
+          try { vInput.focus(); } catch (e) {}
+          vInput.value = code;
+          ["input", "change", "keyup", "blur"].forEach(function (ev) {
+            try { vInput.dispatchEvent(new Event(ev, { bubbles: true })); } catch (e2) {}
+          });
+          if (window.jQuery) {
+            try { window.jQuery(vInput).val(code).trigger("input").trigger("change"); } catch (e3) {}
+          }
+        }
+        var fired = false;
+        if (submitBtn) {
+          try { submitBtn.click(); fired = true; } catch (e4) {}
+          try {
+            submitBtn.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+            fired = true;
+          } catch (e5) {}
+          if (window.jQuery) {
+            try { window.jQuery(submitBtn).trigger("click"); fired = true; } catch (e6) {}
+          }
+        }
+        if (!fired && typeof hs_address !== "undefined" && hs_address) {
+          var portalBase = String(hs_address).replace(/\/$/, "");
+          if (portalBase.indexOf("http") !== 0) portalBase = "http://" + portalBase;
+          window.location.href = portalBase + "?username=" + encodeURIComponent(code);
+          return true;
+        }
+        if (attempt < 10 && (!vInput || !submitBtn || !fired)) {
+          setTimeout(function () { kitifiAutoConnect(code, attempt + 1); }, 350 + attempt * 250);
+        }
+        return fired;
+      }
+
+      function kitifiShowVoucherModal(code) {
+        code = String(code || "").trim();
+        if (!code) return;
+        kitifiApplyPendingVoucher(code);
+        var modal = document.getElementById("gcashVoucherModal");
+        var codeEl = document.getElementById("gcashVoucherCode");
+        if (!modal || !codeEl) return;
+        codeEl.textContent = code;
+        modal.style.display = "block";
+        document.getElementById("gcashVoucherConnect").onclick = function () {
+          modal.style.display = "none";
+          kitifiAutoConnect(code);
+        };
+        document.getElementById("gcashVoucherCopy").onclick = function () {
+          navigator.clipboard.writeText(code).then(function () {
+            if (typeof toastr !== "undefined") toastr.success("Voucher copied!");
+          }).catch(function () { prompt("Copy:", code); });
+        };
+        document.getElementById("gcashVoucherClose").onclick = function () { modal.style.display = "none"; };
+      }
+
+      function takePendingVoucher() {
+        var qs = new URLSearchParams(location.search);
+        var autoConnect = qs.get("autoconnect") === "1";
+        var code = qs.get("voucher") || qs.get("code") || "";
+        if (!code) {
+          try { code = sessionStorage.getItem(STORE_KEY) || ""; } catch (e) {}
+          if (code) autoConnect = true;
+        }
+        if (!code) return;
+        try { sessionStorage.removeItem(STORE_KEY); } catch (e2) {}
+        if (qs.get("voucher") || qs.get("code") || qs.get("autoconnect")) {
+          try {
+            qs.delete("voucher");
+            qs.delete("code");
+            qs.delete("autoconnect");
+            var clean = location.pathname + (qs.toString() ? "?" + qs.toString() : "") + location.hash;
+            history.replaceState(null, "", clean);
+          } catch (e3) {}
+        }
+        if (autoConnect) {
+          kitifiAutoConnect(code);
+          return;
+        }
+        kitifiApplyPendingVoucher(code);
+      }
+
+      function detectPortalRouterId() {
+        var srv = (typeof server !== "undefined" && server) ? String(server).toLowerCase() : "";
+        var br = (typeof brand !== "undefined" && brand) ? String(brand).toLowerCase() : "";
+        var ctx = srv + " " + br;
+        if (/4rth|4th|fourth/.test(ctx)) return "37";
+        if (/2nd|second|2nd-server/.test(ctx)) return "46";
+        if (/3rd|third|3rd-server/.test(ctx)) return "36";
+        if (/1st|first|1stserver/.test(ctx)) return "42";
+        if (/5th|fifth|5thserver/.test(ctx)) return "45";
+        if (/burias/i.test(ctx)) return "40";
+        if (/cagbatang/i.test(ctx)) return "48";
+        if (/cawayan/i.test(ctx)) return "39";
+        if (/sancarlos|san-carlos|san carlos/i.test(ctx)) return "41";
+        if (/candel|kitifi|vlan3002/.test(ctx)) return "34";
+        return "37";
+      }
+      function goBuyVoucher() {
+        var mac = (typeof mac_address !== "undefined" && mac_address) ? String(mac_address).trim() : "";
+        var ret = encodeURIComponent(location.href.split("#")[0]);
+        var rid = detectPortalRouterId();
+        location.href = BUY + "?mac=" + encodeURIComponent(mac) + "&return=" + ret + "&router_id=" + encodeURIComponent(rid);
+      }
+      var buyBtn = document.getElementById("gcashBuyBtn");
+      if (buyBtn) buyBtn.addEventListener("click", goBuyVoucher);
+      ["freeWifiBtn", "freetimeBtn"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.remove();
+      });
+
+      window.kitifiAutoConnect = kitifiAutoConnect;
+      window.kitifiApplyPendingVoucher = kitifiApplyPendingVoucher;
+
+      function kitifiFormatSeconds(sec) {
+        sec = Math.max(0, parseInt(sec, 10) || 0);
+        var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+        if (h > 0) return h + "h " + m + "m " + s + "s";
+        if (m > 0) return m + "m " + s + "s";
+        return s + "s";
+      }
+
+      /** Fallback countdown if KiTifi portal_js leaves #remainTime empty. */
+      function kitifiTimerFallback() {
+        var el = document.getElementById("remainTime");
+        if (!el || el.getAttribute("data-kitifi-timer-fixed")) return;
+        var sec = parseInt(el.getAttribute("data-session-time-left") || "0", 10);
+        if (!sec) return;
+        function paint() { el.innerHTML = "<b>" + kitifiFormatSeconds(sec) + "</b>"; }
+        function startFallback() {
+          if (el.getAttribute("data-kitifi-timer-fixed")) return;
+          var txt = String(el.textContent || el.innerHTML || "").replace(/\s/g, "");
+          if (txt.length > 0 && !/^0+$/.test(txt)) return;
+          el.setAttribute("data-kitifi-timer-fixed", "1");
+          paint();
+          setInterval(function () {
+            if (sec <= 0) return;
+            sec--;
+            paint();
+          }, 1000);
+        }
+        setTimeout(startFallback, 800);
+        setTimeout(startFallback, 2500);
+      }
+
+      /** Wifi Rates modal: split pipe-format amounts into Time/Expiry columns. */
+      function kitifiFixRatesTable() {
+        var tbody = document.getElementById("rates");
+        if (!tbody) return;
+        tbody.querySelectorAll("tr").forEach(function (tr) {
+          var tds = tr.querySelectorAll("td");
+          if (tds.length < 3) return;
+          var amountCell = tds[0].textContent || "";
+          if (tds[1].textContent.trim() || amountCell.indexOf("|") < 0) return;
+          var parts = amountCell.split("|").map(function (x) { return x.trim(); });
+          if (parts.length >= 3) {
+            tds[0].textContent = parts[0];
+            tds[1].textContent = parts[1];
+            tds[2].textContent = parts[2];
+          }
+        });
+      }
+
+      function kitifiHookRatesModal() {
+        var btn = document.getElementById("ratesBtn");
+        if (btn) {
+          btn.addEventListener("click", function () {
+            setTimeout(kitifiFixRatesTable, 300);
+            setTimeout(kitifiFixRatesTable, 1200);
+          });
+        }
+        var tbody = document.getElementById("rates");
+        if (tbody && window.MutationObserver) {
+          new MutationObserver(function () { kitifiFixRatesTable(); }).observe(tbody, { childList: true, subtree: true });
+        }
+      }
+
+      kitifiTimerFallback();
+      kitifiHookRatesModal();
+      setTimeout(kitifiFixRatesTable, 500);
+      setTimeout(kitifiFixRatesTable, 2000);
+
+      if (document.readyState === "complete") setTimeout(takePendingVoucher, 400);
+      else window.addEventListener("load", function () { setTimeout(takePendingVoucher, 400); });
+    })();
+    </script>
+</body>
+</html>
