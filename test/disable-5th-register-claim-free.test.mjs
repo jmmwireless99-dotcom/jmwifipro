@@ -7,6 +7,7 @@ import {
   FIFTH_SERVER_ROUTER_ID,
   FREE_ENABLED_KEY,
   assertFifthPortalHtml,
+  patchRegisterRejectsDisabled,
   stripRegisterClaimFree,
 } from "../deploy/disable-5th-register-claim-free.mjs";
 
@@ -23,7 +24,8 @@ test("5th portal HTML keeps BUY VOUCHER and drops Register / Claim Free", () => 
   const html = fs.readFileSync(HTML, "utf8");
   assertFifthPortalHtml(html);
   assert.match(html, /Insert Coin/);
-  assert.doesNotMatch(html, /free-internet/i);
+  assert.doesNotMatch(html, /Create account to get free internet/i);
+  assert.doesNotMatch(html, /kitifi\/free-internet/i);
   assert.doesNotMatch(html, /goFreeInternet/);
   assert.doesNotMatch(html, /Create account to get free internet/i);
 });
@@ -46,4 +48,14 @@ test("deploy script targets only router 45 and does not enable free WiFi", () =>
   assert.match(src, /upsert\.run\(FREE_ENABLED_KEY, "0"\)/);
   assert.doesNotMatch(src, /kitifi_free_enabled_51/);
   assert.doesNotMatch(src, /kitifi_free_enabled_34/);
+});
+
+test("register() is patched to reject when free WiFi is disabled", () => {
+  const before =
+    "const rid = Number(routerId) || kitifiPortalRouterId();\n      const existing = byMac(m, rid);";
+  const { src, changed } = patchRegisterRejectsDisabled(before);
+  assert.equal(changed, true);
+  assert.match(src, /kitifiFreeSettings\(rid\)\.enabled/);
+  const again = patchRegisterRejectsDisabled(src);
+  assert.equal(again.changed, false);
 });

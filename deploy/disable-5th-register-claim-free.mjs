@@ -87,6 +87,43 @@ function disableFreeSetting(dbPath) {
   return true;
 }
 
+const REGISTER_NEEDLE =
+  "const rid = Number(routerId) || kitifiPortalRouterId();\n      const existing = byMac(m, rid);";
+const REGISTER_PATCH =
+  "const rid = Number(routerId) || kitifiPortalRouterId();\n" +
+  "      if (!kitifiFreeSettings(rid).enabled) throw new Error(\"Free internet is disabled.\");\n" +
+  "      const existing = byMac(m, rid);";
+
+export function patchRegisterRejectsDisabled(src) {
+  if (src.includes('if (!kitifiFreeSettings(rid).enabled) throw new Error("Free internet is disabled.")')) {
+    return { src, changed: false };
+  }
+  if (!src.includes(REGISTER_NEEDLE)) {
+    return { src, changed: false, missing: true };
+  }
+  return { src: src.split(REGISTER_NEEDLE).join(REGISTER_PATCH), changed: true };
+}
+
+function patchLiveRegisterGate() {
+  const p = path.join(ROOT, "lib/kitifi-free-wifi.js");
+  if (!fs.existsSync(p)) {
+    console.log("lib/kitifi-free-wifi.js not in this tree (ok on git-only checkout)");
+    return;
+  }
+  const cur = fs.readFileSync(p, "utf8");
+  const next = patchRegisterRejectsDisabled(cur);
+  if (next.missing) {
+    console.warn("register() gate not found in kitifi-free-wifi.js");
+    return;
+  }
+  if (!next.changed) {
+    console.log("register() already rejects when free WiFi is disabled");
+    return;
+  }
+  fs.writeFileSync(p, next.src);
+  console.log("patched lib/kitifi-free-wifi.js register() to honor per-router enabled flag");
+}
+
 async function pushPortalHtml() {
   const htmlPath = path.join(ROOT, HTML_REL);
   if (!fs.existsSync(htmlPath)) throw new Error("Missing " + HTML_REL);
@@ -170,6 +207,7 @@ async function main() {
   }
 
   disableFreeSetting(DB);
+  patchLiveRegisterGate();
 
   if (SKIP_PORTAL) {
     console.log("SKIP_PORTAL_PUSH=1 — DB flag only. Re-run to push HTML.");
