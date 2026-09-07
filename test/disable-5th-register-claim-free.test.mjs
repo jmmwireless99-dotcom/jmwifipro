@@ -51,17 +51,26 @@ test("deploy script targets only router 45 and does not enable free WiFi", () =>
   assert.doesNotMatch(src, /kitifi_free_enabled_34/);
 });
 
-test("register() is patched to reject when free WiFi is disabled", () => {
+test("register() is patched for 5thserver only, not Panisijan or other sites", () => {
   const before =
     "const rid = Number(routerId) || kitifiPortalRouterId();\n      const existing = byMac(m, rid);";
   const { src, changed } = patchRegisterRejectsDisabled(before);
   assert.equal(changed, true);
-  assert.match(src, /kitifiFreeSettings\(rid\)\.enabled/);
+  assert.match(src, /rid === 45 && !kitifiFreeSettings\(rid\)\.enabled/);
+  assert.doesNotMatch(src, /if \(!kitifiFreeSettings\(rid\)\.enabled\) throw/);
   const again = patchRegisterRejectsDisabled(src);
   assert.equal(again.changed, false);
+
+  const global =
+    "const rid = Number(routerId) || kitifiPortalRouterId();\n" +
+    "      if (!kitifiFreeSettings(rid).enabled) throw new Error(\"Free internet is disabled.\");\n" +
+    "      const existing = byMac(m, rid);";
+  const scoped = patchRegisterRejectsDisabled(global);
+  assert.equal(scoped.changed, true);
+  assert.match(scoped.src, /rid === 45 && !kitifiFreeSettings\(rid\)\.enabled/);
 });
 
-test("free-internet page hides Register when the site is disabled", () => {
+test("free-internet page hides Register for router 45 only", () => {
   const before = `    if (!data.registered) {
       setBadge(data, !!data.enabled);
       if (head) {
@@ -74,6 +83,7 @@ test("free-internet page hides Register when the site is disabled", () => {
     }`;
   const { src, changed } = patchFreeInternetHidesRegisterWhenDisabled(before);
   assert.equal(changed, true);
-  assert.match(src, /show\("stepDisabled"\)/);
-  assert.doesNotMatch(src, /Registration is open/);
+  assert.match(src, /String\(routerId\) === "45" && !data\.enabled/);
+  assert.match(src, /Registration is open/);
+  assert.match(src, /show\("stepRegister"\)/);
 });

@@ -2,7 +2,8 @@
  * 5thserver (KiTifi router 45) — remove Register / Claim Free from the portal.
  *
  * - Turns off jmwifi.pro free-internet for router 45 only
- *   (kitifi_free_enabled_45=0). Other sites are unchanged.
+ *   (kitifi_free_enabled_45=0). Panisijan (51) and every other site stay as-is.
+ * - Shared files are patched with `router_id === 45` guards only.
  * - Pushes public/kitifi/status-portal-5th.html (no Register / Claim Free
  *   buttons; BUY VOUCHER + Insert Coin stay).
  * - Hides native KiTifi "Claim Free Time" (freetimeBtn=0).
@@ -87,21 +88,27 @@ function disableFreeSetting(dbPath) {
   return true;
 }
 
-const REGISTER_NEEDLE =
+const REGISTER_ORIGINAL =
   "const rid = Number(routerId) || kitifiPortalRouterId();\n      const existing = byMac(m, rid);";
-const REGISTER_PATCH =
+const REGISTER_GLOBAL =
   "const rid = Number(routerId) || kitifiPortalRouterId();\n" +
   "      if (!kitifiFreeSettings(rid).enabled) throw new Error(\"Free internet is disabled.\");\n" +
   "      const existing = byMac(m, rid);";
+const REGISTER_FIFTH_ONLY =
+  "const rid = Number(routerId) || kitifiPortalRouterId();\n" +
+  "      if (rid === " + FIFTH_SERVER_ROUTER_ID + " && !kitifiFreeSettings(rid).enabled) throw new Error(\"Free internet is disabled.\");\n" +
+  "      const existing = byMac(m, rid);";
 
 export function patchRegisterRejectsDisabled(src) {
-  if (src.includes('if (!kitifiFreeSettings(rid).enabled) throw new Error("Free internet is disabled.")')) {
-    return { src, changed: false };
+  let out = String(src || "");
+  if (out.includes(REGISTER_FIFTH_ONLY)) return { src: out, changed: false };
+  if (out.includes(REGISTER_GLOBAL)) {
+    return { src: out.split(REGISTER_GLOBAL).join(REGISTER_FIFTH_ONLY), changed: true };
   }
-  if (!src.includes(REGISTER_NEEDLE)) {
-    return { src, changed: false, missing: true };
+  if (!out.includes(REGISTER_ORIGINAL)) {
+    return { src: out, changed: false, missing: true };
   }
-  return { src: src.split(REGISTER_NEEDLE).join(REGISTER_PATCH), changed: true };
+  return { src: out.split(REGISTER_ORIGINAL).join(REGISTER_FIFTH_ONLY), changed: true };
 }
 
 function patchLiveRegisterGate() {
@@ -121,10 +128,10 @@ function patchLiveRegisterGate() {
     return;
   }
   fs.writeFileSync(p, next.src);
-  console.log("patched lib/kitifi-free-wifi.js register() to honor per-router enabled flag");
+  console.log("patched lib/kitifi-free-wifi.js register() for 5thserver (router 45) only");
 }
 
-const FREE_PAGE_NEEDLE = `    if (!data.registered) {
+const FREE_PAGE_ORIGINAL = `    if (!data.registered) {
       setBadge(data, !!data.enabled);
       if (head) {
         head.textContent = data.enabled
@@ -135,7 +142,7 @@ const FREE_PAGE_NEEDLE = `    if (!data.registered) {
       return;
     }`;
 
-const FREE_PAGE_PATCH = `    if (!data.enabled) {
+const FREE_PAGE_GLOBAL = `    if (!data.enabled) {
       setBadge(data, false);
       var title = $("headTitle");
       if (title && !isPanisijan) title.textContent = "Free internet not available";
@@ -153,14 +160,40 @@ const FREE_PAGE_PATCH = `    if (!data.enabled) {
       return;
     }`;
 
+const FREE_PAGE_FIFTH_ONLY = `    if (String(routerId) === "45" && !data.enabled) {
+      setBadge(data, false);
+      var title = $("headTitle");
+      if (title) title.textContent = "Free internet not available";
+      if (head) head.textContent = data.message || "Free internet not available.";
+      var dm = $("disabledMsg");
+      if (dm) dm.textContent = data.message || "Free WiFi is not available right now.";
+      show("stepDisabled");
+      return;
+    }
+
+    if (!data.registered) {
+      setBadge(data, !!data.enabled);
+      if (head) {
+        head.textContent = data.enabled
+          ? "Fill up the form below, then tap Register to connect."
+          : "Registration is open. Free internet will activate when enabled by admin.";
+      }
+      show("stepRegister");
+      return;
+    }`;
+
 export function patchFreeInternetHidesRegisterWhenDisabled(src) {
-  if (src.includes("if (!data.enabled)") && src.includes('title.textContent = "Free internet not available"')) {
-    return { src, changed: false };
+  let out = String(src || "");
+  if (out.includes('String(routerId) === "45" && !data.enabled')) {
+    return { src: out, changed: false };
   }
-  if (!src.includes(FREE_PAGE_NEEDLE)) {
-    return { src, changed: false, missing: true };
+  if (out.includes(FREE_PAGE_GLOBAL)) {
+    return { src: out.split(FREE_PAGE_GLOBAL).join(FREE_PAGE_FIFTH_ONLY), changed: true };
   }
-  return { src: src.split(FREE_PAGE_NEEDLE).join(FREE_PAGE_PATCH), changed: true };
+  if (!out.includes(FREE_PAGE_ORIGINAL)) {
+    return { src: out, changed: false, missing: true };
+  }
+  return { src: out.split(FREE_PAGE_ORIGINAL).join(FREE_PAGE_FIFTH_ONLY), changed: true };
 }
 
 function patchLiveFreeInternetPage() {
@@ -180,7 +213,7 @@ function patchLiveFreeInternetPage() {
     return;
   }
   fs.writeFileSync(p, next.src);
-  console.log("patched public/kitifi/free-internet.html to hide Register when free WiFi is off");
+  console.log("patched public/kitifi/free-internet.html for 5thserver (router 45) only");
 }
 
 async function pushPortalHtml() {
