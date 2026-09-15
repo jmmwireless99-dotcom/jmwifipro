@@ -187,9 +187,57 @@ const FULFILL_AC_NEW = `      if (order.client_mac) {
       }`;
 
 export function patchFulfillFreshAutoconnect(src) {
-  if (src.includes("KitifiOrders.markAutoconnected(order.id)")) return { src, changed: false };
+  if (src.includes(FULFILL_AC_NEW)) return { src, changed: false };
   if (!src.includes(FULFILL_AC_OLD)) return { src, changed: false, missing: "fulfill-autoconnect" };
   return { src: src.split(FULFILL_AC_OLD).join(FULFILL_AC_NEW), changed: true };
+}
+
+const REDEEM_OLD = `        const ac = await kitifiTryAutoconnect(conn, order, order.voucher_code, rid, router);
+        conn.close?.();`;
+const REDEEM_NEW = `        const ac = await kitifiTryAutoconnect(conn, order, order.voucher_code, rid, router);
+        if (ac?.ok) try { KitifiOrders.markAutoconnected(order.id); } catch {}
+        conn.close?.();`;
+
+export function patchRedeemMarkAutoconnect(src) {
+  if (src.includes(REDEEM_NEW)) return { src, changed: false };
+  if (!src.includes(REDEEM_OLD)) return { src, changed: false, missing: "redeem-mark" };
+  return { src: src.split(REDEEM_OLD).join(REDEEM_NEW), changed: true };
+}
+
+const STATUS_URL_OLD = `      let connectUrl = null;
+      if (order.voucher_code) {
+        try {
+          const rid = order.router_id || kitifiPortalRouterId();
+          const { conn } = resolveRouterCtx(rid);
+          connectUrl = await kitifiOrderConnectUrl(conn, {
+            voucher: order.voucher_code, mac: order.client_mac, routerId: rid,
+            uptime: order.uptime, profile: order.profile,
+          });
+          conn.close?.();
+        } catch {
+          connectUrl = kitifiConnectUrl(order.voucher_code, order.router_id, order.client_mac);
+        }
+      }`;
+const STATUS_URL_NEW = `      let connectUrl = null;
+      if (order.voucher_code) {
+        connectUrl = kitifiConnectUrl(order.voucher_code, order.router_id, order.client_mac);
+        if (Number(order.router_id) === 37) {
+          try {
+            const rid = order.router_id || kitifiPortalRouterId();
+            const { conn } = resolveRouterCtx(rid);
+            connectUrl = await kitifiOrderConnectUrl(conn, {
+              voucher: order.voucher_code, mac: order.client_mac, routerId: rid,
+              uptime: order.uptime, profile: order.profile,
+            });
+            conn.close?.();
+          } catch {}
+        }
+      }`;
+
+export function patchStatusConnectUrlFast(src) {
+  if (src.includes(STATUS_URL_NEW)) return { src, changed: false };
+  if (!src.includes(STATUS_URL_OLD)) return { src, changed: false, missing: "status-connect-url" };
+  return { src: src.split(STATUS_URL_OLD).join(STATUS_URL_NEW), changed: true };
 }
 
 const LOCKS_OLD = `const kitifiFulfillLocks = new Map();`;
@@ -207,13 +255,17 @@ function kitifiShouldCheckGateway(token) {
 async function sweepPendingKitifiQrPayments() {
   try { KitifiOrders.resetStuckGenerating(90); } catch {}
   const rows = KitifiOrders.pendingRecent ? KitifiOrders.pendingRecent(1200, 30) : [];
-  if (!rows.length) return;
   const gw = paymentGateway();
   for (const order of rows) {
     const token = String(order.token || "");
     const ref = String(order.payment_intent_id || "");
-    if (!token || !ref || !kitifiShouldCheckGateway("sweep:" + token)) continue;
+    if (!token || !kitifiShouldCheckGateway("sweep:" + token)) continue;
     try {
+      if (order.status === "paid") {
+        await fulfillKitifiOrder(token, { paymentIntentId: ref, resourceId: ref });
+        continue;
+      }
+      if (!ref) continue;
       if (ref.startsWith("link_") && gw.getLink) {
         const link = await gw.getLink(ref);
         if (link.status === "paid") {
@@ -224,6 +276,22 @@ async function sweepPendingKitifiQrPayments() {
         if (pi.status === "succeeded") {
           await fulfillKitifiOrder(token, { paymentIntentId: ref, resourceId: pi.id, amount: pi.amount });
         }
+      }
+    } catch {}
+  }
+  const ready = KitifiOrders.readyUnconnectedRecent ? KitifiOrders.readyUnconnectedRecent(900, 20) : [];
+  for (const order of ready) {
+    const token = String(order.token || "");
+    const code = String(order.voucher_code || "").trim();
+    if (!token || !code || !order.client_mac || !kitifiShouldCheckGateway("ac:" + token)) continue;
+    try {
+      const rid = order.router_id || kitifiPortalRouterId();
+      const fresh = resolveRouterCtx(rid);
+      try {
+        const ac = await kitifiTryAutoconnect(fresh.conn, order, code, rid, fresh.router);
+        if (ac?.ok) KitifiOrders.markAutoconnected(order.id);
+      } finally {
+        fresh.conn.close?.();
       }
     } catch {}
   }
@@ -252,11 +320,13 @@ export function patchSweepTimer(src) {
 export function patchServerJs(src) {
   let out = String(src || "");
   const steps = [
-    patchGatewayThrottleAndSweep,
     patchTryAutoconnect,
     patchFulfillFreshAutoconnect,
+    patchRedeemMarkAutoconnect,
+    patchGatewayThrottleAndSweep,
     patchStatusPaymongoThrottle,
     patchStatusGeneratingWait,
+    patchStatusConnectUrlFast,
     patchStatusResponse,
     patchSweepTimer,
   ];
@@ -301,6 +371,7 @@ function main() {
     "lib/kitifi-vouchers.js",
     "public/kitifi/generator-buy.html",
     "public/kitifi/payment-return.html",
+    "public/kitifi/kitifi-connect.js",
   ]) {
     console.log(copyIfPresent(rel) ? "ok " + rel : "missing " + rel);
   }

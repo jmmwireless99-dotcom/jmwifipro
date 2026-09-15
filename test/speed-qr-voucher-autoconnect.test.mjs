@@ -49,12 +49,28 @@ test("server.js patcher injects sweeper, fresh autoconnect, and auto_connected",
     "        await new Promise((r) => setTimeout(r, 800));",
     "        order = KitifiOrders.byToken(token) || order;",
     "      }",
+    "      let connectUrl = null;",
+    "      if (order.voucher_code) {",
+    "        try {",
+    "          const rid = order.router_id || kitifiPortalRouterId();",
+    "          const { conn } = resolveRouterCtx(rid);",
+    "          connectUrl = await kitifiOrderConnectUrl(conn, {",
+    "            voucher: order.voucher_code, mac: order.client_mac, routerId: rid,",
+    "            uptime: order.uptime, profile: order.profile,",
+    "          });",
+    "          conn.close?.();",
+    "        } catch {",
+    "          connectUrl = kitifiConnectUrl(order.voucher_code, order.router_id, order.client_mac);",
+    "        }",
+    "      }",
     "      return send(res, 200, {",
     "        ok: true, status: statusOut, voucher: order.voucher_code || null,",
     "        plan_name: order.plan_name, amount: order.amount, token: order.token,",
     "        connect_url: connectUrl,",
     "        seller: order.seller || kitifiSellerName(),",
     "      });",
+    "        const ac = await kitifiTryAutoconnect(conn, order, order.voucher_code, rid, router);",
+    "        conn.close?.();",
     '      if (order.client_mac) {',
     "        try {",
     "          await kitifiTryAutoconnect(conn, order, code, rid, router);",
@@ -68,11 +84,31 @@ test("server.js patcher injects sweeper, fresh autoconnect, and auto_connected",
   assert.equal(missing.includes("fulfill-locks"), false);
   assert.equal(missing.includes("status-response"), false);
   assert.equal(missing.includes("sweep-timer"), false);
+  assert.equal(missing.includes("fulfill-autoconnect"), false);
+  assert.equal(missing.includes("redeem-mark"), false);
+  assert.equal(missing.includes("status-connect-url"), false);
   assert.equal(changed, true);
   assert.match(src, /sweepPendingKitifiQrPayments/);
   assert.match(src, /markAutoconnected/);
   assert.match(src, /auto_connected/);
   assert.match(src, /kitifiShouldCheckGateway/);
+  assert.match(src, /readyUnconnectedRecent/);
+  assert.match(src, /status === "paid"/);
+});
+
+test("live VPS server.js snippets still match the patcher", () => {
+  const livePath = "/tmp/vps-live/server.js";
+  if (!fs.existsSync(livePath)) return;
+  const { changed, missing } = patchServerJs(fs.readFileSync(livePath, "utf8"));
+  assert.deepEqual(missing, []);
+  assert.equal(changed, true);
+});
+
+test("order queries retry paid fulfill and ready MAC login", () => {
+  const src = fs.readFileSync(path.join(ROOT, "lib/kitifi-vouchers.js"), "utf8");
+  assert.match(src, /status IN \('pending','paid'\)/);
+  assert.match(src, /readyUnconnectedRecent/);
+  assert.match(src, /COALESCE\(autoconnected,0\)=0/);
 });
 
 test("MikroTik login helper logs out an existing session before voucher login", () => {
