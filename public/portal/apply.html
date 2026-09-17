@@ -103,14 +103,14 @@
     background:rgba(26,14,46,.82);border-radius:10px;font-size:13px;color:var(--muted);
   }
   #pinmap-loading.show{display:grid}
-  select option{color:#111}
+  select option{color:#111;background:#fff}
   .cov-note{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.45}
   .cov-block{display:none;margin-top:12px;padding:14px 15px;border-radius:11px;border:1px solid var(--bad);background:rgba(251,113,133,.12);color:#fecdd3}
   .cov-block.show{display:block}
   .cov-block b{display:block;font-size:15px;margin-bottom:4px;color:#fff}
   #addr-extra{display:none}
   #addr-extra.show{display:block}
-  button.submit.blocked{opacity:.45;cursor:not-allowed}
+  button.submit.blocked, button.submit:disabled{opacity:.42;filter:grayscale(.7);cursor:not-allowed;box-shadow:none}
   .agreement-text{font-size:12px;color:var(--muted);background:var(--inbg);border:1px solid var(--line);border-radius:11px;padding:12px;margin-top:12px;max-height:120px;overflow:auto;white-space:pre-wrap}
   .agree{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:13px;color:var(--muted)}
   .agree input{width:20px;height:20px;flex-shrink:0;margin-top:2px}
@@ -257,6 +257,8 @@
     if(submit){
       submit.disabled=missing;
       submit.classList.toggle("blocked", missing);
+      if(missing) submit.textContent="Hindi maka-proceed";
+      else if(submit.textContent!=="Sending...") submit.textContent="Submit application";
     }
   }
   function resetCoverage(){
