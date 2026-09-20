@@ -307,8 +307,7 @@
   }
   function planCard(p,i,n,popIdx){
     const b=badge(i,n), days=p.validity_days||30, sp=cleanSpeed(p.speed);
-    const instFee=Number(p.installation_fee||0);
-    const instLine=instFee>0?`<div class="valid" style="margin-top:6px">Install fee: <b>${peso(instFee)}</b> one-time</div>`:"";
+    const instLine=`<div class="valid" style="margin-top:6px">Install fee: <b>₱0 FREE</b></div>`;
     return `<div class="plan ${i===popIdx&&n>=3?'pop':''}">
       ${b?`<div class="badge">${b}</div>`:""}
       <h3>${esc(p.name||"Plan")}</h3>
