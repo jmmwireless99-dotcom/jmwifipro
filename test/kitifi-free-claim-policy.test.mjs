@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import {
   PANISIJAN_ROUTER_ID,
   kitifiFreeSkipRegister,
+  kitifiFreeUsesHotspotTrial,
+  kitifiHotspotTrialUsername,
+  kitifiHotspotTrialLoginUrl,
   kitifiFreeGuestName,
   kitifiFreeCanClaim,
   kitifiFreeStatusMessage,
@@ -93,7 +96,17 @@ test("registered Candelaria client can still claim", () => {
   assert.equal(d.ok, true);
 });
 
-test("Panisijan status copy is claim-only, not register", () => {
+test("Panisijan free internet uses hotspot trial helpers", () => {
+  assert.equal(kitifiFreeUsesHotspotTrial(51), true);
+  assert.equal(kitifiFreeUsesHotspotTrial(34), false);
+  assert.equal(kitifiHotspotTrialUsername("AA:BB:CC:DD:EE:FF"), "T-AA:BB:CC:DD:EE:FF");
+  assert.equal(
+    kitifiHotspotTrialLoginUrl("http://10.0.0.1/login", "AA:BB:CC:DD:EE:FF"),
+    "http://10.0.0.1/login?username=T-AA%3ABB%3ACC%3ADD%3AEE%3AFF"
+  );
+});
+
+test("Panisijan status copy is hotspot trial, not register", () => {
   const available = kitifiFreeStatusMessage({
     enabled: true,
     skipRegister: true,
@@ -103,8 +116,8 @@ test("Panisijan status copy is claim-only, not register", () => {
     uptime: "5 Hours",
     routerId: 51,
   });
-  assert.match(available, /tap to claim/i);
-  assert.doesNotMatch(available, /register/i);
+  assert.match(available, /hotspot trial/i);
+  assert.doesNotMatch(available, /Register/i);
 
   const limited = kitifiFreeStatusMessage({
     enabled: true,

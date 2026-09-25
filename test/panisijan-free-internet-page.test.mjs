@@ -7,25 +7,35 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const html = fs.readFileSync(path.join(root, "public/kitifi/free-internet.html"), "utf8");
 const login = fs.readFileSync(path.join(root, "public/hotspot/panisijan-login.html"), "utf8");
+const deploy = fs.readFileSync(path.join(root, "deploy/setup-panisijan-hotspot-trial.mjs"), "utf8");
 
-test("free-internet page skips registration for Panisijan", () => {
-  assert.ok(html.includes("function skipRegister"));
-  assert.ok(html.includes('isPanisijan || !!(data && data.skip_register)'));
-  assert.ok(html.includes("Walang registration"));
-  assert.ok(html.includes("CLAIM FREE INTERNET"));
-  assert.ok(html.includes('show("stepClaim")'));
+test("captive portal free button is MikroTik hotspot trial, not VPS register", () => {
+  assert.ok(login.includes("username=T-$(mac-esc)"));
+  assert.ok(login.includes("$(link-login-only)"));
+  assert.ok(login.includes(">CLAIM FREE INTERNET<"));
+  assert.ok(!login.includes("/kitifi/free-internet"));
+  assert.ok(!login.includes("Register And CLAIM"));
+  assert.ok(login.includes("/kitifi/generator-buy"));
+});
+
+test("VPS free-internet page bounces Panisijan to hotspot trial", () => {
+  assert.ok(html.includes("function startPanisijanHotspotTrial"));
+  assert.ok(html.includes('username=" + encodeURIComponent("T-" + mac)'));
+  assert.ok(html.includes("MikroTik hotspot trial"));
+  assert.ok(html.includes("no VPS registration"));
+  assert.ok(html.includes('if (isPanisijan)'));
+  assert.ok(html.includes("startPanisijanHotspotTrial()"));
 });
 
 test("missing MAC on Panisijan does not open the register form", () => {
-  assert.ok(html.includes('Connect to PANISIJAN WiFi and open this page from the captive portal.'));
-  const load = html.slice(html.indexOf("async function loadStatus"));
-  const missing = load.slice(0, load.indexOf("var r = await api"));
-  assert.ok(missing.includes("if (isPanisijan)"));
-  assert.ok(missing.includes('show("stepDisabled")'));
+  const start = html.slice(html.indexOf("function startPanisijanHotspotTrial"));
+  const body = start.slice(0, start.indexOf("location.replace"));
+  assert.ok(body.includes('show("stepDisabled")'));
+  assert.ok(!body.includes('show("stepRegister")'));
 });
 
-test("captive portal button is claim-only, not Register", () => {
-  assert.ok(login.includes(">CLAIM FREE INTERNET<"));
-  assert.ok(!login.includes("Register And CLAIM"));
-  assert.ok(!login.includes("while you register"));
+test("deploy script enables trial-uptime and daily T- user reset", () => {
+  assert.ok(deploy.includes("trial-uptime="));
+  assert.ok(deploy.includes('name~\\"^T-\\"') || deploy.includes('name~"^T-"'));
+  assert.ok(deploy.includes("panisijan-reset-trials"));
 });

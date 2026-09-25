@@ -131,7 +131,7 @@
     var onceDay = $("headOnceDay");
     if (isPanisijan) {
       if (title) {
-        title.textContent = "ONCE A DAY LANG PWEDE MAG CLAIM NG FREE INTERNET bawat cellphone";
+        title.textContent = "Free internet ay hotspot trial na — walang VPS form";
         title.classList.add("panisijan");
       }
       if (onceDay) onceDay.style.display = "block";
@@ -198,6 +198,24 @@
 
   function skipRegister(data) {
     return isPanisijan || !!(data && data.skip_register);
+  }
+
+  function startPanisijanHotspotTrial() {
+    if (!mac) {
+      if ($("disabledMsg")) {
+        $("disabledMsg").textContent = "Connect to PANISIJAN WiFi. Free internet is now MikroTik hotspot trial — no VPS registration.";
+      }
+      if ($("headMsg")) {
+        $("headMsg").textContent = "Hindi na sa VPS ang claim. Buksan ang WiFi login, tapos i-tap ang CLAIM FREE INTERNET.";
+      }
+      if ($("statusBadge")) {
+        $("statusBadge").className = "badge wait";
+        $("statusBadge").textContent = "Hotspot trial";
+      }
+      show("stepDisabled");
+      return;
+    }
+    location.replace(portalUrl("username=" + encodeURIComponent("T-" + mac)));
   }
 
   function applyStatus(data) {
@@ -343,20 +361,12 @@
     showDone(r.voucher, r.connect_url);
   };
 
-  loadStatus();
-
   if (isPanisijan) {
-    var music = document.createElement("script");
-    music.src = "/hotspot/portal-music.js";
-    music.onload = function () {
-      if (window.PanisijanMusic) {
-        PanisijanMusic.boot();
-        PanisijanMusic.bindAutoStart();
-        PanisijanMusic.start();
-      }
-    };
-    document.body.appendChild(music);
+    startPanisijanHotspotTrial();
+    return;
   }
+
+  loadStatus();
 })();
 </script>
 </body>

@@ -1,5 +1,6 @@
 /**
  * PANISIJAN (router 51) free WiFi captive portal + jmwifi.pro registration flow.
+ * Free internet is now MikroTik hotspot trial — use deploy/setup-panisijan-hotspot-trial.mjs
  * Usage: BILLING_DB=/opt/jm-billing/billing.db node deploy/setup-panisijan-free-wifi.mjs
  */
 import fs from "node:fs";
