@@ -1,6 +1,6 @@
 /**
- * Make MAGSAY2X-CORE a jmwifi.pro billing PPPoE server using the same
- * profile / pool / suspend stack as CANDELARIA-PPPOE.
+ * Copy CANDELARIA-PPPOE expire/GCash firewall flow onto MAGSAY2X-CORE.
+ * MAGSAY is a separate site — do not duplicate the router or copy Candelaria clients.
  *
  * On VPS:
  *   cd /opt/jm-billing && node deploy/setup-magsay2x-pppoe.mjs
@@ -14,8 +14,12 @@ import {
   REQUIRED_POOLS,
   REQUIRED_PROFILES,
   PPPOE_SERVER,
+  MAGSAY_DUP_NAME,
+  CANDELARIA_ROUTER_NAME,
   displayNameFromSecret,
   shouldImportSecret,
+  promoProfileFromRos,
+  assignmentForMagsaySecret,
 } from "../lib/magsay2x-pppoe.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -94,7 +98,8 @@ async function ensurePppoeServer(conn) {
   return { action: "created", interface: PPPOE_SERVER.interface, service: PPPOE_SERVER["service-name"] };
 }
 
-function pickPlanId(db, profile) {
+function pickPlanId(db, profile, username) {
+  const promo = promoProfileFromRos(profile, username);
   const maps = [
     ["Home Fiber 999", "SELECT id FROM plans WHERE router_profile=? OR (name LIKE ? AND price=999) LIMIT 1", ["Home Fiber 999", "%Unli Surf%"]],
     ["Home Fiber 1299", "SELECT id FROM plans WHERE router_profile=? OR (name LIKE ? AND price=1299) LIMIT 1", ["Home Fiber 1299", "%Super Surf%"]],
@@ -102,7 +107,7 @@ function pickPlanId(db, profile) {
     ["Enterprise 3800", "SELECT id FROM plans WHERE router_profile=? OR (price=3800 AND type='pppoe') LIMIT 1", ["Enterprise 3800"]],
   ];
   for (const [name, sql, args] of maps) {
-    if (profile === name) {
+    if (promo === name) {
       const row = db.prepare(sql).get(...args);
       if (row) return row.id;
     }
@@ -110,73 +115,114 @@ function pickPlanId(db, profile) {
   return db.prepare("SELECT id FROM plans WHERE type='pppoe' ORDER BY id LIMIT 1").get()?.id || 1;
 }
 
-function dedupeRouters(db) {
-  const rows = db.prepare("SELECT id,enabled,last_status FROM routers WHERE name='MAGSAY2X-CORE' ORDER BY id").all();
-  const keep = rows.find((r) => r.id === 53) || rows[0];
+function disableDuplicateRouter(db, keepId) {
+  const rows = db.prepare("SELECT id,enabled FROM routers WHERE name='MAGSAY2X-CORE' OR name=? ORDER BY id").all(MAGSAY_DUP_NAME);
+  const keep = rows.find((r) => r.id === keepId) || rows[0];
   const extras = rows.filter((r) => r.id !== keep.id);
-  const moved = [];
+  const renamed = [];
   for (const extra of extras) {
-    const n = db.prepare("UPDATE customers SET router_id=? WHERE router_id=?").run(keep.id, extra.id).changes;
-    if (!DRY) db.prepare("UPDATE routers SET enabled=0, vpn_notes='duplicate of MAGSAY2X-CORE #'||? WHERE id=?").run(keep.id, extra.id);
-    moved.push({ from: extra.id, to: keep.id, customers: n });
+    if (!DRY) {
+      db.prepare(
+        "UPDATE routers SET name=?, enabled=0, area='MAGSAY2X-DISABLED', vpn_notes=? WHERE id=?",
+      ).run(
+        MAGSAY_DUP_NAME,
+        "disabled duplicate — MAGSAY2X site is router #" + keep.id + " (do not copy Candelaria clients here)",
+        extra.id,
+      );
+    }
+    renamed.push({ id: extra.id, name: MAGSAY_DUP_NAME });
   }
-  db.prepare("UPDATE routers SET area='MAGSAY2X', vpn_notes=?, enabled=1 WHERE id=?").run(
-    "PPPoE server for jmwifi.pro billing (same profiles as CANDELARIA-PPPOE)",
-    keep.id,
-  );
-  return { keep: keep.id, extras: moved };
+  if (!DRY) {
+    db.prepare("UPDATE routers SET name='MAGSAY2X-CORE', area='MAGSAY2X', vpn_notes=?, enabled=1 WHERE id=?").run(
+      "MAGSAY2X site — expire/GCash flow copied from CANDELARIA-PPPOE; own PPPoE clients only",
+      keep.id,
+    );
+  }
+  return { keep: keep.id, renamed };
 }
 
-function importSecrets(db, routerId, secrets) {
-  const existing = new Set(
-    db.prepare("SELECT lower(username) u FROM customers WHERE username IS NOT NULL AND username!=''").all().map((r) => r.u),
-  );
+function integrateMagsayClients(db, { magRouterId, candRouterId, secrets, magActive, candActive }) {
+  const magLive = new Set(magActive || []);
+  const candLive = new Set(candActive || []);
   const created = [];
+  const updated = [];
+  const restored = [];
   const skipped = [];
+
   for (const s of secrets || []) {
     if (!shouldImportSecret(s)) {
       skipped.push({ name: s.name, reason: "not-pppoe" });
       continue;
     }
     const user = String(s.name).trim();
-    if (existing.has(user.toLowerCase())) {
-      skipped.push({ name: user, reason: "already-in-billing" });
+    const billed = db.prepare("SELECT id,username,router_id,status,plan_id FROM customers WHERE lower(username)=lower(?)").get(user);
+    const asg = assignmentForMagsaySecret({
+      username: user,
+      profile: s.profile,
+      magActive: magLive.has(user),
+      candActive: candLive.has(user),
+      billedRouterId: billed?.router_id,
+      magRouterId,
+      candRouterId,
+    });
+
+    if (asg.action === "skip-candelaria") {
+      skipped.push({ name: user, reason: "candelaria-live" });
       continue;
     }
-    const profile = String(s.profile || "Home Fiber 999");
-    const planId = pickPlanId(db, profile);
-    const status = profile === "suspended-pool" ? "suspended" : "active";
-    if (!DRY) {
-      db.prepare(
-        `INSERT INTO customers (name,username,password,plan_id,router_id,conn_type,status,area,notes)
-         VALUES (?,?,?,?,?,?,?,?,?)`,
-      ).run(
-        displayNameFromSecret(user, profile),
-        user,
-        s.password || "",
-        planId,
-        routerId,
-        "pppoe",
-        status,
-        "MAGSAY2X",
-        "imported from MAGSAY2X-CORE pppoe · profile " + profile,
-      );
+    if (asg.action === "restore-candelaria") {
+      if (!DRY && billed && candRouterId) {
+        db.prepare("UPDATE customers SET router_id=? WHERE id=?").run(candRouterId, billed.id);
+      }
+      restored.push({ name: user, from: magRouterId, to: candRouterId });
+      continue;
     }
-    existing.add(user.toLowerCase());
-    created.push({ name: user, profile, planId, status });
-  }
-  return { created, skipped };
-}
 
-function fixCandelariaMisassign(db) {
-  // ALVIN is live on CANDELARIA-PPPOE, not MAGSAY.
-  const row = db.prepare("SELECT id,username,router_id FROM customers WHERE username='ALVIN_MONTEALEGRE'").get();
-  if (row && Number(row.router_id) === 53) {
-    const cand = db.prepare("SELECT id FROM routers WHERE name='CANDELARIA-PPPOE'").get();
-    if (cand && !DRY) db.prepare("UPDATE customers SET router_id=? WHERE id=?").run(cand.id, row.id);
-    return { username: row.username, from: 53, to: cand?.id || 50 };
+    const planId = pickPlanId(db, s.profile, user);
+    const status = asg.status || billed?.status || "active";
+    if (!billed) {
+      if (!DRY) {
+        db.prepare(
+          `INSERT INTO customers (name,username,password,plan_id,router_id,conn_type,status,area,notes)
+           VALUES (?,?,?,?,?,?,?,?,?)`,
+        ).run(
+          displayNameFromSecret(user, asg.promoProfile),
+          user,
+          s.password || "",
+          planId,
+          magRouterId,
+          "pppoe",
+          status,
+          "MAGSAY2X",
+          "MAGSAY2X PPPoE · promo " + asg.promoProfile,
+        );
+      }
+      created.push({ name: user, profile: asg.promoProfile, planId, status });
+      continue;
+    }
+
+    if (!DRY) {
+      if (asg.status) {
+        db.prepare(
+          `UPDATE customers SET router_id=?, plan_id=?, conn_type='pppoe', status=? WHERE id=?`,
+        ).run(magRouterId, planId, asg.status, billed.id);
+      } else {
+        db.prepare(
+          `UPDATE customers SET router_id=?, plan_id=?, conn_type='pppoe' WHERE id=?`,
+        ).run(magRouterId, planId, billed.id);
+      }
+    }
+    updated.push({
+      name: user,
+      from: billed.router_id,
+      to: magRouterId,
+      planId,
+      promoProfile: asg.promoProfile,
+      status,
+    });
   }
-  return null;
+
+  return { created, updated, restored, skipped };
 }
 
 async function main() {
@@ -196,9 +242,31 @@ async function main() {
   const active = ((await conn.print("/ppp/active")) || []).filter((s) => /pppoe/i.test(String(s.service || "pppoe")));
   try { conn.close?.(); } catch {}
 
-  const routers = DRY ? { keep: row.id, extras: [] } : dedupeRouters(db);
-  const mis = DRY ? null : fixCandelariaMisassign(db);
-  const imported = importSecrets(db, routers.keep || row.id, secrets);
+  const candRow = db.prepare("SELECT * FROM routers WHERE name=? AND enabled=1 ORDER BY id LIMIT 1").get(CANDELARIA_ROUTER_NAME);
+  let candActive = [];
+  if (candRow) {
+    const candConn = connFor(candRow);
+    try {
+      candActive = ((await candConn.print("/ppp/active")) || [])
+        .filter((s) => /pppoe/i.test(String(s.service || "pppoe")))
+        .map((s) => String(s.name || "").trim())
+        .filter(Boolean);
+    } finally {
+      try { candConn.close?.(); } catch {}
+    }
+  }
+
+  const routers = DRY ? { keep: row.id, renamed: [] } : disableDuplicateRouter(db, row.id);
+  const magActive = active.map((s) => String(s.name || "").trim()).filter(Boolean);
+  const integrated = DRY
+    ? { created: [], updated: [], restored: [], skipped: [] }
+    : integrateMagsayClients(db, {
+        magRouterId: routers.keep || row.id,
+        candRouterId: candRow?.id || null,
+        secrets,
+        magActive,
+        candActive,
+      });
 
   console.log(JSON.stringify({
     identity: ident?.name || ident,
@@ -207,9 +275,15 @@ async function main() {
     server,
     pppoeSecrets: secrets.length,
     pppoeActive: active.length,
+    candPppoeActive: candActive.length,
     routers,
-    reassignedToCandelaria: mis,
-    imported: { created: imported.created.length, skipped: imported.skipped.length, names: imported.created.map((c) => c.name) },
+    integrated: {
+      created: integrated.created.length,
+      updated: integrated.updated.length,
+      restoredToCandelaria: integrated.restored.map((r) => r.name),
+      skippedCandelariaLive: integrated.skipped.filter((s) => s.reason === "candelaria-live").map((s) => s.name),
+      createdNames: integrated.created.map((c) => c.name),
+    },
     dry: DRY,
   }, null, 2));
 }
