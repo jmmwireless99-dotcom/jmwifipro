@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  MAGSAY_WAN,
   PPPOE_SERVER,
   REQUIRED_POOLS,
   REQUIRED_PROFILES,
@@ -43,4 +44,8 @@ test("import skips VPN secrets and keeps PPPoE", () => {
 test("required pools include the JM suspend range", () => {
   const susp = REQUIRED_POOLS.find((p) => p.name === "suspended-pool");
   assert.equal(susp.ranges, "50.0.0.5-50.0.0.254");
+});
+
+test("MAGSAY suspend firewall uses the live PLDT-SEM WAN", () => {
+  assert.equal(MAGSAY_WAN, "PLDT-SEM");
 });

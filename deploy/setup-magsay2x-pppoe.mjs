@@ -4,7 +4,7 @@
  *
  * On VPS:
  *   cd /opt/jm-billing && node deploy/setup-magsay2x-pppoe.mjs
- *   node deploy/apply-suspend-firewall.mjs MAGSAY2X-CORE
+ *   node deploy/apply-suspend-firewall.mjs MAGSAY2X-CORE PLDT-SEM
  */
 import path from "node:path";
 import { fileURLToPath } from "node:url";
