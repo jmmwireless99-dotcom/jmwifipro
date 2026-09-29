@@ -106,26 +106,29 @@ function connFor(RouterOSAPI, row) {
   });
 }
 
-async function addHotspotUser(conn, { code, profile, uptime }) {
-  const users = (await conn.print("/ip/hotspot/user")) || [];
-  const hit = users.find((u) => String(u.name || "").toUpperCase() === String(code).toUpperCase());
-  if (hit) return { existed: true };
+async function addHotspotUser(conn, { code, profile, uptime }, existingNames) {
+  const name = String(code || "").toUpperCase();
+  if (existingNames.has(name)) return { existed: true };
   await conn.talk(hotspotUserAddWords({ code, profile, uptime }));
+  existingNames.add(name);
   return { created: true };
 }
 
 export async function recoverPaidFailed(db, { RouterOSAPI, dry = false } = {}) {
+  const onlyRid = Number(process.env.RECOVER_ROUTER_ID || 0) || null;
   const rows = db.prepare(
     `SELECT id, router_id, profile, uptime
      FROM kitifi_orders
      WHERE status='failed' AND paid_at IS NOT NULL AND TRIM(COALESCE(paid_at,''))!=''
        AND TRIM(COALESCE(voucher_code,''))=''
        AND created_at >= datetime('now', '-14 days')
+       ${onlyRid ? "AND router_id=" + onlyRid : ""}
      ORDER BY id`,
   ).all();
   const out = { attempted: rows.length, ready: 0, errors: [] };
   if (!RouterOSAPI) return out;
   const conns = new Map();
+  const names = new Map();
   const routerRow = (id) => db.prepare("SELECT * FROM routers WHERE id=?").get(id);
 
   for (const order of rows) {
@@ -139,9 +142,12 @@ export async function recoverPaidFailed(db, { RouterOSAPI, dry = false } = {}) {
       if (!conns.has(rid)) {
         const conn = connFor(RouterOSAPI, row);
         await conn.identity();
+        const users = (await conn.print("/ip/hotspot/user")) || [];
+        names.set(rid, new Set(users.map((u) => String(u.name || "").toUpperCase())));
         conns.set(rid, conn);
       }
       const conn = conns.get(rid);
+      const existingNames = names.get(rid);
       let code = "";
       let ok = false;
       for (let i = 0; i < 8; i++) {
@@ -150,7 +156,7 @@ export async function recoverPaidFailed(db, { RouterOSAPI, dry = false } = {}) {
           code,
           profile: order.profile || "KITIFI",
           uptime: order.uptime || "10 Hours",
-        });
+        }, existingNames);
         if (r.created) {
           ok = true;
           break;
