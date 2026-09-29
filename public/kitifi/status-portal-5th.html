@@ -243,11 +243,27 @@
         return true;
       }
 
-      /** Fill #v_code and auto-click KiTifi Submit (retries until portal JS is ready). */
+      /** MikroTik hotspot login — GCash voucher is /ip/hotspot/user, not a KiTifi controller code. */
+      function kitifiMikrotikLoginUrl(code) {
+        var base = "";
+        if (typeof hs_address !== "undefined" && hs_address) base = String(hs_address);
+        else base = "http://10.0.0.1/login";
+        base = String(base).replace(/\/$/, "");
+        if (base.indexOf("http") !== 0) base = "http://" + base;
+        if (!/\/login$/i.test(base)) base += "/login";
+        var u = encodeURIComponent(String(code || "").trim());
+        return base + "?username=" + u + "&password=" + u;
+      }
+
+      /** Auto-connect on the site MikroTik. Does not submit through KiTifi 10.0.0.10. */
       function kitifiAutoConnect(code, attempt) {
         code = String(code || "").trim();
         if (!code) return false;
         attempt = attempt || 0;
+        try {
+          window.location.href = kitifiMikrotikLoginUrl(code);
+          return true;
+        } catch (e0) {}
         var vInput = document.getElementById("v_code");
         var submitBtn = document.getElementById("submit");
         if (vInput) {
@@ -272,9 +288,7 @@
           }
         }
         if (!fired && typeof hs_address !== "undefined" && hs_address) {
-          var portalBase = String(hs_address).replace(/\/$/, "");
-          if (portalBase.indexOf("http") !== 0) portalBase = "http://" + portalBase;
-          window.location.href = portalBase + "?username=" + encodeURIComponent(code);
+          window.location.href = kitifiMikrotikLoginUrl(code);
           return true;
         }
         if (attempt < 10 && (!vInput || !submitBtn || !fired)) {
