@@ -190,8 +190,8 @@ async function syncPppoeServerSettings(conn, candeServers, magIface) {
 }
 
 async function main() {
-  const cande = connFromEnvOrDb("cande");
-  const mag = connFromEnvOrDb("mag");
+  const cande = await connFromEnvOrDb("cande");
+  const mag = await connFromEnvOrDb("mag");
   const cId = await cande.identity();
   const mId = await mag.identity();
   console.log("Source:", cId.name || cId);
