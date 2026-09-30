@@ -213,6 +213,10 @@ function restartBilling() {
 }
 
 async function main() {
+  if (process.cwd() !== ROOT) {
+    process.chdir(ROOT);
+    console.log("cwd", ROOT);
+  }
   const htmlPath = path.join(ROOT, HTML_REL);
   if (!fs.existsSync(htmlPath)) throw new Error("Missing " + HTML_REL);
   const html = stripGcashBuyFromPortalHtml(fs.readFileSync(htmlPath, "utf8"));
