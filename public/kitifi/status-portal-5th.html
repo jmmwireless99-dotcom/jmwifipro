@@ -47,7 +47,6 @@
                         <button type="button" id="submit" class="submit">Submit</button>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary" id="gcashBuyBtn" style="margin-top:8px;width:100%;font-weight:800;background:linear-gradient(120deg,#007dff,#00b4ff);border:none">BUY VOUCHER (GCash)</button>
             </div>
             <footer class="footer text-center">
                 <b>Powered by: <a href="{{ footerLink }}" target="_blank">{{ footerText }}</a>. © All rights reserved
@@ -215,7 +214,6 @@
     {% endif %}
     <script type="application/javascript">
     (function () {
-      var BUY = "https://jmwifi.pro/kitifi/generator-buy";
       var STORE_KEY = "kitifi_pending_voucher";
 
       /** Pre-fill portal paste field and scroll into view (manual connect). */
@@ -330,30 +328,6 @@
         kitifiApplyPendingVoucher(code);
       }
 
-      function detectPortalRouterId() {
-        var srv = (typeof server !== "undefined" && server) ? String(server).toLowerCase() : "";
-        var br = (typeof brand !== "undefined" && brand) ? String(brand).toLowerCase() : "";
-        var ctx = srv + " " + br;
-        if (/4rth|4th|fourth/.test(ctx)) return "37";
-        if (/2nd|second|2nd-server/.test(ctx)) return "46";
-        if (/3rd|third|3rd-server/.test(ctx)) return "36";
-        if (/1st|first|1stserver/.test(ctx)) return "42";
-        if (/5th|fifth|5thserver/.test(ctx)) return "45";
-        if (/burias/i.test(ctx)) return "40";
-        if (/cagbatang/i.test(ctx)) return "48";
-        if (/cawayan/i.test(ctx)) return "39";
-        if (/sancarlos|san-carlos|san carlos/i.test(ctx)) return "41";
-        if (/candel|kitifi|vlan3002/.test(ctx)) return "34";
-        return "37";
-      }
-      function goBuyVoucher() {
-        var mac = (typeof mac_address !== "undefined" && mac_address) ? String(mac_address).trim() : "";
-        var ret = encodeURIComponent(location.href.split("#")[0]);
-        var rid = detectPortalRouterId();
-        location.href = BUY + "?mac=" + encodeURIComponent(mac) + "&return=" + ret + "&router_id=" + encodeURIComponent(rid);
-      }
-      var buyBtn = document.getElementById("gcashBuyBtn");
-      if (buyBtn) buyBtn.addEventListener("click", goBuyVoucher);
       ["freeWifiBtn", "freetimeBtn"].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.remove();
