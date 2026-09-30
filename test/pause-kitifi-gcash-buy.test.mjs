@@ -72,6 +72,7 @@ test("deploy script pauses every KiTifi site and does not touch PPPoE pay-start"
   assert.match(src, /stripGcashBuyFromPortalHtml/);
   assert.match(src, /skip PPPoE/);
   assert.match(src, /systemctl restart jm-billing/);
+  assert.match(src, /db\.close/);
   assert.doesNotMatch(src, /\/api\/pay-start/);
   assert.doesNotMatch(src, /createQrph/);
 });

@@ -45,13 +45,17 @@ export function pauseGcashBuySetting(dbPath) {
     return [];
   }
   const db = new DatabaseSync(dbPath);
-  db.prepare(
-    "INSERT INTO settings (k,v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v"
-  ).run(GCASH_BUY_ENABLED_KEY, DEFAULT_GCASH_BUY_ENABLED);
-  const ids = collectKitifiIds(db);
-  console.log(GCASH_BUY_ENABLED_KEY + "=" + DEFAULT_GCASH_BUY_ENABLED);
-  console.log("kitifi ids", ids.join(",") || "(none)");
-  return ids;
+  try {
+    db.prepare(
+      "INSERT INTO settings (k,v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v"
+    ).run(GCASH_BUY_ENABLED_KEY, DEFAULT_GCASH_BUY_ENABLED);
+    const ids = collectKitifiIds(db);
+    console.log(GCASH_BUY_ENABLED_KEY + "=" + DEFAULT_GCASH_BUY_ENABLED);
+    console.log("kitifi ids", ids.join(",") || "(none)");
+    return ids;
+  } finally {
+    try { db.close(); } catch {}
+  }
 }
 
 function writeIfChanged(file, next) {
@@ -152,23 +156,32 @@ async function pushPortalHtml(ids) {
     return { ok: [], fail: [] };
   }
   const db = new DatabaseSync(DB);
+  const targets = [];
+  try {
+    for (const id of ids) {
+      if (id === PANISIJAN_ROUTER_ID) continue;
+      const row = db.prepare("SELECT * FROM routers WHERE id=?").get(id);
+      if (!row?.host) {
+        console.log("skip router", id, "(no routers row)");
+        continue;
+      }
+      if (isPanisijanRouter(row.id, row.name)) {
+        console.log("skip Panisijan", row.id, row.name);
+        continue;
+      }
+      if (/pppoe/i.test(String(row.name || ""))) {
+        console.log("skip PPPoE", row.id, row.name);
+        continue;
+      }
+      targets.push(row);
+    }
+  } finally {
+    try { db.close(); } catch {}
+  }
   const ok = [];
   const fail = [];
-  for (const id of ids) {
-    if (id === PANISIJAN_ROUTER_ID) continue;
-    const row = db.prepare("SELECT * FROM routers WHERE id=?").get(id);
-    if (!row?.host) {
-      console.log("skip router", id, "(no routers row)");
-      continue;
-    }
-    if (isPanisijanRouter(row.id, row.name)) {
-      console.log("skip Panisijan", row.id, row.name);
-      continue;
-    }
-    if (/pppoe/i.test(String(row.name || ""))) {
-      console.log("skip PPPoE", row.id, row.name);
-      continue;
-    }
+  for (const row of targets) {
+    const id = Number(row.id);
     process.stdout.write("portal " + row.name + " (" + id + ") ... ");
     if (DRY) {
       console.log("dry-run");
@@ -216,7 +229,16 @@ async function main() {
     return;
   }
 
-  const result = await pushPortalHtml(ids.length ? ids : collectKitifiIds(new DatabaseSync(DB)));
+  let pushIds = ids;
+  if (!pushIds.length && fs.existsSync(DB)) {
+    const db = new DatabaseSync(DB);
+    try {
+      pushIds = collectKitifiIds(db);
+    } finally {
+      try { db.close(); } catch {}
+    }
+  }
+  const result = await pushPortalHtml(pushIds);
   if (result.fail?.length) {
     console.warn(
       "Portal HTML not pushed on " +
