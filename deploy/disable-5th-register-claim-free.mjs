@@ -6,7 +6,8 @@
  * - register() rejects when the site is disabled (Panisijan stays enabled).
  * - free-internet.html hides the Register form when enabled=false.
  * - Pushes public/kitifi/status-portal-5th.html (no Register / Claim Free;
- *   BUY VOUCHER + Insert Coin stay) to every KiTifi controller except Panisijan.
+ *   Insert Coin stays; GCash BUY VOUCHER is paused separately) to every
+ *   KiTifi controller except Panisijan.
  * - Does not edit public/hotspot/panisijan-login.html.
  *
  * Usage on VPS:
@@ -101,8 +102,8 @@ export function assertFifthPortalHtml(html) {
   if (/Claim Free Time/i.test(text)) {
     throw new Error("KiTifi portal HTML still has Claim Free Time");
   }
-  if (!/id=["']gcashBuyBtn["']/i.test(text) || !/BUY VOUCHER/i.test(text)) {
-    throw new Error("KiTifi portal HTML is missing BUY VOUCHER");
+  if (!/Insert Coin/i.test(text)) {
+    throw new Error("KiTifi portal HTML is missing Insert Coin");
   }
   return true;
 }
@@ -396,7 +397,7 @@ async function main() {
     );
     process.exitCode = 2;
   } else {
-    console.log("KiTifi portals: Register / Claim Free removed. BUY VOUCHER kept. Panisijan untouched.");
+    console.log("KiTifi portals: Register / Claim Free removed. Insert Coin kept. Panisijan untouched.");
   }
 }
 

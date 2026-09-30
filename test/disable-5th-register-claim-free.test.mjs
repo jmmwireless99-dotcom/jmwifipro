@@ -44,10 +44,12 @@ test("KiTifi name matcher includes kitifi servers and skips PPPOE + Panisijan", 
   );
 });
 
-test("KiTifi portal HTML keeps BUY VOUCHER and drops Register / Claim Free", () => {
+test("KiTifi portal HTML keeps Insert Coin and drops Register / Claim Free", () => {
   const html = fs.readFileSync(HTML, "utf8");
   assertFifthPortalHtml(html);
   assert.match(html, /Insert Coin/);
+  assert.doesNotMatch(html, /id=["']gcashBuyBtn["']/i);
+  assert.doesNotMatch(html, /BUY VOUCHER \(GCash\)/i);
   assert.doesNotMatch(html, /Create account to get free internet/i);
   assert.doesNotMatch(html, /kitifi\/free-internet/i);
   assert.doesNotMatch(html, /goFreeInternet/);
@@ -55,7 +57,7 @@ test("KiTifi portal HTML keeps BUY VOUCHER and drops Register / Claim Free", () 
 
 test("stripRegisterClaimFree removes leftover Register / Claim Free buttons", () => {
   const dirty =
-    '<button id="gcashBuyBtn">BUY VOUCHER (GCash)</button>' +
+    '<button id="insertBtn">Insert Coin</button>' +
     '<button id="freeWifiBtn">Create account to get free internet</button>' +
     '{% if freetimeBtn == 1 %}<button id="freetimeBtn">Claim Free Time</button>{% endif %}';
   const clean = stripRegisterClaimFree(dirty);
