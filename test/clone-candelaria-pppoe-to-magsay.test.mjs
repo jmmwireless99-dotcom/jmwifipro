@@ -6,6 +6,7 @@ import {
   MAG_PPPOE_IFACE,
   CANDELARIA_ROUTER_NAME,
   MAGSAY_ROUTER_NAME,
+  MAGSAY_WAN,
 } from "../lib/magsay-clone-pppoe.mjs";
 
 test("clones Candelaria plan pools including suspended", () => {
@@ -26,8 +27,9 @@ test("clones billing PPP profile names", () => {
   ]);
 });
 
-test("keeps MAGSAY PPPoE on CSR switch uplink", () => {
-  assert.equal(MAG_PPPOE_IFACE, "sfp-sfpplus2");
+test("targets MAGSAYSAY-PPPOE on bridge-OUT, not MAGSAY2X-CORE", () => {
+  assert.equal(MAGSAY_ROUTER_NAME, "MAGSAYSAY-PPPOE");
+  assert.equal(MAG_PPPOE_IFACE, "bridge-OUT");
+  assert.equal(MAGSAY_WAN, "sfp-sfpplus1");
   assert.equal(CANDELARIA_ROUTER_NAME, "CANDELARIA-PPPOE");
-  assert.equal(MAGSAY_ROUTER_NAME, "MAGSAY2X-CORE");
 });

@@ -1,20 +1,14 @@
 /**
- * Clone CANDELARIA-PPPOE (PPPoE stack) onto MAGSAY2X-CORE.
+ * Clone CANDELARIA-PPPOE (PPPoE stack) onto MAGSAYSAY-PPPOE.
  *
  * Copies: IP pools, PPP profiles, PPPoE-server auth knobs, speedtest mangle.
  * Skips: /ppp/secret (per operator request).
- * Keeps: MAGSAY live pool ranges when used>0 (avoids kicking online clients).
- * Keeps: MAGSAY ISP PCC mangle + PPPoE server interface (sfp-sfpplus2).
+ * Target PPPoE server interface: bridge-OUT (customer side).
+ * Do NOT apply this to MAGSAY2X-CORE — that site keeps its own live pools.
  *
- * Usage (from this agent or VPS with API reachability):
- *   CANDE_HOST=jmtechsolution.cloud CANDE_PORT=53099 \
- *   MAG_HOST=jmtechsolution.cloud MAG_PORT=52712 \
- *   CANDE_USER=CANDELARIA-PPPOE CANDE_PASS=... \
- *   MAG_USER=MAGSAY2X-CORE MAG_PASS=... \
- *   node deploy/clone-candelaria-pppoe-to-magsay.mjs
- *
- * Or with billing.db on VPS:
+ * Usage on VPS:
  *   BILLING_DB=/opt/jm-billing/billing.db node deploy/clone-candelaria-pppoe-to-magsay.mjs
+ *   node deploy/apply-suspend-firewall.mjs MAGSAYSAY-PPPOE sfp-sfpplus1
  */
 import path from "node:path";
 import { fileURLToPath } from "node:url";
