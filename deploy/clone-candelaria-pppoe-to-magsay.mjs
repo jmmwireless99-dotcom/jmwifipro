@@ -8,6 +8,7 @@
  *
  * Usage on VPS:
  *   BILLING_DB=/opt/jm-billing/billing.db node deploy/clone-candelaria-pppoe-to-magsay.mjs
+ *   BILLING_DB=/opt/jm-billing/billing.db node deploy/finish-magsaysay-pppoe.mjs
  *   node deploy/apply-suspend-firewall.mjs MAGSAYSAY-PPPOE sfp-sfpplus1
  */
 import path from "node:path";

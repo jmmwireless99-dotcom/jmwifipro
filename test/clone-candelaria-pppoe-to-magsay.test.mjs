@@ -27,9 +27,9 @@ test("clones billing PPP profile names", () => {
   ]);
 });
 
-test("targets MAGSAYSAY-PPPOE on bridge-OUT, not MAGSAY2X-CORE", () => {
+test("targets MAGSAYSAY-PPPOE on sfp-sfpplus1 fabric, not MAGSAY2X-CORE", () => {
   assert.equal(MAGSAY_ROUTER_NAME, "MAGSAYSAY-PPPOE");
-  assert.equal(MAG_PPPOE_IFACE, "bridge-OUT");
+  assert.equal(MAG_PPPOE_IFACE, "sfp-sfpplus1");
   assert.equal(MAGSAY_WAN, "sfp-sfpplus1");
   assert.equal(CANDELARIA_ROUTER_NAME, "CANDELARIA-PPPOE");
 });

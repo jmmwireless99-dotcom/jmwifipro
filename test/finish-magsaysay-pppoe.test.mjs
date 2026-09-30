@@ -7,16 +7,16 @@ import { MAGSAY_ROUTER_NAME, MAGSAY_WAN, MAG_PPPOE_IFACE } from "../lib/magsay-c
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("finish script targets MAGSAYSAY-PPPOE WAN and bridge-OUT", () => {
+test("finish script targets MAGSAYSAY-PPPOE WAN and PPPoE fabric", () => {
   const src = fs.readFileSync(path.join(root, "deploy/finish-magsaysay-pppoe.mjs"), "utf8");
   assert.match(src, /MAGSAYSAY-PPPOE|MAGSAY_ROUTER_NAME/);
   assert.match(src, /sfp-sfpplus1|MAGSAY_WAN/);
-  assert.match(src, /bridge-OUT|MAG_PPPOE_IFACE/);
+  assert.match(src, /MAG_PPPOE_IFACE/);
   assert.match(src, /dhcp-server/);
   assert.match(src, /masquerade/);
   assert.equal(MAGSAY_ROUTER_NAME, "MAGSAYSAY-PPPOE");
   assert.equal(MAGSAY_WAN, "sfp-sfpplus1");
-  assert.equal(MAG_PPPOE_IFACE, "bridge-OUT");
+  assert.equal(MAG_PPPOE_IFACE, "sfp-sfpplus1");
 });
 
 test("finish script never touches ppp secrets", () => {
