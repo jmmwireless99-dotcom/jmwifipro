@@ -71,6 +71,18 @@ test("hotspot redirect helper builds Candelaria public portal URL", async () => 
   assert.match(h, /location\.replace/);
 });
 
+test("server.js gains public route for status-portal-5th.html", async () => {
+  const { patchServerStatusPortalRoute } = await import("../lib/kitifi-status-portal-route.mjs");
+  const sample =
+    '    if (pathname === "/kitifi/status-portal-full.html" && req.method === "GET") {\n' +
+    "      return;\n" +
+    "    }\n";
+  const { src, changed } = patchServerStatusPortalRoute(sample);
+  assert.equal(changed, true);
+  assert.match(src, /status-portal-5th\.html/);
+  assert.equal(patchServerStatusPortalRoute(src).changed, false);
+});
+
 test("patchKitifiServerAll removes Cawayan skip when present", () => {
   const src =
     'export function kitifiMikrotikOnlyRouter(){return true}\n' +

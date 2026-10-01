@@ -37,6 +37,7 @@ import {
   collectKitifiIds,
 } from "./disable-5th-register-claim-free.mjs";
 import { pushHotspotPortalRedirect } from "../lib/kitifi-hotspot-portal-redirect.mjs";
+import { patchServerStatusPortalRoute } from "../lib/kitifi-status-portal-route.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DB = process.env.BILLING_DB || process.env.DB_FILE || path.join(ROOT, "billing.db");
@@ -370,7 +371,15 @@ async function main() {
 
   const ids = DRY ? [] : smoothSettings(DB);
   patchFile("lib/kitifi-server.js", patchKitifiServerAll);
-  patchFile("server.js", patchServerBuyRouterAlias);
+  patchFile("server.js", (src) => {
+    const a = patchServerBuyRouterAlias(src);
+    const b = patchServerStatusPortalRoute(a.src);
+    return {
+      src: b.src,
+      changed: !!(a.changed || b.changed),
+      missing: [...(a.missing || []), ...(b.missing || [])],
+    };
+  });
   patchFile("lib/kitifi-api.js", patchKitifiApiFulfillAlias);
   restartBilling();
 
