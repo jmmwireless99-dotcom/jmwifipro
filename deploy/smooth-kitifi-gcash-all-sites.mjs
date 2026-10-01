@@ -36,6 +36,7 @@ import {
   isPanisijanRouter,
   collectKitifiIds,
 } from "./disable-5th-register-claim-free.mjs";
+import { pushHotspotPortalRedirect } from "../lib/kitifi-hotspot-portal-redirect.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DB = process.env.BILLING_DB || process.env.DB_FILE || path.join(ROOT, "billing.db");
@@ -115,7 +116,16 @@ export function smoothSettings(dbPath) {
         const dstKey = prefix + to;
         const dst = db.prepare("SELECT v FROM settings WHERE k=?").get(dstKey);
         if (dst?.v && prefix !== "kitifi_admin_pass_") continue;
-        // Always refresh admin pass onto live id when missing (portal HTML push).
+        // Refresh admin pass onto live id when missing OR still equal to deleted-router leftover.
+        if (prefix === "kitifi_admin_pass_" && dst?.v && dst.v !== src.v) {
+          // Prefer pass from a known-good live peer (Candelaria) over stale deleted-id copy.
+          const good = db.prepare("SELECT v FROM settings WHERE k=?").get("kitifi_admin_pass_34");
+          if (good?.v && dst.v !== good.v && src.v === good.v) {
+            if (!DRY) setSetting(db, dstKey, good.v);
+            copied.push(dstKey + "(from34)");
+          }
+          continue;
+        }
         if (prefix === "kitifi_admin_pass_" && dst?.v) continue;
         if (!DRY) setSetting(db, dstKey, src.v);
         copied.push(dstKey);
@@ -254,6 +264,11 @@ async function pushOnePortal(row, html) {
   const { RouterOSAPI } = await import("../lib/routeros-api.js");
   const { kitifiLogin, kitifiAdminBase } = await import("../lib/kitifi-remote.js");
   const rid = Number(row.id);
+  const site =
+    String(row.name || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || String(rid);
   const conn = new RouterOSAPI({
     host: String(row.host).split(":")[0],
     user: row.username,
@@ -263,26 +278,37 @@ async function pushOnePortal(row, html) {
     timeout: Number(process.env.KITIFI_TIMEOUT_MS || 45000),
   });
   await conn.identity();
-  const cookie = await kitifiLogin(conn, rid);
-  async function kitifiPost(body) {
-    const r = await conn.talk([
-      "/tool/fetch",
-      "=url=" + kitifiAdminBase(rid) + "/api/pages/settings",
-      "=mode=http",
-      "=http-method=post",
-      "=http-header-field=Cookie: " + cookie + "\r\nContent-Type: application/json",
-      "=http-data=" + JSON.stringify(body),
-      "=output=user-with-headers",
-      "=check-certificate=no",
-    ]);
-    return (r || []).map((x) => x.data || "").join("");
+  try {
+    const cookie = await kitifiLogin(conn, rid);
+    async function kitifiPost(body) {
+      const r = await conn.talk([
+        "/tool/fetch",
+        "=url=" + kitifiAdminBase(rid) + "/api/pages/settings",
+        "=mode=http",
+        "=http-method=post",
+        "=http-header-field=Cookie: " + cookie + "\r\nContent-Type: application/json",
+        "=http-data=" + JSON.stringify(body),
+        "=output=user-with-headers",
+        "=check-certificate=no",
+      ]);
+      return (r || []).map((x) => x.data || "").join("");
+    }
+    const htmlRes = await kitifiPost({ action: "savehtmlportal", html_portal: html });
+    if (!/"status"\s*:\s*true/i.test(htmlRes)) {
+      throw new Error("savehtmlportal failed: " + htmlRes.slice(0, 180));
+    }
+    conn.close?.();
+    return { mode: "kitifi", detail: htmlRes.slice(0, 100) };
+  } catch (e) {
+    // KiTifi admin unknown/changed — still give clients Candelaria-like BUY via hotspot redirect.
+    const fb = await pushHotspotPortalRedirect(conn, { rid, site });
+    conn.close?.();
+    if (!fb.ok.length) throw e;
+    return {
+      mode: "hotspot-redirect",
+      detail: "ok=" + fb.ok.join(",") + (fb.fail.length ? " fail=" + fb.fail.length : ""),
+    };
   }
-  const htmlRes = await kitifiPost({ action: "savehtmlportal", html_portal: html });
-  if (!/"status"\s*:\s*true/i.test(htmlRes)) {
-    throw new Error("savehtmlportal failed: " + htmlRes.slice(0, 180));
-  }
-  conn.close?.();
-  return htmlRes.slice(0, 100);
 }
 
 async function pushPortals(ids) {
@@ -311,7 +337,7 @@ async function pushPortals(ids) {
     }
     try {
       const res = await pushOnePortal(row, html);
-      console.log("ok", res);
+      console.log("ok", res.mode || "kitifi", res.detail || res);
       ok.push(row.id);
     } catch (e) {
       console.log("FAIL", e.message);

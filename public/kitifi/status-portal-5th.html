@@ -246,8 +246,15 @@
       /** MikroTik hotspot login — GCash voucher is /ip/hotspot/user, not a KiTifi controller code. */
       function kitifiMikrotikLoginUrl(code) {
         var base = "";
-        if (typeof hs_address !== "undefined" && hs_address) base = String(hs_address);
-        else base = "http://10.0.0.1/login";
+        try {
+          var q = new URLSearchParams(location.search || "");
+          var linkLogin = String(q.get("link-login-only") || q.get("link_login_only") || "").trim();
+          if (linkLogin) {
+            base = decodeURIComponent(linkLogin);
+          }
+        } catch (e0) {}
+        if (!base && typeof hs_address !== "undefined" && hs_address) base = String(hs_address);
+        if (!base) base = "http://10.0.0.1/login";
         base = String(base).replace(/\/$/, "");
         if (base.indexOf("http") !== 0) base = "http://" + base;
         if (!/\/login$/i.test(base)) base += "/login";
@@ -345,6 +352,22 @@
       }
 
       function detectPortalRouterId() {
+        try {
+          var q = new URLSearchParams(location.search || "");
+          var qid = String(q.get("rid") || q.get("router_id") || "").trim();
+          if (/^\d+$/.test(qid)) return qid;
+          var site = String(q.get("site") || "").toLowerCase();
+          if (/3rd|third/.test(site)) return "57";
+          if (/2nd|second/.test(site)) return "56";
+          if (/1st|first/.test(site)) return "52";
+          if (/5th|fifth/.test(site)) return "45";
+          if (/cagbatang/.test(site)) return "48";
+          if (/cawayan/.test(site)) return "39";
+          if (/burias/.test(site)) return "40";
+          if (/sancarlos|san-carlos/.test(site)) return "41";
+          if (/4rth|4th|fourth/.test(site)) return "37";
+          if (/candel/.test(site)) return "34";
+        } catch (e0) {}
         var srv = (typeof server !== "undefined" && server) ? String(server).toLowerCase() : "";
         var br = (typeof brand !== "undefined" && brand) ? String(brand).toLowerCase() : "";
         var ctx = srv + " " + br;

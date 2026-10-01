@@ -48,6 +48,27 @@ test("smooth script wires settings, garden, portal push, Cawayan fix", () => {
   assert.match(src, /savehtmlportal/);
   assert.match(src, /kitifi_admin_pass_/);
   assert.match(src, /resolveHotspotUserProfile/);
+  assert.match(src, /pushHotspotPortalRedirect/);
+  assert.match(src, /hotspot-redirect/);
+});
+
+test("portal detects rid query for hotspot-redirect fallback sites", () => {
+  const html = fs.readFileSync(HTML, "utf8");
+  assert.match(html, /URLSearchParams\(location\.search/);
+  assert.match(html, /q\.get\("rid"\)/);
+  assert.match(html, /link-login-only/);
+});
+
+test("hotspot redirect helper builds Candelaria public portal URL", async () => {
+  const { hotspotRedirectHtml, PUBLIC_STATUS_PORTAL } = await import(
+    "../lib/kitifi-hotspot-portal-redirect.mjs"
+  );
+  assert.match(PUBLIC_STATUS_PORTAL, /status-portal-5th\.html/);
+  const h = hotspotRedirectHtml({ rid: 57, site: "3rd", kind: "status" });
+  assert.match(h, /rid=57/);
+  assert.match(h, /site=3rd/);
+  assert.match(h, /\$\(mac\)/);
+  assert.match(h, /location\.replace/);
 });
 
 test("patchKitifiServerAll removes Cawayan skip when present", () => {
