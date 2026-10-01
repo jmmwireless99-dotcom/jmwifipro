@@ -48,8 +48,8 @@ test("KiTifi portal HTML keeps Insert Coin and drops Register / Claim Free", () 
   const html = fs.readFileSync(HTML, "utf8");
   assertFifthPortalHtml(html);
   assert.match(html, /Insert Coin/);
-  assert.doesNotMatch(html, /id=["']gcashBuyBtn["']/i);
-  assert.doesNotMatch(html, /BUY VOUCHER \(GCash\)/i);
+  assert.match(html, /id=["']gcashBuyBtn["']/i);
+  assert.match(html, /BUY VOUCHER \(GCash\)/i);
   assert.doesNotMatch(html, /Create account to get free internet/i);
   assert.doesNotMatch(html, /kitifi\/free-internet/i);
   assert.doesNotMatch(html, /goFreeInternet/);
