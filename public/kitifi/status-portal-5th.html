@@ -361,6 +361,7 @@
           if (/2nd|second/.test(site)) return "56";
           if (/1st|first/.test(site)) return "52";
           if (/5th|fifth/.test(site)) return "45";
+          if (/panisijan/.test(site)) return "51";
           if (/cagbatang/.test(site)) return "48";
           if (/cawayan/.test(site)) return "39";
           if (/burias/.test(site)) return "40";
@@ -376,6 +377,7 @@
         if (/3rd|third|3rd-server|3rdserver/.test(ctx)) return "57";
         if (/1st|first|1stserver/.test(ctx)) return "52";
         if (/5th|fifth|5thserver/.test(ctx)) return "45";
+        if (/panisijan/i.test(ctx)) return "51";
         if (/burias/i.test(ctx)) return "40";
         if (/cagbatang/i.test(ctx)) return "48";
         if (/cawayan/i.test(ctx)) return "39";
