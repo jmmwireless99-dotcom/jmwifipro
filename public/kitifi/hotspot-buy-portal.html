@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3.0" />
+  <title>JM WiFi — Buy Voucher (GCash)</title>
+  <style>
+    :root {
+      --bg0: #07111f;
+      --bg1: #0d2138;
+      --card: rgba(255,255,255,0.06);
+      --text: #f4f8ff;
+      --muted: #9db0c9;
+      --accent: #00a3ff;
+      --accent2: #0070f3;
+      --ok: #22c55e;
+      --line: rgba(255,255,255,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 420px at 10% -10%, rgba(0,163,255,0.28), transparent 55%),
+        radial-gradient(700px 380px at 100% 0%, rgba(0,112,243,0.22), transparent 50%),
+        linear-gradient(160deg, var(--bg0), var(--bg1) 55%, #081526);
+    }
+    .wrap {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+    .brand {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      margin: 0 0 4px;
+    }
+    .sub {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 12px 12px;
+      font-size: 1rem;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-connect {
+      background: var(--ok);
+      color: #04210f;
+      white-space: nowrap;
+    }
+    .btn-buy {
+      width: 100%;
+      margin-top: 14px;
+      padding: 14px 16px;
+      font-size: 1.05rem;
+      color: #fff;
+      background: linear-gradient(120deg, var(--accent2), var(--accent));
+      box-shadow: 0 8px 24px rgba(0,163,255,0.25);
+    }
+    .hint {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+    .meta {
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="brand" id="brand">JM WiFi</h1>
+    <p class="sub">Buy voucher via GCash — auto-connect after payment (same as Candelaria KiTifi).</p>
+    <div class="panel">
+      <label for="v_code">May voucher code na? I-connect:</label>
+      <div class="row">
+        <input id="v_code" type="text" placeholder="Paste voucher code…" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+        <button type="button" class="btn-connect" id="connectBtn">Connect</button>
+      </div>
+      <button type="button" class="btn-buy" id="gcashBuyBtn">BUY VOUCHER (GCash)</button>
+      <p class="hint">After GCash payment, voucher time is created on MikroTik and this page auto-connects you.</p>
+      <div class="meta" id="meta"></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var BUY = "https://jmwifi.pro/kitifi/generator-buy";
+      function qs(name) {
+        try { return new URLSearchParams(location.search || "").get(name) || ""; }
+        catch (e) { return ""; }
+      }
+      function detectRouterId() {
+        var qid = String(qs("rid") || qs("router_id") || "").trim();
+        if (/^\d+$/.test(qid)) return qid;
+        var site = String(qs("site") || "").toLowerCase();
+        if (/3rd|third/.test(site)) return "57";
+        if (/2nd|second/.test(site)) return "56";
+        if (/1st|first/.test(site)) return "52";
+        if (/5th|fifth/.test(site)) return "45";
+        if (/cagbatang/.test(site)) return "48";
+        if (/cawayan/.test(site)) return "39";
+        if (/burias/.test(site)) return "40";
+        if (/sancarlos|san-carlos/.test(site)) return "41";
+        if (/4rth|4th|fourth/.test(site)) return "37";
+        if (/candel/.test(site)) return "34";
+        return "57";
+      }
+      function mikrotikLoginUrl(code) {
+        var base = "";
+        var linkLogin = String(qs("link-login-only") || qs("link_login_only") || "").trim();
+        if (linkLogin) {
+          try { base = decodeURIComponent(linkLogin); } catch (e) { base = linkLogin; }
+        }
+        if (!base) base = "http://10.0.0.1/login";
+        base = String(base).replace(/\/$/, "");
+        if (base.indexOf("http") !== 0) base = "http://" + base;
+        if (!/\/login$/i.test(base)) base += "/login";
+        var u = encodeURIComponent(String(code || "").trim());
+        return base + "?username=" + u + "&password=" + u;
+      }
+      function autoConnect(code) {
+        code = String(code || "").trim();
+        if (!code) return false;
+        location.href = mikrotikLoginUrl(code);
+        return true;
+      }
+      var rid = detectRouterId();
+      var site = qs("site") || ("router " + rid);
+      var mac = qs("mac") || "";
+      document.getElementById("brand").textContent = "JM WiFi · " + site;
+      document.getElementById("meta").textContent =
+        "Site #" + rid + (mac ? " · MAC " + mac : "");
+
+      document.getElementById("gcashBuyBtn").addEventListener("click", function () {
+        var ret = encodeURIComponent(location.href.split("#")[0]);
+        location.href =
+          BUY +
+          "?router_id=" + encodeURIComponent(rid) +
+          "&mac=" + encodeURIComponent(mac) +
+          "&return=" + ret;
+      });
+      document.getElementById("connectBtn").addEventListener("click", function () {
+        autoConnect(document.getElementById("v_code").value);
+      });
+      document.getElementById("v_code").addEventListener("keydown", function (ev) {
+        if (ev.key === "Enter") autoConnect(document.getElementById("v_code").value);
+      });
+
+      // Pending voucher from GCash return / query
+      try {
+        var pending = qs("code") || qs("voucher") || localStorage.getItem("kitifi_pending_voucher") || "";
+        if (pending) {
+          document.getElementById("v_code").value = pending;
+          if (qs("autoconnect") === "1" || qs("connected") !== "1") {
+            setTimeout(function () { autoConnect(pending); }, 400);
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

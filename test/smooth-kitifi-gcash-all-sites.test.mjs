@@ -63,7 +63,7 @@ test("hotspot redirect helper builds Candelaria public portal URL", async () => 
   const { hotspotRedirectHtml, PUBLIC_STATUS_PORTAL } = await import(
     "../lib/kitifi-hotspot-portal-redirect.mjs"
   );
-  assert.match(PUBLIC_STATUS_PORTAL, /status-portal-5th\.html/);
+  assert.match(PUBLIC_STATUS_PORTAL, /hotspot-buy-portal\.html/);
   const h = hotspotRedirectHtml({ rid: 57, site: "3rd", kind: "status" });
   assert.match(h, /rid=57/);
   assert.match(h, /site=3rd/);
@@ -71,7 +71,7 @@ test("hotspot redirect helper builds Candelaria public portal URL", async () => 
   assert.match(h, /location\.replace/);
 });
 
-test("server.js gains public route for status-portal-5th.html", async () => {
+test("server.js gains public routes for hotspot buy portal HTML", async () => {
   const { patchServerStatusPortalRoute } = await import("../lib/kitifi-status-portal-route.mjs");
   const sample =
     '    if (pathname === "/kitifi/status-portal-full.html" && req.method === "GET") {\n' +
@@ -79,8 +79,21 @@ test("server.js gains public route for status-portal-5th.html", async () => {
     "    }\n";
   const { src, changed } = patchServerStatusPortalRoute(sample);
   assert.equal(changed, true);
+  assert.match(src, /hotspot-buy-portal\.html/);
   assert.match(src, /status-portal-5th\.html/);
   assert.equal(patchServerStatusPortalRoute(src).changed, false);
+});
+
+test("standalone hotspot buy portal has GCash buy and MikroTik connect", () => {
+  const html = fs.readFileSync(
+    path.join(ROOT, "public/kitifi/hotspot-buy-portal.html"),
+    "utf8",
+  );
+  assert.doesNotMatch(html, /\{\{/);
+  assert.match(html, /BUY VOUCHER \(GCash\)/);
+  assert.match(html, /generator-buy/);
+  assert.match(html, /10\.0\.0\.1\/login/);
+  assert.match(html, /router_id/);
 });
 
 test("patchKitifiServerAll removes Cawayan skip when present", () => {
