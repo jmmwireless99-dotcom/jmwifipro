@@ -21,6 +21,7 @@ import {
   patchServerBuyRouterAlias,
   patchKitifiApiFulfillAlias,
   patchMikrotikGenerateProfile,
+  patchMikrotikGenerateResolveProfile,
 } from "../lib/kitifi-mikrotik-direct-voucher.mjs";
 import { patchKitifiServerSource } from "./enable-mikrotik-direct-gcash-voucher.mjs";
 import {
@@ -230,7 +231,12 @@ async function main() {
   patchFile("lib/kitifi-server.js", (src) => {
     const a = patchKitifiServerSource(src);
     const b = patchMikrotikGenerateProfile(a.src);
-    return { src: b.src, changed: !!(a.changed || b.changed), missing: b.missing };
+    const c = patchMikrotikGenerateResolveProfile(b.src);
+    return {
+      src: c.src,
+      changed: !!(a.changed || b.changed || c.changed),
+      missing: b.missing || c.missing,
+    };
   });
   patchFile("server.js", patchServerBuyRouterAlias);
   patchFile("lib/kitifi-api.js", patchKitifiApiFulfillAlias);

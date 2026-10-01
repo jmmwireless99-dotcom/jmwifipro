@@ -6,6 +6,7 @@ import {
   hotspotUserAddWords,
   kitifiUptimeToMikrotik,
   normalizeGcashGenerateMode,
+  resolveHotspotUserProfile,
   shouldGenerateOnMikrotik,
 } from "../lib/kitifi-mikrotik-direct-voucher.mjs";
 
@@ -40,6 +41,18 @@ test("hotspot user is name=password on KITIFI profile, no KiTifi controller fiel
   assert.ok(words.includes("=profile=KITIFI"));
   assert.ok(words.includes("=limit-uptime=10:00:00"));
   assert.equal(words.some((w) => /10\.0\.0\.10|generateVoucher|seller/i.test(w)), false);
+});
+
+test("hotspot profile KITIFI resolves to live KiTiFi casing", () => {
+  assert.equal(resolveHotspotUserProfile("KITIFI", ["KiTiFi", "FREE"]), "KiTiFi");
+  assert.equal(resolveHotspotUserProfile("KITIFI", ["KITIFI", "FREE"]), "KITIFI");
+  const words = hotspotUserAddWords({
+    code: "VC99",
+    profile: "KITIFI",
+    uptime: "10 Hours",
+    liveProfiles: ["KiTiFi", "FREE"],
+  });
+  assert.ok(words.includes("=profile=KiTiFi"));
 });
 
 test("auto-connect URL is the MikroTik hotspot login, not the KiTifi controller", () => {

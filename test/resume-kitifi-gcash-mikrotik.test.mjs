@@ -61,6 +61,7 @@ test("resume deploy turns GCash buy on and generates on MikroTik", () => {
   assert.match(src, /DEFAULT_GCASH_GENERATE/);
   assert.match(src, /copySiteSettings/);
   assert.match(src, /patchServerBuyRouterAlias/);
+  assert.match(src, /patchMikrotikGenerateResolveProfile/);
   assert.match(src, /\/ip\/hotspot\/user/);
   assert.doesNotMatch(src, /\/api\/pay-start/);
 });
