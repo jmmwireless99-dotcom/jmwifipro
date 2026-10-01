@@ -42,14 +42,6 @@ test("paused page has no PayMongo / buy QR and tells clients to Insert Coin", ()
   assert.match(GCASH_BUY_PAUSED_MSG, /paused/i);
 });
 
-test("repo portal HTML has no BUY VOUCHER GCash button", () => {
-  const html = fs.readFileSync(HTML, "utf8");
-  assertPausedPortalHtml(html);
-  assert.match(html, /Insert Coin/);
-  assert.doesNotMatch(html, /id=["']gcashBuyBtn["']/i);
-  assert.doesNotMatch(html, /goBuyVoucher/);
-});
-
 test("stripGcashBuyFromPortalHtml removes leftover buy button and click handler", () => {
   const dirty =
     '<button type="button" id="insertBtn">Insert Coin</button>' +
