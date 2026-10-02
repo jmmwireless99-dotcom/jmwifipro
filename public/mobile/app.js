@@ -1,9 +1,29 @@
-import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=1";
+import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=5";
 import {
   isSalesMonthEditable,
   salesMonthLockReason,
   monthNow as lockMonthNow,
-} from "/lib/sales-history-lock.mjs?v=1";
+} from "/lib/sales-history-lock.mjs?v=5";
+
+/** Union of apply-coverage + barangays that already have encoded sales. */
+function coverageTree() {
+  const tree = {};
+  for (const [m, list] of Object.entries(APPLY_COVERAGE)) {
+    tree[m] = new Set(list);
+  }
+  for (const e of state.entries) {
+    const m = String(e.municipality || "").toUpperCase().trim();
+    const b = String(e.barangay || "").toUpperCase().trim();
+    if (!m || !b) continue;
+    if (!tree[m]) tree[m] = new Set();
+    tree[m].add(b);
+  }
+  const out = {};
+  for (const m of Object.keys(tree).sort()) {
+    out[m] = [...tree[m]].sort();
+  }
+  return out;
+}
 
 const STORAGE_KEY = "jm_sales_history_vendos_v1";
 const FILTER_KEY = "jm_sales_mobile_month";
@@ -180,7 +200,7 @@ function closeSheet() {
 
 function renderKpis() {
   const view = filteredEntries();
-  const munis = Object.keys(APPLY_COVERAGE).length;
+  const munis = Object.keys(coverageTree()).length;
   const total = view.reduce((s, e) => s + (Number(e.amount) || 0), 0);
   $("k-muni").textContent = String(munis);
   $("k-rows").textContent = String(view.length);
@@ -212,21 +232,22 @@ function renderCrumbs() {
 
 function renderMunicipalities() {
   const q = state.q.trim().toUpperCase();
-  const names = Object.keys(APPLY_COVERAGE).sort();
-  const list = names.filter((n) => !q || n.includes(q));
+  const tree = coverageTree();
+  const list = Object.keys(tree).filter((n) => !q || n.includes(q));
   if (!list.length) {
     $("list").innerHTML = `<div class="empty"><strong>Walang match</strong>Subukan ang ibang search.</div>`;
     return;
   }
   $("list").innerHTML = list
     .map((muni) => {
-      const brgys = APPLY_COVERAGE[muni] || [];
+      const brgys = tree[muni] || [];
       const rows = filteredEntries().filter((e) => String(e.municipality).toUpperCase() === muni);
       const sales = rows.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      const vendos = new Set(rows.map((e) => e.vendo)).size;
       return `<button type="button" class="row" data-muni="${esc(muni)}">
         <div class="avatar">${esc(muni.slice(0, 2))}</div>
-        <div class="meta"><strong>${esc(muni)}</strong><span>${brgys.length} barangays · ${rows.length} entries</span></div>
-        <div class="right"><div class="amt">${peso(sales)}</div><div class="sub">tap</div></div>
+        <div class="meta"><strong>${esc(muni)}</strong><span>${brgys.length} locations · ${vendos} vendos</span></div>
+        <div class="right"><div class="amt">${peso(sales)}</div><div class="sub">total</div></div>
         <span class="chev">›</span>
       </button>`;
     })
@@ -244,7 +265,8 @@ function renderMunicipalities() {
 
 function renderBarangays() {
   const q = state.q.trim().toUpperCase();
-  const brgys = (APPLY_COVERAGE[state.muni] || []).filter((b) => !q || b.includes(q));
+  const tree = coverageTree();
+  const brgys = (tree[state.muni] || []).filter((b) => !q || b.includes(q));
   if (!brgys.length) {
     $("list").innerHTML = `<div class="empty"><strong>Walang barangay</strong></div>`;
     return;
@@ -253,10 +275,11 @@ function renderBarangays() {
     .map((brgy) => {
       const rows = entriesFor(state.muni, brgy);
       const sales = rows.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      const vendos = new Set(rows.map((e) => e.vendo)).size;
       return `<button type="button" class="row" data-brgy="${esc(brgy)}">
         <div class="avatar">${esc(brgy.slice(0, 2))}</div>
-        <div class="meta"><strong>${esc(brgy)}</strong><span>${rows.length} vendo${rows.length === 1 ? "" : "s"}</span></div>
-        <div class="right"><div class="amt">${peso(sales)}</div><div class="sub">open</div></div>
+        <div class="meta"><strong>${esc(brgy)}</strong><span>${vendos} vendo name/address</span></div>
+        <div class="right"><div class="amt">${peso(sales)}</div><div class="sub">total</div></div>
         <span class="chev">›</span>
       </button>`;
     })

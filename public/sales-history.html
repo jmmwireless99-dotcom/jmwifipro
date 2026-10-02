@@ -316,11 +316,11 @@
   <div class="toast" id="toast">Saved</div>
 
   <script type="module">
-    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=4";
+    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=5";
     import {
       isSalesMonthEditable,
       salesMonthLockReason,
-    } from "/lib/sales-history-lock.mjs?v=4";
+    } from "/lib/sales-history-lock.mjs?v=5";
 
     const STORAGE_KEY = "jm_sales_history_vendos_v1";
     const FILTER_KEY = "jm_sales_history_month_filter";
@@ -452,9 +452,30 @@
       setTimeout(() => el.classList.remove("show"), 1600);
     }
 
+    /** Union of apply-coverage + barangays that already have encoded sales. */
+    function coverageTree() {
+      const tree = {};
+      for (const [m, list] of Object.entries(APPLY_COVERAGE)) {
+        tree[m] = new Set(list);
+      }
+      for (const e of state.entries) {
+        const m = String(e.municipality || "").toUpperCase().trim();
+        const b = String(e.barangay || "").toUpperCase().trim();
+        if (!m || !b) continue;
+        if (!tree[m]) tree[m] = new Set();
+        tree[m].add(b);
+      }
+      const out = {};
+      for (const m of Object.keys(tree).sort()) {
+        out[m] = [...tree[m]].sort();
+      }
+      return out;
+    }
+
     function renderKpis() {
-      const munis = Object.keys(APPLY_COVERAGE);
-      const brgyCount = munis.reduce((n, m) => n + (APPLY_COVERAGE[m] || []).length, 0);
+      const tree = coverageTree();
+      const munis = Object.keys(tree);
+      const brgyCount = munis.reduce((n, m) => n + (tree[m] || []).length, 0);
       const view = filteredEntries();
       const vendos = new Set(view.map((e) => `${e.municipality}::${e.barangay}::${e.vendo}`));
       const total = view.reduce((n, e) => n + (Number(e.amount) || 0), 0);
@@ -496,15 +517,16 @@
 
     function renderMunicipalities() {
       $("panel-title").textContent = "Municipalities";
-      $("panel-hint").textContent = "Pindutin ang municipality — lalabas ang barangays under nito." +
+      $("panel-hint").textContent = "Location → barangay → vendo name / address · month · total sales." +
         (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
       $("btn-add").style.display = "none";
-      $("thead-row").innerHTML = "<th>Municipality</th><th>Barangays</th><th>Vendos</th><th>Sales</th><th></th>";
-      const munis = Object.keys(APPLY_COVERAGE);
+      $("thead-row").innerHTML = "<th>Location (Municipality)</th><th>Barangays</th><th>Vendos</th><th>Total sales</th><th></th>";
+      const tree = coverageTree();
+      const munis = Object.keys(tree);
       const view = filteredEntries();
       $("rows").innerHTML = munis.map((m) => {
-        const brgys = APPLY_COVERAGE[m] || [];
-        const rows = view.filter((e) => e.municipality === m);
+        const brgys = tree[m] || [];
+        const rows = view.filter((e) => String(e.municipality).toUpperCase() === m);
         const vendoN = new Set(rows.map((e) => e.vendo)).size;
         const total = rows.reduce((n, e) => n + (Number(e.amount) || 0), 0);
         return `<tr data-muni="${esc(m)}">
@@ -521,12 +543,13 @@
     }
 
     function renderBarangays() {
-      const list = APPLY_COVERAGE[state.muni] || [];
+      const tree = coverageTree();
+      const list = tree[state.muni] || [];
       $("panel-title").textContent = state.muni + " · Barangays";
-      $("panel-hint").textContent = "Pindutin ang barangay — lalabas ang + Add vendo." +
+      $("panel-hint").textContent = "Pindutin ang barangay (location) — vendo names / address + monthly sales." +
         (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
       $("btn-add").style.display = "none";
-      $("thead-row").innerHTML = "<th>Barangay</th><th>Vendos</th><th>Total sales</th><th></th>";
+      $("thead-row").innerHTML = "<th>Location (Barangay)</th><th>Vendos</th><th>Total sales</th><th></th>";
       $("rows").innerHTML = list.map((b) => {
         const rows = entriesFor(state.muni, b);
         const vendos = new Set(rows.map((r) => r.vendo)).size;
@@ -558,7 +581,7 @@
       $("btn-add").title = isSalesMonthEditable(addMonth)
         ? "Add vendo"
         : salesMonthLockReason(addMonth);
-      $("thead-row").innerHTML = "<th>Vendo name</th><th>Month / Date</th><th>Sales</th><th>Status</th><th>Actions</th>";
+      $("thead-row").innerHTML = "<th>Vendo name / Address</th><th>Month / Date</th><th>Total sales</th><th>Status</th><th>Actions</th>";
 
       if (!rows.length) {
         $("rows").innerHTML = `<tr class="novis"><td colspan="5" class="empty">${
