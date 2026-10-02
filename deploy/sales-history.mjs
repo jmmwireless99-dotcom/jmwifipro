@@ -18,6 +18,9 @@ import {
   patchLandingHtml,
   patchOperatorHtml,
 } from "../lib/sales-history-nav.mjs";
+import { patchMobileAppRoutes } from "../lib/mobile-app.mjs";
+import { patchSalesHistoryAuth } from "../lib/sales-history-auth.mjs";
+import { patchSalesHistoryApi } from "../lib/sales-history-api.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -77,6 +80,14 @@ function copyRel(rel) {
   return true;
 }
 
+function copyDirRel(rel) {
+  const from = path.join(ROOT, rel);
+  const to = path.join(process.cwd(), rel);
+  if (!fs.existsSync(from)) return false;
+  fs.cpSync(from, to, { recursive: true });
+  return true;
+}
+
 function applyFile(rel, patcher) {
   const p = path.join(process.cwd(), rel);
   if (!fs.existsSync(p)) {
@@ -106,6 +117,8 @@ function main() {
     "lib/sales-history-nav.mjs",
     "lib/sales-history-lock.mjs",
     "lib/sales-history-api.mjs",
+    "lib/sales-history-auth.mjs",
+    "lib/mobile-app.mjs",
     "public/sales-history.html",
     "public/landing/index.html",
     "public/isp-landing.css",
@@ -113,6 +126,7 @@ function main() {
   for (const rel of files) {
     console.log(copyRel(rel) ? "copied " + rel : "missing " + rel);
   }
+  console.log(copyDirRel("public/mobile") ? "copied public/mobile" : "missing public/mobile");
 
   // Operator panel (often public/index.html → /operator)
   applyFile("public/index.html", patchOperatorHtml);
@@ -133,14 +147,44 @@ function main() {
     console.log("server.js not in cwd (ok on git-only checkout) — copy into /opt/jm-billing then re-run");
     return;
   }
-  const cur = fs.readFileSync(serverPath, "utf8");
+  let cur = fs.readFileSync(serverPath, "utf8");
   const next = patchServerJs(cur);
   if (next.missing) console.warn("server.js patch miss:", next.missing);
   if (next.changed) {
     fs.writeFileSync(serverPath, next.src);
+    cur = next.src;
     console.log("patched server.js (/sales-history + /lib/*.mjs)");
   } else {
     console.log("server.js already patched or no matching snippets");
+  }
+
+  const api = patchSalesHistoryApi(cur);
+  if (api.missing) console.warn("server.js API patch miss:", api.missing);
+  if (api.changed) {
+    fs.writeFileSync(serverPath, api.src);
+    cur = api.src;
+    console.log("patched server.js (sales-history API PUT/DELETE + lock)");
+  } else {
+    console.log("server.js API already patched or no match");
+  }
+
+  const mobile = patchMobileAppRoutes(cur);
+  if (mobile.missing) console.warn("server.js mobile patch miss:", mobile.missing);
+  if (mobile.changed) {
+    fs.writeFileSync(serverPath, mobile.src);
+    cur = mobile.src;
+    console.log("patched server.js (/mobile + /app PWA)");
+  } else {
+    console.log("server.js mobile routes already patched or no match");
+  }
+
+  const auth = patchSalesHistoryAuth(cur);
+  if (auth.missing) console.warn("server.js auth patch miss:", auth.missing);
+  if (auth.changed) {
+    fs.writeFileSync(serverPath, auth.src);
+    console.log("patched server.js (sales-history login gate)");
+  } else {
+    console.log("server.js auth already patched or no match");
   }
 }
 

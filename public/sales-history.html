@@ -201,6 +201,37 @@
     }
     .toast.show { display: block; }
 
+    .login-gate {
+      position: fixed; inset: 0; z-index: 1200;
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(700px 360px at 20% 0%, rgba(59,123,255,.22), transparent 55%),
+        rgba(6, 10, 20, .92);
+      backdrop-filter: blur(10px);
+    }
+    .login-gate.open { display: flex; }
+    .login-card {
+      width: min(400px, 100%);
+      background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+      padding: 22px 20px 18px; box-shadow: var(--shadow);
+    }
+    .login-card h2 { font-size: 20px; margin: 0 0 4px; }
+    .login-card .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .login-card .fld { margin-bottom: 12px; }
+    .login-card label {
+      display: block; font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
+    }
+    .login-card input.set-in, .login-card input {
+      width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 12px; color: var(--text); font: 600 15px var(--sans);
+      padding: 12px 14px; outline: none;
+    }
+    .login-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,140,255,.18); }
+    .login-card .err { color: var(--warn); font-size: 13px; font-weight: 600; min-height: 1.2em; margin-bottom: 10px; }
+    .login-card .primary { width: 100%; padding: 12px 14px; font-size: 14px; }
+
     @media (max-width: 640px) {
       .bcard .v { font-size: 20px; }
       .module-title { font-size: 18px; }
@@ -208,8 +239,24 @@
   </style>
 </head>
 <body>
+  <div class="login-gate open" id="login-gate" aria-label="Sales History login">
+    <form class="login-card" id="login-form">
+      <h2>Sales History Login</h2>
+      <div class="sub">Admin access required · JMM Internet Services</div>
+      <div class="err" id="login-err"></div>
+      <div class="fld">
+        <label for="login-user">Username</label>
+        <input id="login-user" name="username" autocomplete="username" required placeholder="admin" />
+      </div>
+      <div class="fld">
+        <label for="login-pass">Password</label>
+        <input id="login-pass" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="primary" id="login-btn">Login</button>
+    </form>
+  </div>
   <div class="app-bgfx" aria-hidden="true"></div>
-  <div class="wrap">
+  <div class="wrap" id="app-wrap" hidden>
     <div class="topbar">
       <div class="brand-row">
         <div class="logo">JM</div>
@@ -218,7 +265,11 @@
           <div class="brand-sub">Billing &amp; Network Control · Sales History</div>
         </div>
       </div>
-      <button type="button" class="ghost" onclick="location.href='/operator'">← Operator</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="ghost" id="btn-logout">Logout</button>
+        <button type="button" class="ghost" onclick="location.href='/mobile'">📱 Mobile app</button>
+        <button type="button" class="ghost" onclick="location.href='/operator'">← Operator</button>
+      </div>
     </div>
 
     <h1 class="module-title">Sales History</h1>
@@ -313,16 +364,51 @@
   <div class="toast" id="toast">Saved</div>
 
   <script type="module">
-    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=4";
+    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=6";
     import {
       isSalesMonthEditable,
       salesMonthLockReason,
-    } from "/lib/sales-history-lock.mjs?v=4";
+    } from "/lib/sales-history-lock.mjs?v=6";
 
     const STORAGE_KEY = "jm_sales_history_vendos_v1";
     const FILTER_KEY = "jm_sales_history_month_filter";
-    const state = { muni: null, brgy: null, entries: [], month: "", editId: null };
+    const state = { muni: null, brgy: null, entries: [], month: "", editId: null, user: null };
     const $ = (id) => document.getElementById(id);
+
+    function showLogin(msg = "") {
+      state.user = null;
+      $("app-wrap").hidden = true;
+      $("login-gate").classList.add("open");
+      $("login-err").textContent = msg || "";
+    }
+    function showApp(user) {
+      state.user = user;
+      $("login-gate").classList.remove("open");
+      $("app-wrap").hidden = false;
+    }
+    async function checkAuth() {
+      try {
+        const r = await fetch("/api/sales-history/me", { credentials: "same-origin" });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok && d.user) return d.user;
+      } catch {}
+      return null;
+    }
+    async function doLogin(username, password) {
+      const r = await fetch("/api/sales-history/login", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || d.ok === false) throw new Error(d.error || "Login failed");
+      return d.user;
+    }
+    async function doLogout() {
+      await fetch("/api/sales-history/logout", { method: "POST", credentials: "same-origin" }).catch(() => {});
+      showLogin("");
+    }
 
     function peso(n) {
       return "₱" + Number(n || 0).toLocaleString("en-PH", { maximumFractionDigits: 0 });
@@ -352,11 +438,14 @@
     async function loadEntries() {
       try {
         const r = await fetch("/api/sales-history", { credentials: "same-origin" });
+        if (r.status === 401) { showLogin("Please login again."); throw new Error("login"); }
         if (r.ok) {
           const d = await r.json();
           if (d && Array.isArray(d.entries)) { state.entries = d.entries; saveLocal(d.entries); return; }
         }
-      } catch {}
+      } catch (e) {
+        if (e && e.message === "login") throw e;
+      }
       state.entries = loadLocal();
     }
 
@@ -368,6 +457,10 @@
         body: body ? JSON.stringify(body) : undefined,
       });
       const d = await r.json().catch(() => ({}));
+      if (r.status === 401 || d.needLogin) {
+        showLogin("Session expired. Login again.");
+        throw new Error("Login required");
+      }
       if (!r.ok || d.ok === false) {
         const err = new Error(d.error || ("HTTP " + r.status));
         err.status = r.status;
@@ -449,9 +542,30 @@
       setTimeout(() => el.classList.remove("show"), 1600);
     }
 
+    /** Union of apply-coverage + barangays that already have encoded sales. */
+    function coverageTree() {
+      const tree = {};
+      for (const [m, list] of Object.entries(APPLY_COVERAGE)) {
+        tree[m] = new Set(list);
+      }
+      for (const e of state.entries) {
+        const m = String(e.municipality || "").toUpperCase().trim();
+        const b = String(e.barangay || "").toUpperCase().trim();
+        if (!m || !b) continue;
+        if (!tree[m]) tree[m] = new Set();
+        tree[m].add(b);
+      }
+      const out = {};
+      for (const m of Object.keys(tree).sort()) {
+        out[m] = [...tree[m]].sort();
+      }
+      return out;
+    }
+
     function renderKpis() {
-      const munis = Object.keys(APPLY_COVERAGE);
-      const brgyCount = munis.reduce((n, m) => n + (APPLY_COVERAGE[m] || []).length, 0);
+      const tree = coverageTree();
+      const munis = Object.keys(tree);
+      const brgyCount = munis.reduce((n, m) => n + (tree[m] || []).length, 0);
       const view = filteredEntries();
       const vendos = new Set(view.map((e) => `${e.municipality}::${e.barangay}::${e.vendo}`));
       const total = view.reduce((n, e) => n + (Number(e.amount) || 0), 0);
@@ -493,15 +607,16 @@
 
     function renderMunicipalities() {
       $("panel-title").textContent = "Municipalities";
-      $("panel-hint").textContent = "Pindutin ang municipality — lalabas ang barangays under nito." +
+      $("panel-hint").textContent = "Location → barangay → vendo name / address · month · total sales." +
         (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
       $("btn-add").style.display = "none";
-      $("thead-row").innerHTML = "<th>Municipality</th><th>Barangays</th><th>Vendos</th><th>Sales</th><th></th>";
-      const munis = Object.keys(APPLY_COVERAGE);
+      $("thead-row").innerHTML = "<th>Location (Municipality)</th><th>Barangays</th><th>Vendos</th><th>Total sales</th><th></th>";
+      const tree = coverageTree();
+      const munis = Object.keys(tree);
       const view = filteredEntries();
       $("rows").innerHTML = munis.map((m) => {
-        const brgys = APPLY_COVERAGE[m] || [];
-        const rows = view.filter((e) => e.municipality === m);
+        const brgys = tree[m] || [];
+        const rows = view.filter((e) => String(e.municipality).toUpperCase() === m);
         const vendoN = new Set(rows.map((e) => e.vendo)).size;
         const total = rows.reduce((n, e) => n + (Number(e.amount) || 0), 0);
         return `<tr data-muni="${esc(m)}">
@@ -518,12 +633,13 @@
     }
 
     function renderBarangays() {
-      const list = APPLY_COVERAGE[state.muni] || [];
+      const tree = coverageTree();
+      const list = tree[state.muni] || [];
       $("panel-title").textContent = state.muni + " · Barangays";
-      $("panel-hint").textContent = "Pindutin ang barangay — lalabas ang + Add vendo." +
+      $("panel-hint").textContent = "Pindutin ang barangay (location) — vendo names / address + monthly sales." +
         (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
       $("btn-add").style.display = "none";
-      $("thead-row").innerHTML = "<th>Barangay</th><th>Vendos</th><th>Total sales</th><th></th>";
+      $("thead-row").innerHTML = "<th>Location (Barangay)</th><th>Vendos</th><th>Total sales</th><th></th>";
       $("rows").innerHTML = list.map((b) => {
         const rows = entriesFor(state.muni, b);
         const vendos = new Set(rows.map((r) => r.vendo)).size;
@@ -555,7 +671,7 @@
       $("btn-add").title = isSalesMonthEditable(addMonth)
         ? "Add vendo"
         : salesMonthLockReason(addMonth);
-      $("thead-row").innerHTML = "<th>Vendo name</th><th>Month / Date</th><th>Sales</th><th>Status</th><th>Actions</th>";
+      $("thead-row").innerHTML = "<th>Vendo name / Address</th><th>Month / Date</th><th>Total sales</th><th>Status</th><th>Actions</th>";
 
       if (!rows.length) {
         $("rows").innerHTML = `<tr class="novis"><td colspan="5" class="empty">${
@@ -658,9 +774,26 @@
     $("btn-x").onclick = closeForm;
     $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeForm(); });
     $("btn-refresh").onclick = async () => { await loadEntries(); render(); toast("Refreshed"); };
+    $("btn-logout").onclick = () => doLogout();
     $("flt-month").addEventListener("change", (e) => setMonthFilter(e.target.value || ""));
     $("flt-month-quick").addEventListener("change", (e) => setMonthFilter(e.target.value || ""));
     $("btn-all-months").onclick = () => setMonthFilter("");
+    $("login-form").onsubmit = async (e) => {
+      e.preventDefault();
+      $("login-err").textContent = "";
+      $("login-btn").disabled = true;
+      try {
+        const user = await doLogin($("login-user").value.trim(), $("login-pass").value);
+        showApp(user);
+        await loadEntries();
+        render();
+        toast("Welcome, " + (user.username || "admin"));
+      } catch (err) {
+        $("login-err").textContent = err.message || "Login failed";
+      } finally {
+        $("login-btn").disabled = false;
+      }
+    };
 
     $("add-form").onsubmit = async (e) => {
       e.preventDefault();
@@ -705,8 +838,16 @@
     };
 
     try { state.month = localStorage.getItem(FILTER_KEY) || ""; } catch { state.month = ""; }
-    await loadEntries();
-    render();
+    const user = await checkAuth();
+    if (!user) {
+      showLogin("");
+      $("login-user").value = "admin";
+      setTimeout(() => $("login-pass").focus(), 40);
+    } else {
+      showApp(user);
+      await loadEntries();
+      render();
+    }
   </script>
 </body>
 </html>
