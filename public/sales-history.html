@@ -114,6 +114,18 @@
     .hint {
       padding: 9px 16px 0; font-family: var(--sans); font-size: 12px; color: var(--muted);
     }
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 12px 14px; margin-bottom: 16px; box-shadow: var(--shadow);
+    }
+    .filter-bar .fld { margin: 0; min-width: 160px; }
+    .filter-bar .fld label {
+      display: block; font-size: 10.5px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 5px;
+    }
+    .filter-bar .grow { flex: 1; min-width: 140px; }
+    .filter-bar .note { font-size: 12px; color: var(--muted); padding-bottom: 8px; }
 
     .scroll { overflow: auto; max-height: 520px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -191,14 +203,29 @@
     </div>
 
     <h1 class="module-title">Sales History</h1>
-    <p class="module-desc">Pindutin ang municipality → barangay → + Add vendo (name, month/date, sales).</p>
+    <p class="module-desc">Pindutin ang municipality → barangay → + Add vendo. Gamitin ang monthly filter para balikan ang old sales.</p>
+
+    <div class="filter-bar" aria-label="Monthly filter">
+      <div class="fld">
+        <label for="flt-month">Month filter</label>
+        <input class="set-in" id="flt-month" type="month" />
+      </div>
+      <div class="fld grow">
+        <label for="flt-month-quick">Quick pick (saved months)</label>
+        <select class="set-in" id="flt-month-quick">
+          <option value="">All months</option>
+        </select>
+      </div>
+      <button type="button" class="ghost" id="btn-all-months">All months</button>
+      <div class="note" id="flt-label">Showing: All months</div>
+    </div>
 
     <section class="bgrid" aria-label="Summary">
       <div class="bcard"><div class="k">Municipalities</div><div class="v" id="k-muni">—</div></div>
       <div class="bcard"><div class="k">Barangays</div><div class="v" id="k-brgy">—</div></div>
       <div class="bcard teal"><div class="k">Vendos</div><div class="v" id="k-vendo">—</div></div>
-      <div class="bcard ok"><div class="k">Total sales ₱</div><div class="v money" id="k-total">—</div></div>
-      <div class="bcard ok"><div class="k">This month ₱</div><div class="v money" id="k-month">—</div></div>
+      <div class="bcard ok"><div class="k">Filtered sales ₱</div><div class="v money" id="k-total">—</div></div>
+      <div class="bcard ok"><div class="k" id="k-month-label">This month ₱</div><div class="v money" id="k-month">—</div></div>
       <div class="bcard warn"><div class="k">Entries</div><div class="v" id="k-rows">—</div></div>
     </section>
 
@@ -265,7 +292,8 @@
     import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs";
 
     const STORAGE_KEY = "jm_sales_history_vendos_v1";
-    const state = { muni: null, brgy: null, entries: [] };
+    const FILTER_KEY = "jm_sales_history_month_filter";
+    const state = { muni: null, brgy: null, entries: [], month: "" };
     const $ = (id) => document.getElementById(id);
 
     function peso(n) {
@@ -277,6 +305,15 @@
     function monthNow() {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    }
+    function entryMonth(e) {
+      return String(e.month || (e.date || "").slice(0, 7) || "");
+    }
+    function formatMonthLabel(ym) {
+      if (!ym) return "All months";
+      const [y, m] = ym.split("-").map(Number);
+      const d = new Date(y, (m || 1) - 1, 1);
+      return d.toLocaleString("en-PH", { month: "long", year: "numeric" });
     }
     function loadLocal() {
       try { const a = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(a) ? a : []; }
@@ -308,10 +345,44 @@
       } catch {}
     }
 
+    function filteredEntries() {
+      if (!state.month) return state.entries;
+      return state.entries.filter((e) => entryMonth(e) === state.month);
+    }
+
     function entriesFor(muni, brgy) {
-      return state.entries.filter(
+      return filteredEntries().filter(
         (e) => String(e.municipality).toUpperCase() === muni && String(e.barangay).toUpperCase() === brgy
       );
+    }
+
+    function availableMonths() {
+      const set = new Set(state.entries.map(entryMonth).filter(Boolean));
+      set.add(monthNow());
+      return [...set].sort().reverse();
+    }
+
+    function syncMonthControls() {
+      const quick = $("flt-month-quick");
+      const months = availableMonths();
+      const cur = state.month;
+      quick.innerHTML =
+        `<option value="">All months</option>` +
+        months.map((m) => `<option value="${esc(m)}">${esc(formatMonthLabel(m))}</option>`).join("");
+      // keep custom past month even if not in list yet
+      if (cur && !months.includes(cur)) {
+        quick.insertAdjacentHTML("beforeend", `<option value="${esc(cur)}">${esc(formatMonthLabel(cur))}</option>`);
+      }
+      quick.value = cur || "";
+      $("flt-month").value = cur || "";
+      $("flt-label").textContent = "Showing: " + formatMonthLabel(cur);
+    }
+
+    function setMonthFilter(ym) {
+      state.month = ym || "";
+      try { localStorage.setItem(FILTER_KEY, state.month); } catch {}
+      syncMonthControls();
+      render();
     }
 
     function toast(msg) {
@@ -324,17 +395,20 @@
     function renderKpis() {
       const munis = Object.keys(APPLY_COVERAGE);
       const brgyCount = munis.reduce((n, m) => n + (APPLY_COVERAGE[m] || []).length, 0);
-      const vendos = new Set(state.entries.map((e) => `${e.municipality}::${e.barangay}::${e.vendo}`));
-      const total = state.entries.reduce((n, e) => n + (Number(e.amount) || 0), 0);
-      const ym = monthNow();
-      const month = state.entries.filter((e) => (e.month || (e.date || "").slice(0, 7)) === ym)
+      const view = filteredEntries();
+      const vendos = new Set(view.map((e) => `${e.municipality}::${e.barangay}::${e.vendo}`));
+      const total = view.reduce((n, e) => n + (Number(e.amount) || 0), 0);
+      const ym = state.month || monthNow();
+      const monthTotal = state.entries
+        .filter((e) => entryMonth(e) === ym)
         .reduce((n, e) => n + (Number(e.amount) || 0), 0);
       $("k-muni").textContent = String(munis.length);
       $("k-brgy").textContent = String(brgyCount);
       $("k-vendo").textContent = String(vendos.size);
       $("k-total").textContent = peso(total);
-      $("k-month").textContent = peso(month);
-      $("k-rows").textContent = String(state.entries.length);
+      $("k-month-label").textContent = (state.month ? formatMonthLabel(state.month) : "This month") + " ₱";
+      $("k-month").textContent = peso(monthTotal);
+      $("k-rows").textContent = String(view.length);
     }
 
     function renderCrumbs() {
@@ -362,19 +436,22 @@
 
     function renderMunicipalities() {
       $("panel-title").textContent = "Municipalities";
-      $("panel-hint").textContent = "Pindutin ang municipality — lalabas ang barangays under nito.";
+      $("panel-hint").textContent = "Pindutin ang municipality — lalabas ang barangays under nito." +
+        (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
       $("btn-add").style.display = "none";
-      $("thead-row").innerHTML = "<th>Municipality</th><th>Barangays</th><th>Vendos</th><th></th>";
+      $("thead-row").innerHTML = "<th>Municipality</th><th>Barangays</th><th>Vendos</th><th>Sales</th><th></th>";
       const munis = Object.keys(APPLY_COVERAGE);
+      const view = filteredEntries();
       $("rows").innerHTML = munis.map((m) => {
         const brgys = APPLY_COVERAGE[m] || [];
-        const vendoN = new Set(
-          state.entries.filter((e) => e.municipality === m).map((e) => e.vendo)
-        ).size;
+        const rows = view.filter((e) => e.municipality === m);
+        const vendoN = new Set(rows.map((e) => e.vendo)).size;
+        const total = rows.reduce((n, e) => n + (Number(e.amount) || 0), 0);
         return `<tr data-muni="${esc(m)}">
           <td><b>${esc(m)}</b></td>
           <td>${brgys.length}</td>
           <td>${vendoN}</td>
+          <td class="money">${peso(total)}</td>
           <td class="muted">Open ›</td>
         </tr>`;
       }).join("");
@@ -386,7 +463,8 @@
     function renderBarangays() {
       const list = APPLY_COVERAGE[state.muni] || [];
       $("panel-title").textContent = state.muni + " · Barangays";
-      $("panel-hint").textContent = "Pindutin ang barangay — lalabas ang + Add vendo.";
+      $("panel-hint").textContent = "Pindutin ang barangay — lalabas ang + Add vendo." +
+        (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
       $("btn-add").style.display = "none";
       $("thead-row").innerHTML = "<th>Barangay</th><th>Vendos</th><th>Total sales</th><th></th>";
       $("rows").innerHTML = list.map((b) => {
@@ -408,12 +486,18 @@
     function renderVendoList() {
       const rows = entriesFor(state.muni, state.brgy);
       $("panel-title").textContent = state.brgy + " · Vendos";
-      $("panel-hint").textContent = state.muni + " › " + state.brgy + " — pindutin ang + Add vendo para magdagdag.";
+      $("panel-hint").textContent = state.muni + " › " + state.brgy +
+        (state.month ? " · " + formatMonthLabel(state.month) : " · All months") +
+        " — pindutin ang + Add vendo para magdagdag.";
       $("btn-add").style.display = "";
       $("thead-row").innerHTML = "<th>Vendo name</th><th>Month / Date</th><th>Sales</th><th>Entries</th>";
 
       if (!rows.length) {
-        $("rows").innerHTML = `<tr class="novis"><td colspan="4" class="empty">No vendos yet — click "+ Add vendo".</td></tr>`;
+        $("rows").innerHTML = `<tr class="novis"><td colspan="4" class="empty">${
+          state.month
+            ? "No sales for " + esc(formatMonthLabel(state.month)) + " — change month filter or + Add vendo."
+            : "No vendos yet — click \"+ Add vendo\"."
+        }</td></tr>`;
         return;
       }
 
@@ -439,6 +523,7 @@
     }
 
     function render() {
+      syncMonthControls();
       renderKpis();
       renderCrumbs();
       if (!state.muni) renderMunicipalities();
@@ -449,11 +534,12 @@
     function openForm() {
       $("form-err").textContent = "";
       $("modal-where").textContent = state.muni + " › " + state.brgy;
-      const ym = monthNow();
+      const ym = state.month || monthNow();
       const d = new Date();
+      const day = state.month && state.month !== monthNow() ? "01" : String(d.getDate()).padStart(2, "0");
       $("f-vendo").value = "";
       $("f-month").value = ym;
-      $("f-date").value = `${ym}-${String(d.getDate()).padStart(2, "0")}`;
+      $("f-date").value = `${ym}-${day}`;
       $("f-amount").value = "";
       $("modal").classList.add("open");
       setTimeout(() => $("f-vendo").focus(), 40);
@@ -465,6 +551,9 @@
     $("btn-x").onclick = closeForm;
     $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeForm(); });
     $("btn-refresh").onclick = async () => { await loadEntries(); render(); toast("Refreshed"); };
+    $("flt-month").addEventListener("change", (e) => setMonthFilter(e.target.value || ""));
+    $("flt-month-quick").addEventListener("change", (e) => setMonthFilter(e.target.value || ""));
+    $("btn-all-months").onclick = () => setMonthFilter("");
 
     $("add-form").onsubmit = async (e) => {
       e.preventDefault();
@@ -487,9 +576,12 @@
       });
       closeForm();
       toast("Vendo saved");
-      render();
+      // Jump filter to the month just saved so old/new history is easy to review
+      if (state.month !== month) setMonthFilter(month);
+      else render();
     };
 
+    try { state.month = localStorage.getItem(FILTER_KEY) || ""; } catch { state.month = ""; }
     await loadEntries();
     render();
   </script>
