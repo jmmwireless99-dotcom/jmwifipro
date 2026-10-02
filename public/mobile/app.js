@@ -192,6 +192,45 @@ function entriesFor(muni, brgy) {
   );
 }
 
+function encodeMonth() {
+  return state.month || monthNow();
+}
+
+function knownVendoNames(muni, brgy) {
+  const set = new Set();
+  for (const e of state.entries) {
+    if (String(e.municipality).toUpperCase() !== muni) continue;
+    if (String(e.barangay).toUpperCase() !== brgy) continue;
+    const v = String(e.vendo || "").trim();
+    if (v) set.add(v);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+}
+
+function vendoEncodeRows(muni, brgy) {
+  const ym = encodeMonth();
+  const names = knownVendoNames(muni, brgy);
+  const byName = new Map();
+  for (const e of state.entries) {
+    if (String(e.municipality).toUpperCase() !== muni) continue;
+    if (String(e.barangay).toUpperCase() !== brgy) continue;
+    if (entryMonth(e) !== ym) continue;
+    const v = String(e.vendo || "").trim();
+    if (!v) continue;
+    if (!byName.has(v)) byName.set(v, e);
+  }
+  return names.map((vendo) => {
+    const entry = byName.get(vendo) || null;
+    return {
+      vendo,
+      month: ym,
+      entry,
+      amount: entry ? Number(entry.amount) || 0 : null,
+      pending: !entry,
+    };
+  });
+}
+
 function canEdit(e) {
   return isSalesMonthEditable(entryMonth(e));
 }
@@ -214,33 +253,59 @@ function setMonth(ym) {
   render();
 }
 
-function openSheet(entry = null) {
-  state.editId = entry ? entry.id : null;
-  $("sheet-title").textContent = entry ? "Edit vendo" : "Add vendo";
-  $("sheet-where").textContent = state.muni + " › " + state.brgy;
+function openEncodeSheet(vendoName, { allowNewName = false } = {}) {
   $("form-err").textContent = "";
-  const ym = entry ? entryMonth(entry) : state.month || monthNow();
-  const d = new Date();
-  const day =
-    entry && entry.date
-      ? entry.date.slice(8, 10)
-      : state.month && state.month !== monthNow()
-        ? "01"
-        : String(d.getDate()).padStart(2, "0");
-  $("f-vendo").value = entry ? entry.vendo : "";
-  $("f-month").value = ym;
-  $("f-date").value = entry?.date || `${ym}-${day}`;
-  $("f-amount").value = entry ? String(Number(entry.amount) || 0) : "";
+  const ym = encodeMonth();
+  const name = String(vendoName || "").trim();
+  const existing = name
+    ? state.entries.find(
+        (e) =>
+          String(e.municipality).toUpperCase() === state.muni &&
+          String(e.barangay).toUpperCase() === state.brgy &&
+          String(e.vendo || "").trim() === name &&
+          entryMonth(e) === ym
+      )
+    : null;
+  state.editId = existing ? existing.id : null;
+  const lockedName = !!name && !allowNewName;
+  $("sheet-title").textContent = existing
+    ? "Edit amount"
+    : lockedName
+      ? "Encode amount"
+      : "New vendo name";
+  $("sheet-where").textContent =
+    state.muni + " › " + state.brgy + " · " + formatMonthLabel(ym);
+  $("btn-save").textContent = "Save amount";
   if (!isSalesMonthEditable(ym)) {
     $("form-err").textContent = salesMonthLockReason(ym);
   }
+  const d = new Date();
+  const day =
+    existing && existing.date
+      ? existing.date.slice(8, 10)
+      : ym !== monthNow()
+        ? "01"
+        : String(d.getDate()).padStart(2, "0");
+  $("f-vendo").value = name;
+  $("f-vendo").readOnly = lockedName;
+  $("f-month").value = ym;
+  $("f-month").readOnly = lockedName;
+  $("f-date").value = existing?.date || `${ym}-${day}`;
+  $("f-amount").value = existing ? String(Number(existing.amount) || 0) : "";
   $("sheet-backdrop").classList.add("open");
   $("sheet").classList.add("open");
-  setTimeout(() => $("f-vendo").focus(), 50);
+  setTimeout(() => (lockedName ? $("f-amount") : $("f-vendo")).focus(), 50);
+}
+
+function openSheet(entry = null) {
+  if (entry) openEncodeSheet(entry.vendo);
+  else openEncodeSheet("", { allowNewName: true });
 }
 
 function closeSheet() {
   state.editId = null;
+  $("f-vendo").readOnly = false;
+  $("f-month").readOnly = false;
   $("sheet-backdrop").classList.remove("open");
   $("sheet").classList.remove("open");
 }
@@ -313,6 +378,7 @@ function renderMunicipalities() {
 function renderBarangays() {
   const q = state.q.trim().toUpperCase();
   const tree = coverageTree();
+  const ym = encodeMonth();
   const brgys = (tree[state.muni] || []).filter((b) => !q || b.includes(q));
   if (!brgys.length) {
     $("list").innerHTML = `<div class="empty"><strong>Walang barangay</strong></div>`;
@@ -320,12 +386,13 @@ function renderBarangays() {
   }
   $("list").innerHTML = brgys
     .map((brgy) => {
-      const rows = entriesFor(state.muni, brgy);
+      const names = knownVendoNames(state.muni, brgy);
+      const rows = vendoEncodeRows(state.muni, brgy);
+      const encoded = rows.filter((r) => !r.pending && Number(r.amount) > 0).length;
       const sales = rows.reduce((s, e) => s + (Number(e.amount) || 0), 0);
-      const vendos = new Set(rows.map((e) => e.vendo)).size;
       return `<button type="button" class="row" data-brgy="${esc(brgy)}">
         <div class="avatar">${esc(brgy.slice(0, 2))}</div>
-        <div class="meta"><strong>${esc(brgy)}</strong><span>${vendos} vendo name/address</span></div>
+        <div class="meta"><strong>${esc(brgy)}</strong><span>${names.length} vendos · ${encoded} encoded · ${esc(formatMonthLabel(ym))}</span></div>
         <div class="right"><div class="amt">${peso(sales)}</div><div class="sub">total</div></div>
         <span class="chev">›</span>
       </button>`;
@@ -342,38 +409,47 @@ function renderBarangays() {
 }
 
 function renderVendos() {
-  const rows = entriesFor(state.muni, state.brgy);
+  const ym = encodeMonth();
+  const rows = vendoEncodeRows(state.muni, state.brgy);
   if (!rows.length) {
-    $("list").innerHTML = `<div class="empty"><strong>Walang vendo pa</strong>Pindutin ang + Add vendo para mag-encode.</div>`;
+    $("list").innerHTML = `<div class="empty"><strong>Walang vendo pa</strong>Pindutin ang + New vendo name, tapos amount na lang sa susunod.</div>`;
     return;
   }
+  const unlocked = isSalesMonthEditable(ym);
+  const tip = unlocked ? "" : esc(salesMonthLockReason(ym));
   $("list").innerHTML = rows
     .map((r) => {
-      const unlocked = canEdit(r);
-      const tip = unlocked ? "" : esc(salesMonthLockReason(entryMonth(r)));
-      return `<article class="vendo-card" data-id="${esc(r.id)}">
+      const status = !unlocked
+        ? "Locked"
+        : r.pending
+          ? "Need amount"
+          : Number(r.amount) > 0
+            ? "Encoded"
+            : "₱0";
+      const amt = r.pending ? "—" : peso(r.amount);
+      const encodeLabel = r.pending || !(Number(r.amount) > 0) ? "₱ Amount" : "✏️ Edit amount";
+      const delBtn = r.entry
+        ? `<button type="button" class="del" data-del="${esc(r.entry.id)}" ${unlocked ? "" : "disabled"} title="${tip}">🗑 Delete</button>`
+        : "";
+      return `<article class="vendo-card" data-vendo="${esc(r.vendo)}">
         <div class="head">
           <h3>${esc(r.vendo)}</h3>
-          <div class="amt">${peso(r.amount)}</div>
+          <div class="amt">${amt}</div>
         </div>
         <div class="info">
-          <span class="pill">${esc(entryMonth(r) || "—")}</span>
-          <span class="pill">${esc(r.date || "")}</span>
-          <span class="pill ${unlocked ? "ok" : "lock"}">${unlocked ? "Editable" : "Locked"}</span>
+          <span class="pill">${esc(ym)}</span>
+          <span class="pill ${unlocked && !r.pending && Number(r.amount) > 0 ? "ok" : unlocked ? "" : "lock"}">${status}</span>
         </div>
         <div class="actions">
-          <button type="button" class="edit" data-edit="${esc(r.id)}" ${unlocked ? "" : "disabled"} title="${tip}">✏️ Edit</button>
-          <button type="button" class="del" data-del="${esc(r.id)}" ${unlocked ? "" : "disabled"} title="${tip}">🗑 Delete</button>
+          <button type="button" class="edit" data-encode="${esc(r.vendo)}" ${unlocked ? "" : "disabled"} title="${tip}">${encodeLabel}</button>
+          ${delBtn}
         </div>
       </article>`;
     })
     .join("");
 
-  $("list").querySelectorAll("[data-edit]").forEach((btn) => {
-    btn.onclick = () => {
-      const entry = state.entries.find((e) => e.id === btn.dataset.edit);
-      if (entry) openSheet(entry);
-    };
+  $("list").querySelectorAll("[data-encode]").forEach((btn) => {
+    btn.onclick = () => openEncodeSheet(btn.dataset.encode);
   });
   $("list").querySelectorAll("[data-del]").forEach((btn) => {
     btn.onclick = async () => {
@@ -409,10 +485,10 @@ function renderHome() {
   const showFab = !!(state.muni && state.brgy);
   $("fab").classList.toggle("show", showFab);
   if (showFab) {
-    const addMonth = state.month || monthNow();
+    const addMonth = encodeMonth();
     $("fab").disabled = !isSalesMonthEditable(addMonth);
     $("fab").title = isSalesMonthEditable(addMonth)
-      ? "Add vendo"
+      ? "Add a new vendo name"
       : salesMonthLockReason(addMonth);
   }
 }
@@ -501,7 +577,7 @@ async function refresh() {
 }
 
 $("btn-refresh").onclick = () => refresh();
-$("fab").onclick = () => openSheet(null);
+$("fab").onclick = () => openEncodeSheet("", { allowNewName: true });
 $("btn-cancel").onclick = closeSheet;
 $("sheet-backdrop").onclick = closeSheet;
 $("btn-all-months").onclick = () => setMonth("");
@@ -541,7 +617,7 @@ $("add-form").onsubmit = async (e) => {
         date,
         amount,
       });
-      toast("Updated");
+      toast("Amount updated");
     } else {
       await persistEntry({
         id: "sh_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -553,7 +629,7 @@ $("add-form").onsubmit = async (e) => {
         amount,
         createdAt: new Date().toISOString(),
       });
-      toast("Vendo saved");
+      toast("Amount saved");
     }
     closeSheet();
     if (state.month && state.month !== month) setMonth(month);
