@@ -2,201 +2,262 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales History — JM WIFI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales History — JMM Internet Services</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0f1419;
-      --bg2: #161d26;
-      --panel: #1a2330;
-      --line: #2a3648;
-      --ink: #e8eef6;
-      --muted: #8b9bb0;
-      --accent: #1d9e75;
-      --accent2: #2ec4a0;
-      --ok: #3ecf8e;
-      --bad: #e85d6a;
-      --radius: 12px;
+      --bg: #0a1120;
+      --panel: #121b2e;
+      --panel-2: #18233c;
+      --line: #25324f;
+      --text: #eef2fa;
+      --muted: #93a3c0;
+      --accent: #4a8cff;
+      --accent-2: #2bc4e8;
+      --accent-dim: #1e3a8a;
+      --grad: linear-gradient(135deg, #3b7bff 0%, #4a8cff 100%);
+      --grad-flat: #3b7bff;
+      --ok: #2dd482;
+      --warn: #ff5d6d;
+      --bad: #ff5d6d;
       --mono: "IBM Plex Mono", ui-monospace, monospace;
       --sans: "IBM Plex Sans", system-ui, sans-serif;
+      --radius: 16px;
+      --shadow: 0 2px 8px rgba(0,0,0,.22), 0 1px 2px rgba(0,0,0,.16);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: var(--sans);
-      background:
-        radial-gradient(900px 480px at 8% -10%, rgba(29, 158, 117, 0.14), transparent 55%),
-        linear-gradient(180deg, #121820 0%, var(--bg) 45%);
-      color: var(--ink);
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
     }
-    .wrap { max-width: 920px; margin: 0 auto; padding: 20px 16px 56px; }
-    header.top {
-      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
-      align-items: flex-end; margin-bottom: 18px;
+    .app-bgfx {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(900px 480px at 12% -10%, rgba(59,123,255,.12), transparent 55%),
+        radial-gradient(700px 420px at 90% 0%, rgba(43,196,232,.07), transparent 50%),
+        var(--bg);
     }
-    .brand { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent2); font-weight: 700; }
-    h1 { font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 700; margin-top: 4px; }
-    .sub { color: var(--muted); font-size: 13.5px; margin-top: 4px; }
-    a.back {
-      display: inline-block; text-decoration: none; color: var(--ink);
-      border: 1px solid var(--line); background: var(--panel); border-radius: 8px;
-      padding: 8px 12px; font-size: 13px; font-weight: 600;
-    }
-    a.back:hover { border-color: var(--accent); color: var(--accent2); }
+    .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px 18px 48px; }
 
-    .crumbs {
-      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
-      margin-bottom: 14px; font-size: 13px; color: var(--muted);
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      flex-wrap: wrap; margin-bottom: 18px;
     }
-    .crumbs button {
-      border: 0; background: transparent; color: var(--accent2); font: inherit;
-      font-weight: 600; cursor: pointer; padding: 0;
+    .brand-row { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--grad); display: grid; place-items: center;
+      font-weight: 800; font-size: 13px; color: #fff; box-shadow: 0 4px 14px rgba(59,123,255,.35);
     }
-    .crumbs button:hover { text-decoration: underline; }
-    .crumbs .here { color: var(--ink); font-weight: 700; }
+    .brand-name { font-family: var(--sans); font-weight: 800; font-size: 14px; letter-spacing: .02em; }
+    .brand-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+    .module-title { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text); margin: 0 0 4px; letter-spacing: -.3px; }
+    .module-desc { font-family: var(--sans); font-size: 13px; color: var(--muted); margin: 0 0 18px; }
+
+    .bgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .bcard {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 16px 14px 18px; position: relative; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .bcard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); opacity: .85; }
+    .bcard.ok::before { background: var(--ok); }
+    .bcard.teal::before { background: var(--accent-2); }
+    .bcard.warn::before { background: var(--warn); }
+    .bcard .k { font-family: var(--sans); font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+    .bcard .v { font-family: var(--mono); font-size: 23px; font-weight: 600; margin-top: 7px; color: var(--text); }
+    .bcard .v.money { color: var(--ok); }
+    .bcard.warn .v { color: var(--warn); }
 
     .panel {
       background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-      overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,.28);
+      overflow: hidden; box-shadow: var(--shadow); margin-bottom: 20px;
     }
-    .panel-head {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      padding: 12px 14px; border-bottom: 1px solid var(--line);
-      background: linear-gradient(90deg, rgba(29,158,117,.14), transparent);
+    .panel h2 {
+      font-family: var(--sans); font-weight: 700; font-size: 13.5px; letter-spacing: .7px;
+      text-transform: uppercase; color: var(--text); margin: 0; padding: 15px 20px;
+      border-bottom: 1px solid var(--line); display: flex; align-items: center;
+      justify-content: space-between; gap: 10px; flex-wrap: wrap;
     }
-    .panel-head h2 { font-size: 14px; font-weight: 700; }
-    .panel-head .meta { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .panel h2 .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-    .list { list-style: none; }
-    .list li { border-bottom: 1px solid var(--line); }
-    .list li:last-child { border-bottom: 0; }
-    .row {
-      width: 100%; display: flex; align-items: center; gap: 12px;
-      padding: 13px 14px; background: transparent; border: 0; color: var(--ink);
-      font: inherit; text-align: left; cursor: pointer;
+    button, .btn {
+      background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+      border-radius: 8px; padding: 8px 14px; font-family: var(--sans); font-size: 12.5px;
+      font-weight: 600; cursor: pointer; box-shadow: none;
     }
-    .row:hover { background: rgba(46, 196, 160, 0.08); }
-    .row .ico {
-      width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
-      background: #203042; border: 1px solid var(--line); flex: 0 0 34px; font-size: 15px;
+    button:hover, .btn:hover { filter: brightness(1.07); }
+    button.primary, .btn.primary {
+      background: var(--grad); color: #fff; border-color: transparent; font-weight: 700;
+      box-shadow: 0 3px 12px rgba(59,123,255,.35);
     }
-    .row .txt { flex: 1; min-width: 0; }
-    .row .name { font-weight: 700; font-size: 14px; }
-    .row .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .row .chev { color: var(--muted); font-size: 18px; }
+    button.ghost { background: var(--panel-2); }
 
-    .plus {
-      width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
-      background: linear-gradient(135deg, #0d6b4a, #1d9e75); color: #fff;
-      font-size: 26px; font-weight: 700; line-height: 1; box-shadow: 0 6px 18px rgba(29,158,117,.35);
+    .crumbs {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      padding: 12px 16px 0; font-size: 12.5px; color: var(--muted);
     }
-    .plus:hover { filter: brightness(1.08); }
+    .crumbs button {
+      background: transparent; border: none; color: var(--accent); padding: 0;
+      font-size: 12.5px; font-weight: 700; box-shadow: none;
+    }
+    .crumbs button:hover { text-decoration: underline; filter: none; }
+    .crumbs .here { color: var(--text); font-weight: 700; }
 
-    .vendo-card {
-      padding: 12px 14px; border-bottom: 1px solid var(--line);
-      display: grid; gap: 4px;
+    .hint {
+      padding: 9px 16px 0; font-family: var(--sans); font-size: 12px; color: var(--muted);
     }
-    .vendo-card:last-child { border-bottom: 0; }
-    .vendo-card .vn { font-weight: 700; font-size: 14px; }
-    .vendo-card .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-    .vendo-card .amt { font-family: var(--mono); font-weight: 600; color: var(--ok); font-size: 14px; }
-    .empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 13.5px; }
 
-    /* Modal form */
-    .modal-bg {
-      position: fixed; inset: 0; background: rgba(5, 10, 16, .72);
-      display: none; align-items: flex-end; justify-content: center; z-index: 80;
-      padding: 16px;
+    .scroll { overflow: auto; max-height: 520px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      text-align: left; font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px; padding: 12px 16px;
+      border-bottom: 1px solid var(--line); background: rgba(0,0,0,.15); position: sticky; top: 0; z-index: 1;
     }
-    .modal-bg.open { display: flex; }
-    @media (min-width: 640px) { .modal-bg { align-items: center; } }
+    tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover td { background: rgba(74,140,255,.06); }
+    tbody tr.novis { cursor: default; }
+    tbody tr.novis:hover td { background: transparent; }
+    td.empty { text-align: center; color: var(--muted); padding: 28px 16px; cursor: default; }
+    .money { font-family: var(--mono); font-weight: 600; color: var(--ok); }
+    .muted { color: var(--muted); }
+    .chip {
+      display: inline-block; background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 999px; padding: 2px 8px; font-size: 11px; color: var(--muted); font-weight: 600;
+    }
+
     .modal {
-      width: min(440px, 100%); background: var(--panel); border: 1px solid var(--line);
-      border-radius: 16px; padding: 16px; box-shadow: 0 20px 50px rgba(0,0,0,.45);
-      animation: up .2s ease;
+      position: fixed; inset: 0; z-index: 900; background: rgba(0,0,0,.6);
+      display: none; align-items: center; justify-content: center; padding: 20px;
     }
-    @keyframes up { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
-    .modal h3 { font-size: 16px; margin-bottom: 4px; }
-    .modal .where { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
-    .fld { display: grid; gap: 5px; margin-bottom: 12px; }
-    .fld label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
-    .fld input, .fld select {
-      background: var(--bg2); border: 1px solid var(--line); color: var(--ink);
-      border-radius: 9px; padding: 10px 12px; font: inherit; font-size: 14px; width: 100%;
+    .modal.open { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.45);
     }
-    .fld input:focus, .fld select:focus { outline: 2px solid rgba(29,158,117,.45); border-color: var(--accent); }
-    .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
-    .btn {
-      border: 1px solid var(--line); background: var(--bg2); color: var(--ink);
-      border-radius: 9px; padding: 10px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; border-bottom: 1px solid var(--line);
+      font-family: var(--mono); font-size: 13px; position: sticky; top: 0; background: var(--panel); z-index: 2;
     }
-    .btn.primary { background: linear-gradient(135deg, #0d6b4a, #1d9e75); border-color: transparent; color: #fff; }
-    .btn:hover { filter: brightness(1.05); }
-    .err { color: var(--bad); font-size: 12.5px; min-height: 18px; margin-bottom: 6px; }
+    .modal-head .x { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 18px; box-shadow: none; padding: 4px 8px; }
+    .modal-body { padding: 16px; }
+    .fld { margin-bottom: 12px; }
+    .fld label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+    .set-in {
+      display: block; width: 100%; box-sizing: border-box; background: var(--bg);
+      border: 1px solid var(--line); color: var(--text); border-radius: 8px;
+      padding: 10px 12px; font-family: var(--sans); font-size: 13.5px;
+    }
+    .set-in:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,140,255,.18); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .err { color: var(--warn); font-size: 12.5px; min-height: 18px; margin-bottom: 6px; }
     .toast {
-      position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
-      background: #123528; border: 1px solid var(--accent); color: var(--ok);
-      padding: 10px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
-      display: none; z-index: 90;
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      background: #10263f; border: 1px solid var(--accent); color: var(--text);
+      padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      display: none; z-index: 950; box-shadow: 0 8px 24px rgba(0,0,0,.35);
     }
     .toast.show { display: block; }
+
+    @media (max-width: 640px) {
+      .bcard .v { font-size: 20px; }
+      .module-title { font-size: 18px; }
+    }
   </style>
 </head>
 <body>
+  <div class="app-bgfx" aria-hidden="true"></div>
   <div class="wrap">
-    <header class="top">
-      <div>
-        <div class="brand">JM WIFI NETWORK</div>
-        <h1>Sales History</h1>
-        <p class="sub">Municipal → Barangay → + Add vendo (name, month/date, sales)</p>
-      </div>
-      <a class="back" href="/operator">← Operator</a>
-    </header>
-
-    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
-
-    <section class="panel">
-      <div class="panel-head">
+    <div class="topbar">
+      <div class="brand-row">
+        <div class="logo">JM</div>
         <div>
-          <h2 id="panel-title">Municipalities</h2>
-          <div class="meta" id="panel-meta">Piliin ang municipality</div>
+          <div class="brand-name">JMM INTERNET SERVICES</div>
+          <div class="brand-sub">Billing &amp; Network Control · Sales History</div>
         </div>
-        <button type="button" class="plus" id="btn-add" title="Add vendo" style="display:none" aria-label="Add vendo">+</button>
       </div>
-      <div id="view"></div>
+      <button type="button" class="ghost" onclick="location.href='/operator'">← Operator</button>
+    </div>
+
+    <h1 class="module-title">Sales History</h1>
+    <p class="module-desc">Pindutin ang municipality → barangay → + Add vendo (name, month/date, sales).</p>
+
+    <section class="bgrid" aria-label="Summary">
+      <div class="bcard"><div class="k">Municipalities</div><div class="v" id="k-muni">—</div></div>
+      <div class="bcard"><div class="k">Barangays</div><div class="v" id="k-brgy">—</div></div>
+      <div class="bcard teal"><div class="k">Vendos</div><div class="v" id="k-vendo">—</div></div>
+      <div class="bcard ok"><div class="k">Total sales ₱</div><div class="v money" id="k-total">—</div></div>
+      <div class="bcard ok"><div class="k">This month ₱</div><div class="v money" id="k-month">—</div></div>
+      <div class="bcard warn"><div class="k">Entries</div><div class="v" id="k-rows">—</div></div>
     </section>
+
+    <div class="panel">
+      <h2>
+        <span id="panel-title">Municipalities</span>
+        <span class="actions">
+          <button type="button" class="ghost" id="btn-refresh">⟳ refresh</button>
+          <button type="button" class="primary" id="btn-add" style="display:none">+ Add vendo</button>
+        </span>
+      </h2>
+      <nav class="crumbs" id="crumbs"></nav>
+      <div class="hint" id="panel-hint">Piliin ang municipality para makita ang barangays.</div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr id="thead-row">
+              <th>Municipality</th>
+              <th>Barangays</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rows"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
-  <div class="modal-bg" id="modal-bg" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <form class="modal" id="add-form">
-      <h3 id="modal-title">Add vendo</h3>
-      <div class="where" id="modal-where">—</div>
-      <div class="err" id="form-err"></div>
-      <div class="fld">
-        <label for="f-vendo">Vendo name</label>
-        <input id="f-vendo" name="vendo" required placeholder="e.g. Vendo Candelaria Plaza" autocomplete="off" />
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span>Add vendo</span>
+        <button type="button" class="x" id="btn-x" aria-label="Close">✕</button>
       </div>
-      <div class="fld">
-        <label for="f-month">Month</label>
-        <input id="f-month" name="month" type="month" required />
-      </div>
-      <div class="fld">
-        <label for="f-date">Date (optional day)</label>
-        <input id="f-date" name="date" type="date" />
-      </div>
-      <div class="fld">
-        <label for="f-amount">Sales per vendo (₱)</label>
-        <input id="f-amount" name="amount" type="number" min="0" step="1" required placeholder="0" />
-      </div>
-      <div class="actions">
-        <button type="button" class="btn" id="btn-cancel">Cancel</button>
-        <button type="submit" class="btn primary">Save vendo</button>
-      </div>
-    </form>
+      <form class="modal-body" id="add-form">
+        <div class="hint" style="padding:0 0 12px" id="modal-where">—</div>
+        <div class="err" id="form-err"></div>
+        <div class="fld">
+          <label for="f-vendo">Vendo name</label>
+          <input class="set-in" id="f-vendo" required placeholder="e.g. Vendo Candelaria Plaza" autocomplete="off" />
+        </div>
+        <div class="fld">
+          <label for="f-month">Month</label>
+          <input class="set-in" id="f-month" type="month" required />
+        </div>
+        <div class="fld">
+          <label for="f-date">Date</label>
+          <input class="set-in" id="f-date" type="date" />
+        </div>
+        <div class="fld">
+          <label for="f-amount">Sales per vendo (₱)</label>
+          <input class="set-in" id="f-amount" type="number" min="0" step="1" required placeholder="0" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="ghost" id="btn-cancel">Cancel</button>
+          <button type="submit" class="primary">Save vendo</button>
+        </div>
+      </form>
+    </div>
   </div>
   <div class="toast" id="toast">Saved</div>
 
@@ -204,51 +265,31 @@
     import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs";
 
     const STORAGE_KEY = "jm_sales_history_vendos_v1";
-    const state = {
-      muni: null,
-      brgy: null,
-      entries: [],
-    };
-
+    const state = { muni: null, brgy: null, entries: [] };
     const $ = (id) => document.getElementById(id);
 
     function peso(n) {
       return "₱" + Number(n || 0).toLocaleString("en-PH", { maximumFractionDigits: 0 });
     }
-
     function esc(s) {
-      return String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+      return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
-
+    function monthNow() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    }
     function loadLocal() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const arr = raw ? JSON.parse(raw) : [];
-        return Array.isArray(arr) ? arr : [];
-      } catch {
-        return [];
-      }
+      try { const a = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(a) ? a : []; }
+      catch { return []; }
     }
-
-    function saveLocal(entries) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    }
+    function saveLocal(entries) { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
 
     async function loadEntries() {
-      // Prefer server file; fall back to localStorage
       try {
         const r = await fetch("/api/sales-history", { credentials: "same-origin" });
         if (r.ok) {
           const d = await r.json();
-          if (d && Array.isArray(d.entries)) {
-            state.entries = d.entries;
-            saveLocal(d.entries);
-            return;
-          }
+          if (d && Array.isArray(d.entries)) { state.entries = d.entries; saveLocal(d.entries); return; }
         }
       } catch {}
       state.entries = loadLocal();
@@ -269,37 +310,41 @@
 
     function entriesFor(muni, brgy) {
       return state.entries.filter(
-        (e) =>
-          String(e.municipality).toUpperCase() === muni &&
-          String(e.barangay).toUpperCase() === brgy
+        (e) => String(e.municipality).toUpperCase() === muni && String(e.barangay).toUpperCase() === brgy
       );
-    }
-
-    function countBrgy(muni) {
-      return (APPLY_COVERAGE[muni] || []).length;
-    }
-
-    function countVendos(muni, brgy) {
-      const set = new Set(entriesFor(muni, brgy).map((e) => e.vendo));
-      return set.size;
     }
 
     function toast(msg) {
       const el = $("toast");
       el.textContent = msg;
       el.classList.add("show");
-      setTimeout(() => el.classList.remove("show"), 1800);
+      setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    function renderKpis() {
+      const munis = Object.keys(APPLY_COVERAGE);
+      const brgyCount = munis.reduce((n, m) => n + (APPLY_COVERAGE[m] || []).length, 0);
+      const vendos = new Set(state.entries.map((e) => `${e.municipality}::${e.barangay}::${e.vendo}`));
+      const total = state.entries.reduce((n, e) => n + (Number(e.amount) || 0), 0);
+      const ym = monthNow();
+      const month = state.entries.filter((e) => (e.month || (e.date || "").slice(0, 7)) === ym)
+        .reduce((n, e) => n + (Number(e.amount) || 0), 0);
+      $("k-muni").textContent = String(munis.length);
+      $("k-brgy").textContent = String(brgyCount);
+      $("k-vendo").textContent = String(vendos.size);
+      $("k-total").textContent = peso(total);
+      $("k-month").textContent = peso(month);
+      $("k-rows").textContent = String(state.entries.length);
     }
 
     function renderCrumbs() {
       const el = $("crumbs");
-      const parts = [];
-      parts.push(`<button type="button" data-go="root">Municipalities</button>`);
+      const parts = [`<button type="button" data-go="root">Municipalities</button>`];
       if (state.muni) {
-        parts.push(`<span>›</span>`);
+        parts.push("<span>›</span>");
         if (state.brgy) {
           parts.push(`<button type="button" data-go="muni">${esc(state.muni)}</button>`);
-          parts.push(`<span>›</span>`);
+          parts.push("<span>›</span>");
           parts.push(`<span class="here">${esc(state.brgy)}</span>`);
         } else {
           parts.push(`<span class="here">${esc(state.muni)}</span>`);
@@ -308,12 +353,8 @@
       el.innerHTML = parts.join(" ");
       el.querySelectorAll("button[data-go]").forEach((btn) => {
         btn.onclick = () => {
-          if (btn.dataset.go === "root") {
-            state.muni = null;
-            state.brgy = null;
-          } else if (btn.dataset.go === "muni") {
-            state.brgy = null;
-          }
+          if (btn.dataset.go === "root") { state.muni = null; state.brgy = null; }
+          else if (btn.dataset.go === "muni") { state.brgy = null; }
           render();
         };
       });
@@ -321,129 +362,109 @@
 
     function renderMunicipalities() {
       $("panel-title").textContent = "Municipalities";
-      $("panel-meta").textContent = Object.keys(APPLY_COVERAGE).length + " municipalities · from jmwifi.pro/apply";
+      $("panel-hint").textContent = "Pindutin ang municipality — lalabas ang barangays under nito.";
       $("btn-add").style.display = "none";
+      $("thead-row").innerHTML = "<th>Municipality</th><th>Barangays</th><th>Vendos</th><th></th>";
       const munis = Object.keys(APPLY_COVERAGE);
-      $("view").innerHTML =
-        `<ul class="list">` +
-        munis
-          .map((m) => {
-            const n = countBrgy(m);
-            return `<li>
-              <button type="button" class="row" data-muni="${esc(m)}">
-                <span class="ico">🏘</span>
-                <span class="txt">
-                  <div class="name">${esc(m)}</div>
-                  <div class="desc">${n} barangay${n === 1 ? "" : "s"}</div>
-                </span>
-                <span class="chev">›</span>
-              </button>
-            </li>`;
-          })
-          .join("") +
-        `</ul>`;
-      $("view").querySelectorAll("[data-muni]").forEach((btn) => {
-        btn.onclick = () => {
-          state.muni = btn.dataset.muni;
-          state.brgy = null;
-          render();
-        };
+      $("rows").innerHTML = munis.map((m) => {
+        const brgys = APPLY_COVERAGE[m] || [];
+        const vendoN = new Set(
+          state.entries.filter((e) => e.municipality === m).map((e) => e.vendo)
+        ).size;
+        return `<tr data-muni="${esc(m)}">
+          <td><b>${esc(m)}</b></td>
+          <td>${brgys.length}</td>
+          <td>${vendoN}</td>
+          <td class="muted">Open ›</td>
+        </tr>`;
+      }).join("");
+      $("rows").querySelectorAll("tr[data-muni]").forEach((tr) => {
+        tr.onclick = () => { state.muni = tr.dataset.muni; state.brgy = null; render(); };
       });
     }
 
     function renderBarangays() {
       const list = APPLY_COVERAGE[state.muni] || [];
-      $("panel-title").textContent = state.muni;
-      $("panel-meta").textContent = list.length + " barangays · pindutin para mag-add ng vendo";
+      $("panel-title").textContent = state.muni + " · Barangays";
+      $("panel-hint").textContent = "Pindutin ang barangay — lalabas ang + Add vendo.";
       $("btn-add").style.display = "none";
-      $("view").innerHTML =
-        `<ul class="list">` +
-        list
-          .map((b) => {
-            const v = countVendos(state.muni, b);
-            return `<li>
-              <button type="button" class="row" data-brgy="${esc(b)}">
-                <span class="ico">📍</span>
-                <span class="txt">
-                  <div class="name">${esc(b)}</div>
-                  <div class="desc">${v} vendo${v === 1 ? "" : "s"} encoded</div>
-                </span>
-                <span class="chev">›</span>
-              </button>
-            </li>`;
-          })
-          .join("") +
-        `</ul>`;
-      $("view").querySelectorAll("[data-brgy]").forEach((btn) => {
-        btn.onclick = () => {
-          state.brgy = btn.dataset.brgy;
-          render();
-        };
+      $("thead-row").innerHTML = "<th>Barangay</th><th>Vendos</th><th>Total sales</th><th></th>";
+      $("rows").innerHTML = list.map((b) => {
+        const rows = entriesFor(state.muni, b);
+        const vendos = new Set(rows.map((r) => r.vendo)).size;
+        const total = rows.reduce((n, r) => n + (Number(r.amount) || 0), 0);
+        return `<tr data-brgy="${esc(b)}">
+          <td><b>${esc(b)}</b></td>
+          <td>${vendos}</td>
+          <td class="money">${peso(total)}</td>
+          <td class="muted">Open ›</td>
+        </tr>`;
+      }).join("");
+      $("rows").querySelectorAll("tr[data-brgy]").forEach((tr) => {
+        tr.onclick = () => { state.brgy = tr.dataset.brgy; render(); };
       });
     }
 
-    function renderBarangayDetail() {
+    function renderVendoList() {
       const rows = entriesFor(state.muni, state.brgy);
-      $("panel-title").textContent = state.brgy;
-      $("panel-meta").textContent = state.muni + " · " + rows.length + " sale row(s)";
+      $("panel-title").textContent = state.brgy + " · Vendos";
+      $("panel-hint").textContent = state.muni + " › " + state.brgy + " — pindutin ang + Add vendo para magdagdag.";
       $("btn-add").style.display = "";
+      $("thead-row").innerHTML = "<th>Vendo name</th><th>Month / Date</th><th>Sales</th><th>Entries</th>";
 
       if (!rows.length) {
-        $("view").innerHTML = `<div class="empty">Wala pang vendo dito.<br>Pindutin ang <b>+</b> para mag-add.</div>`;
+        $("rows").innerHTML = `<tr class="novis"><td colspan="4" class="empty">No vendos yet — click "+ Add vendo".</td></tr>`;
         return;
       }
 
-      // Group by vendo name
-      const byVendo = new Map();
+      const by = new Map();
       for (const r of rows) {
         const key = r.vendo || "(unnamed)";
-        if (!byVendo.has(key)) byVendo.set(key, []);
-        byVendo.get(key).push(r);
+        if (!by.has(key)) by.set(key, []);
+        by.get(key).push(r);
       }
 
-      $("view").innerHTML = [...byVendo.entries()]
-        .map(([name, list]) => {
-          const total = list.reduce((n, x) => n + (Number(x.amount) || 0), 0);
-          const months = [...new Set(list.map((x) => x.month || (x.date || "").slice(0, 7)))].filter(Boolean);
-          return `<div class="vendo-card">
-            <div class="vn">${esc(name)}</div>
-            <div class="meta">${esc(months.join(", ") || "—")} · ${list.length} entry</div>
-            <div class="amt">${peso(total)}</div>
-          </div>`;
-        })
-        .join("");
+      $("rows").innerHTML = [...by.entries()].map(([name, list]) => {
+        const total = list.reduce((n, x) => n + (Number(x.amount) || 0), 0);
+        const months = [...new Set(list.map((x) => x.month || (x.date || "").slice(0, 7)))].filter(Boolean);
+        const dates = [...new Set(list.map((x) => x.date).filter(Boolean))].slice(0, 3);
+        return `<tr class="novis">
+          <td><b>${esc(name)}</b></td>
+          <td><span class="chip">${esc(months.join(", ") || "—")}</span>
+            <div class="muted" style="margin-top:4px;font-size:11.5px">${esc(dates.join(", "))}</div></td>
+          <td class="money">${peso(total)}</td>
+          <td>${list.length}</td>
+        </tr>`;
+      }).join("");
     }
 
     function render() {
+      renderKpis();
       renderCrumbs();
       if (!state.muni) renderMunicipalities();
       else if (!state.brgy) renderBarangays();
-      else renderBarangayDetail();
+      else renderVendoList();
     }
 
     function openForm() {
       $("form-err").textContent = "";
       $("modal-where").textContent = state.muni + " › " + state.brgy;
-      const now = new Date();
-      const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      const ymd = `${ym}-${String(now.getDate()).padStart(2, "0")}`;
+      const ym = monthNow();
+      const d = new Date();
       $("f-vendo").value = "";
       $("f-month").value = ym;
-      $("f-date").value = ymd;
+      $("f-date").value = `${ym}-${String(d.getDate()).padStart(2, "0")}`;
       $("f-amount").value = "";
-      $("modal-bg").classList.add("open");
-      setTimeout(() => $("f-vendo").focus(), 50);
+      $("modal").classList.add("open");
+      setTimeout(() => $("f-vendo").focus(), 40);
     }
-
-    function closeForm() {
-      $("modal-bg").classList.remove("open");
-    }
+    function closeForm() { $("modal").classList.remove("open"); }
 
     $("btn-add").onclick = openForm;
     $("btn-cancel").onclick = closeForm;
-    $("modal-bg").addEventListener("click", (e) => {
-      if (e.target === $("modal-bg")) closeForm();
-    });
+    $("btn-x").onclick = closeForm;
+    $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeForm(); });
+    $("btn-refresh").onclick = async () => { await loadEntries(); render(); toast("Refreshed"); };
 
     $("add-form").onsubmit = async (e) => {
       e.preventDefault();
@@ -452,33 +473,18 @@
       const month = $("f-month").value;
       let date = $("f-date").value;
       const amount = Number($("f-amount").value);
-      if (!vendo) {
-        $("form-err").textContent = "Lagyan ng vendo name.";
-        return;
-      }
-      if (!month) {
-        $("form-err").textContent = "Piliin ang month.";
-        return;
-      }
-      if (!(amount >= 0)) {
-        $("form-err").textContent = "Invalid sales amount.";
-        return;
-      }
+      if (!vendo) return ($("form-err").textContent = "Lagyan ng vendo name.");
+      if (!month) return ($("form-err").textContent = "Piliin ang month.");
+      if (!(amount >= 0)) return ($("form-err").textContent = "Invalid sales amount.");
       if (!date) date = month + "-01";
-      // keep date inside selected month
       if (date.slice(0, 7) !== month) date = month + "-01";
-
-      const entry = {
-        id: "sh_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      await persistEntry({
+        id: "sh_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         municipality: state.muni,
         barangay: state.brgy,
-        vendo,
-        month,
-        date,
-        amount,
+        vendo, month, date, amount,
         createdAt: new Date().toISOString(),
-      };
-      await persistEntry(entry);
+      });
       closeForm();
       toast("Vendo saved");
       render();
