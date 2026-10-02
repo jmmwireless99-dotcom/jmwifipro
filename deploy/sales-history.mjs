@@ -1,15 +1,23 @@
 /**
- * Install Sales History dashboard routes on a live jm-billing tree.
+ * Install Sales History UI button + dashboard on jmwifi.pro.
  *
  * On VPS:
  *   cd /opt/jm-billing && node deploy/sales-history.mjs
  *   systemctl restart jm-billing
  *
- * Then open https://jmwifi.pro/sales-history
+ * Opens:
+ *   https://jmwifi.pro/sales-history
+ *   Landing nav "Sales History" button
+ *   Operator sidebar "Sales History" button
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  patchLandingCss,
+  patchLandingHtml,
+  patchOperatorHtml,
+} from "../lib/sales-history-nav.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -60,20 +68,58 @@ function copyRel(rel) {
   return true;
 }
 
+function applyFile(rel, patcher) {
+  const p = path.join(process.cwd(), rel);
+  if (!fs.existsSync(p)) {
+    console.log("skip (missing)", rel);
+    return { ok: true, skipped: true };
+  }
+  const cur = fs.readFileSync(p, "utf8");
+  const next = patcher(cur);
+  if (next.missing && (Array.isArray(next.missing) ? next.missing.length : next.missing)) {
+    const miss = Array.isArray(next.missing) ? next.missing.join(", ") : String(next.missing);
+    console.warn("patch misses in", rel, ":", miss);
+  }
+  if (next.changed) {
+    fs.writeFileSync(p, next.src);
+    console.log("patched", rel);
+  } else {
+    console.log("already patched or no match", rel);
+  }
+  return { ok: true, changed: !!next.changed };
+}
+
 function main() {
   const files = [
     "lib/apply-coverage.mjs",
     "lib/sales-history-data.mjs",
     "lib/sales-history.mjs",
+    "lib/sales-history-nav.mjs",
     "public/sales-history.html",
+    "public/landing/index.html",
+    "public/isp-landing.css",
   ];
   for (const rel of files) {
     console.log(copyRel(rel) ? "copied " + rel : "missing " + rel);
   }
 
+  // Operator panel (often public/index.html → /operator)
+  applyFile("public/index.html", patchOperatorHtml);
+
+  // Landing homepage candidates on VPS
+  for (const rel of [
+    "public/landing/index.html",
+    "public/landing.html",
+    "public/isp-landing.html",
+    "public/home.html",
+  ]) {
+    applyFile(rel, patchLandingHtml);
+  }
+  applyFile("public/isp-landing.css", patchLandingCss);
+
   const serverPath = path.join(process.cwd(), "server.js");
   if (!fs.existsSync(serverPath)) {
-    console.log("server.js not in cwd (ok on git-only checkout) — copy files into /opt/jm-billing then re-run");
+    console.log("server.js not in cwd (ok on git-only checkout) — copy into /opt/jm-billing then re-run");
     return;
   }
   const cur = fs.readFileSync(serverPath, "utf8");

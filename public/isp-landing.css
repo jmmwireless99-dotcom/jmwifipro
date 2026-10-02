@@ -1,0 +1,565 @@
+/* JMM — Asian Vision clone v13 (fonts, colors, text style) */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;0,800;0,900;1,800;1,900&display=swap");
+
+.isp-landing {
+  --navy: #003d7a;
+  --navy2: #004a7c;
+  --navy3: #0056a8;
+  --green: #8dc63f;
+  --green2: #88c540;
+  --yellow: #ffe600;
+  --lime: #d4ed5a;
+  --muted: #5a708a;
+  --ink: #12243d;
+  --white: #ffffff;
+  margin: 0;
+  min-height: 100vh;
+  background: #fff;
+  color: var(--ink);
+  font-family: Montserrat, "Segoe UI", Inter, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+.isp-landing *, .isp-landing *::before, .isp-landing *::after { box-sizing: border-box; }
+.isp-landing a { text-decoration: none; color: inherit; }
+body.isp-landing { margin: 0; overflow-x: clip; }
+
+/* Brand mark — double chevron (Asian Vision) */
+.isp-brand-mark {
+  position: relative; width: 22px; height: 28px; flex-shrink: 0;
+}
+.isp-brand-mark.sm { width: 18px; height: 24px; }
+.isp-brand-mark .chev {
+  position: absolute; left: 0; width: 0; height: 0;
+  border-top: 11px solid transparent; border-bottom: 11px solid transparent;
+  border-left: 14px solid var(--navy3);
+}
+.isp-brand-mark .chev-b {
+  left: 6px; top: 6px; border-left-color: var(--green);
+}
+.isp-brand-mark.sm .chev { border-top-width: 9px; border-bottom-width: 9px; border-left-width: 12px; }
+.isp-brand-mark.sm .chev-b { left: 5px; top: 5px; }
+
+.isp-brand-name, .isp-hero-brand-name {
+  color: var(--navy); font-weight: 800; letter-spacing: -.3px;
+}
+
+/* —— Nav —— */
+.isp-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding: 10px clamp(16px, 3vw, 40px);
+  background: #fff;
+  border-bottom: 1px solid #e8f0f8;
+}
+.isp-brand {
+  justify-self: start; display: inline-flex; align-items: center; gap: 8px;
+}
+.isp-brand-text { line-height: 1.1; }
+.isp-brand-name { font-size: clamp(14px, 2vw, 20px); line-height: 1.05; }
+.isp-brand-tag { font-size: 10px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+.isp-brand-logo { height: 44px; width: auto; max-width: 130px; object-fit: contain; }
+.isp-nav-toggle {
+  display: none; grid-column: 3; justify-self: end;
+  width: 40px; height: 40px; border: 1px solid #c9daee; border-radius: 8px;
+  background: #fff; font-size: 18px; cursor: pointer; color: var(--navy);
+}
+.isp-nav-links { justify-self: center; display: flex; align-items: center; gap: 2px; }
+.isp-nav-links a {
+  font-size: 14px; font-weight: 600; color: var(--navy3); padding: 10px 16px;
+}
+.isp-nav-links a:hover { color: var(--navy); }
+.isp-nav-links a.on { color: var(--navy); box-shadow: inset 0 -3px 0 var(--navy); }
+.isp-nav-cta { justify-self: end; display: flex; align-items: center; gap: 10px; }
+
+.isp-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 22px; border-radius: 999px; font-size: 11px; font-weight: 800;
+  letter-spacing: .55px; text-transform: uppercase; white-space: nowrap; border: none; cursor: pointer;
+  font-family: inherit;
+}
+.isp-btn-navy { background: var(--navy); color: #fff !important; }
+.isp-btn-sales {
+  background: linear-gradient(135deg, #0d6b4a 0%, #1d9e75 100%);
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(29, 158, 117, 0.28);
+}
+.isp-btn-sales:hover { filter: brightness(1.06); }
+.isp-btn-outline {
+  background: #fff; color: var(--navy) !important;
+  border: 2px solid var(--navy) !important; padding: 8px 18px;
+}
+.isp-btn-fb { background: #1877F2; color: #fff !important; text-transform: none; letter-spacing: 0; font-size: 12px; }
+.isp-nav-signin {
+  background: none; border: none; font-size: 10px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; cursor: pointer; padding: 8px 0; font-family: inherit;
+}
+.isp-nav-signin:hover { color: var(--navy); }
+
+.isp-signin-panel {
+  position: fixed; top: 58px; right: 16px; z-index: 200; width: min(280px, calc(100vw - 24px));
+}
+.isp-signin-panel-inner {
+  background: #fff; border: 1px solid #d8e6f4; border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 61, 122, .18); padding: 12px;
+}
+.isp-signin-panel-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; font-weight: 800; color: var(--navy); text-transform: uppercase; margin-bottom: 8px;
+}
+.isp-signin-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); }
+.isp-signin-form { display: grid; gap: 6px; }
+.isp-signin-form input {
+  padding: 8px 10px; border: 1px solid #c9daee; border-radius: 8px;
+  font-size: 12px; width: 100%; background: #f4f8fc; font-family: inherit;
+}
+.isp-signin-submit {
+  background: var(--navy); color: #fff; border: none; border-radius: 8px;
+  padding: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-family: inherit;
+}
+.isp-signin-err { font-size: 11px; color: #dc2626; min-height: 14px; text-align: center; }
+
+/* —— Hero (Asian Vision sky banner) —— */
+.isp-hero {
+  position: relative; overflow: hidden;
+  min-height: clamp(440px, 58vw, 580px);
+}
+.isp-hero-sky {
+  position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, #58b9e6 0%, #7ec8e3 30%, #a8d8ef 65%, #cce8f8 100%);
+}
+.isp-hero-streaks {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(112deg, transparent 38%, rgba(255,255,255,.92) 38.3%, rgba(255,255,255,.92) 39%, transparent 39.3%),
+    linear-gradient(118deg, transparent 48%, rgba(255,255,255,.75) 48.3%, rgba(255,255,255,.75) 49%, transparent 49.3%),
+    linear-gradient(105deg, transparent 58%, rgba(255,255,255,.55) 58.3%, rgba(255,255,255,.55) 59%, transparent 59.3%),
+    linear-gradient(125deg, transparent 28%, rgba(255,255,255,.4) 28.3%, rgba(255,255,255,.4) 29%, transparent 29.3%);
+}
+.isp-hero-deco {
+  position: absolute; z-index: 2; opacity: .22; pointer-events: none;
+  background-size: contain; background-repeat: no-repeat;
+}
+.isp-hero-deco-mail {
+  width: 110px; height: 110px; right: 14%; top: 18%; transform: rotate(-12deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23003d7a' viewBox='0 0 24 24'%3E%3Cpath d='M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z'/%3E%3C/svg%3E");
+}
+.isp-hero-deco-globe {
+  width: 100px; height: 100px; right: 4%; top: 8%; transform: rotate(8deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23003d7a' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E");
+}
+
+.isp-hero-inner {
+  position: relative; z-index: 4;
+  max-width: 1200px; margin: 0 auto;
+  padding: clamp(28px, 4vw, 48px) clamp(16px, 4vw, 40px);
+  display: grid; grid-template-columns: 42% 58%; gap: 0; align-items: end;
+  min-height: clamp(400px, 52vw, 520px);
+}
+.isp-hero-inner-promo {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-items: center;
+  text-align: center;
+  min-height: auto;
+  padding: clamp(20px, 4vw, 48px) clamp(12px, 3vw, 24px) clamp(80px, 11vw, 96px);
+}
+
+.isp-hero-left { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.isp-hero-brand-block {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.isp-hero-mini-logo { height: 40px; width: auto; max-width: 100px; object-fit: contain; }
+.isp-hero-brand-name { font-size: clamp(16px, 2.2vw, 24px); line-height: 1.05; letter-spacing: -.3px; }
+.isp-hero-brand-tag { font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+
+.isp-hero-door {
+  position: relative; width: min(100%, 270px); margin-top: 4px;
+}
+.isp-hero-door-top {
+  height: 14px; background: #fff; width: calc(100% + 24px); margin-left: -12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.isp-hero-door-side {
+  position: absolute; top: 14px; bottom: 0; width: 12px; background: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 2;
+}
+.isp-hero-door-side-l { left: -12px; }
+.isp-hero-door-side-r { right: -12px; }
+.isp-hero-door-photo {
+  display: block; width: 100%; height: auto;
+  aspect-ratio: 3/4; object-fit: cover; object-position: center top;
+  position: relative; z-index: 1;
+}
+
+/* Right: promo ad — Asian Vision exact typography */
+.isp-hero-right {
+  text-align: center; padding: 0;
+  align-self: center; overflow: visible; width: 100%;
+  display: flex; justify-content: center;
+}
+.isp-hero-ad {
+  position: relative; display: block; width: 100%;
+  max-width: min(100%, 520px);
+  padding: 0 clamp(8px, 2vw, 24px) clamp(12px, 2vw, 20px);
+  transform: rotate(-1.5deg);
+  text-align: center;
+  box-sizing: border-box;
+  transition: opacity .28s ease, transform .28s ease;
+}
+.isp-hero-ad.is-changing {
+  opacity: 0;
+  transform: rotate(-1.5deg) translateY(10px);
+}
+
+/* Kicker — white + navy outline, italic slant, slight arc feel */
+.isp-ad-kicker {
+  margin: 0 0 8px; padding: 0;
+  font-family: Montserrat, sans-serif;
+  font-weight: 900; font-style: italic; text-transform: uppercase;
+  font-size: clamp(17px, 2.6vw, 32px); letter-spacing: .8px; line-height: 1.1;
+  color: #fff;
+  -webkit-text-stroke: 2px #002d56;
+  paint-order: stroke fill;
+  text-shadow:
+    2px 2px 0 #002d56,
+    3px 3px 0 #002d56,
+    4px 5px 0 rgba(0, 45, 90, .35);
+  transform: skewX(-8deg) rotate(-2deg);
+  transform-origin: center center;
+  white-space: nowrap;
+}
+
+/* Headline — green + navy words (Asian Vision: ULTRA Fiber) */
+.isp-ad-product {
+  position: relative; z-index: 4;
+  margin: 0; padding: 0;
+  font-family: Montserrat, sans-serif;
+  font-weight: 900; font-style: italic;
+  line-height: .92; letter-spacing: -.6px;
+  filter: drop-shadow(5px 6px 0 rgba(0, 45, 90, .22));
+  white-space: nowrap;
+}
+.isp-ad-product .hl-a {
+  color: #8dc63f; display: inline;
+  font-size: clamp(44px, 8.2vw, 82px);
+  text-transform: uppercase;
+  -webkit-text-stroke: 3.5px #fff; paint-order: stroke fill;
+  text-shadow: 2px 3px 0 rgba(0, 45, 90, .35);
+}
+.isp-ad-product .hl-b {
+  color: #002d56; display: inline; margin-left: .05em;
+  font-size: clamp(44px, 8.2vw, 82px);
+  text-transform: uppercase;
+  -webkit-text-stroke: 3.5px #fff; paint-order: stroke fill;
+  text-shadow: 2px 3px 0 rgba(0, 45, 90, .3);
+}
+
+/* Huge price line — Asian Vision: 1299! */
+.isp-ad-price-big,
+.isp-ad-product .isp-ad-price,
+.isp-ad-price {
+  display: block;
+  margin: -4px 0 -8px;
+  font-family: Montserrat, sans-serif;
+  font-size: clamp(72px, 14vw, 132px); font-weight: 900; font-style: italic;
+  line-height: .82; letter-spacing: -5px; text-transform: none;
+  color: #002d56;
+  -webkit-text-stroke: 5px #fff; paint-order: stroke fill;
+  text-shadow:
+    3px 4px 0 rgba(0, 45, 90, .25),
+    5px 6px 0 rgba(0, 45, 90, .35),
+    6px 8px 0 rgba(0, 45, 90, .2);
+}
+
+/* Speech bubble sticker — lime/yellow, pointer tail */
+.isp-ad-sticker {
+  position: absolute; right: clamp(-16px, -2vw, 0px); top: clamp(118px, 22vw, 168px);
+  z-index: 6; display: inline-block;
+  background: linear-gradient(145deg, #d9e066 0%, #ffe600 42%, #c5e838 100%);
+  padding: 10px 22px 12px;
+  border-radius: 14px;
+  transform: rotate(8deg);
+  box-shadow: 0 5px 18px rgba(0, 45, 90, .22), 0 2px 4px rgba(0,0,0,.08);
+  border: 3px solid #fff;
+}
+.isp-ad-sticker::after {
+  content: "";
+  position: absolute; right: 18px; bottom: -11px;
+  width: 0; height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid #d4ed5a;
+  filter: drop-shadow(0 2px 1px rgba(0,45,90,.15));
+}
+.isp-ad-sticker::before {
+  content: "!";
+  position: absolute; right: -6px; bottom: -18px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; color: #002d56;
+  font-size: 14px; font-weight: 900; line-height: 22px; text-align: center;
+  box-shadow: 0 2px 6px rgba(0,45,90,.2);
+}
+.isp-ad-sticker span {
+  display: block; color: #002d56; font-weight: 900;
+  font-size: clamp(12px, 1.55vw, 16px); line-height: 1.12;
+  letter-spacing: .15px; white-space: nowrap; text-align: center;
+  font-style: normal;
+}
+.isp-ad-sticker.is-alt {
+  background: linear-gradient(145deg, #ffe600 0%, #d4ed5a 100%);
+  padding: 10px 18px;
+  top: clamp(48px, 12vw, 76px);
+}
+.isp-ad-sticker.is-alt::before { display: none; }
+
+/* Promo details box — green/teal gradient card */
+.isp-ad-offer {
+  position: relative; z-index: 2;
+  width: min(100%, 320px);
+  margin: 20px auto 0;
+  border: 2.5px solid #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #8dc63f 0%, #52c4b4 58%, #0099b8 100%);
+  box-shadow: 0 10px 28px rgba(0, 45, 90, .28);
+  transform: rotate(-1.2deg);
+  font-family: Montserrat, sans-serif;
+}
+.isp-ad-offer-top {
+  padding: 14px 16px 10px; text-align: center; color: #fff;
+}
+.isp-ad-offer-top .lbl {
+  display: block; font-size: clamp(12px, 1.6vw, 14px); font-weight: 600; opacity: .98;
+}
+.isp-ad-offer-top .spd {
+  display: block; margin-top: 2px;
+  font-size: clamp(30px, 5.5vw, 44px); font-weight: 900; line-height: 1;
+  letter-spacing: -.5px;
+}
+.isp-ad-offer-top .tag {
+  display: block; margin-top: 5px;
+  font-size: clamp(11px, 1.4vw, 13px); font-weight: 700; opacity: .95;
+}
+.isp-ad-offer-div {
+  height: 2px; margin: 0;
+  background: rgba(255, 255, 255, .92);
+}
+.isp-ad-offer-price {
+  padding: 12px 16px 14px; text-align: center;
+  color: #fff; font-size: clamp(19px, 3vw, 26px); font-weight: 900;
+  letter-spacing: -.2px;
+  background: #005a75;
+}
+.isp-ad-offer.hidden { display: none; }
+
+.isp-ad-sub {
+  margin-top: 10px; font-size: clamp(11px, 1.2vw, 13px); font-weight: 800;
+  color: #003d7a; opacity: .9; transform: skewX(-4deg);
+}
+
+/* Carousel dock */
+.isp-hero-dock {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  padding: 12px 24px; background: rgba(0, 45, 90, .78);
+}
+.isp-hero-arrow {
+  background: none; border: none; color: var(--green); font-size: 34px; font-weight: 900;
+  cursor: pointer; line-height: 1; padding: 0 8px;
+}
+.isp-hero-arrow:hover { color: #fff; }
+.isp-hero-thumbs { display: flex; gap: 6px; align-items: center; overflow-x: auto; max-width: min(520px, 75vw); }
+.isp-hero-thumb {
+  flex-shrink: 0; padding: 0; border: 2px solid transparent; border-radius: 2px;
+  overflow: hidden; cursor: pointer; background: none; opacity: .5; transition: .2s;
+}
+.isp-hero-thumb img { width: 88px; height: 52px; object-fit: cover; display: block; }
+.isp-hero-thumb.active { opacity: 1; border-color: var(--green); }
+.isp-hero-thumb:hover { opacity: .75; }
+
+/* Sections */
+.isp-services { padding: clamp(36px, 6vw, 56px) clamp(16px, 4vw, 40px); background: #fff; }
+.isp-services-inner { max-width: 1180px; margin: 0 auto; }
+.isp-sec-head { text-align: center; margin-bottom: 32px; }
+.isp-sec-head h2 {
+  font-size: clamp(26px, 4vw, 34px); color: var(--navy); margin: 0 0 8px;
+  font-weight: 800; letter-spacing: -.3px;
+}
+.isp-sec-head p { color: var(--muted); font-size: 16px; margin: 0; font-weight: 500; }
+.isp-svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+.isp-svc-card {
+  position: relative; display: block; border-radius: 12px; overflow: hidden; min-height: 260px;
+  box-shadow: 0 12px 36px rgba(0,61,122,.12);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.isp-svc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,61,122,.18);
+}
+.isp-svc-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.isp-svc-card .overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,45,90,.92), rgba(0,45,90,.15) 60%, transparent);
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; color: #fff;
+}
+.isp-svc-card h3 { margin: 0 0 6px; font-size: 20px; font-weight: 800; }
+.isp-svc-card p { margin: 0 0 10px; font-size: 13px; opacity: .92; font-weight: 500; }
+.isp-svc-card .link { font-size: 12px; font-weight: 800; color: #c5e86c; text-transform: uppercase; letter-spacing: .4px; }
+.isp-svc-card.isp-svc-icon .isp-svc-icon-bg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(52px, 10vw, 72px);
+  line-height: 1;
+}
+.isp-svc-card.svc-web .isp-svc-icon-bg { background: linear-gradient(135deg, #0a2d6b, #2b7fd4); }
+.isp-svc-card.svc-sales .isp-svc-icon-bg { background: linear-gradient(135deg, #0d4a3a, #1d9e75); }
+.isp-svc-card.svc-billing .isp-svc-icon-bg { background: linear-gradient(135deg, #0d4a3a, #1a9e6e); }
+.isp-svc-card.svc-smartcity .isp-svc-icon-bg { background: linear-gradient(135deg, #1a2a4a, #5b6abf); }
+.isp-svc-card.svc-gas .isp-svc-icon-bg { background: linear-gradient(135deg, #7a4a00, #e6a817); }
+.isp-svc-card.svc-bottle .isp-svc-icon-bg { background: linear-gradient(135deg, #2d5016, #6db33f); }
+.isp-svc-card.svc-mikrotik .isp-svc-icon-bg { background: linear-gradient(135deg, #8b1a1a, #c0392b); }
+
+.isp-sec { max-width: 1180px; margin: 0 auto; padding: clamp(36px, 5vw, 52px) clamp(16px, 4vw, 40px); }
+.isp-plans-wrap { background: linear-gradient(180deg, #f4f9ff, #fff); }
+.isp-plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; }
+.isp-plan {
+  background: #fff; border: 1px solid #d8e6f4; border-radius: 16px; padding: 22px;
+  box-shadow: 0 4px 20px rgba(0,61,122,.05);
+}
+.isp-plan.pop { border-color: var(--green); box-shadow: 0 0 0 2px rgba(141,198,63,.25); }
+.isp-plan .nm { font-size: 13px; font-weight: 700; color: var(--muted); }
+.isp-plan .sp { font-size: 34px; font-weight: 900; color: var(--navy); }
+.isp-plan .pr { font-size: 28px; font-weight: 900; color: var(--green); }
+.isp-plan .pick {
+  display: block; margin-top: 12px; padding: 12px; border-radius: 999px;
+  background: var(--navy); color: #fff; font-weight: 800; font-size: 13px; text-align: center;
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.isp-plan.empty { grid-column: 1/-1; text-align: center; color: var(--muted); padding: 36px; }
+
+.isp-promo-band { background: var(--navy); color: #fff; padding: clamp(28px, 5vw, 44px) clamp(16px, 4vw, 40px); }
+.isp-promo-band-inner {
+  max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto;
+  gap: 24px; align-items: center;
+}
+.isp-promo-band h2 { margin: 0 0 8px; font-size: clamp(22px, 3.5vw, 30px); font-weight: 800; }
+.isp-promo-band p { margin: 0; opacity: .88; font-size: 15px; max-width: 560px; font-weight: 500; }
+.isp-promo-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.isp-promo-band .isp-btn-navy { background: var(--green); color: var(--navy) !important; }
+
+.isp-features { background: #fff; border-top: 1px solid #e8f0f8; }
+.isp-feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.isp-feat { background: #eef6ff; border: 1px solid #d4e6f8; border-radius: 14px; padding: 20px; }
+.isp-feat .ic { font-size: 28px; margin-bottom: 8px; }
+.isp-feat h3 { font-size: 16px; color: var(--navy); margin: 0 0 6px; font-weight: 800; }
+.isp-feat p { font-size: 13px; color: var(--muted); margin: 0; font-weight: 500; }
+.isp-offers { border: 1px solid #dce9f6; border-radius: 14px; padding: 18px; margin-bottom: 20px; font-size: 14px; }
+
+.isp-foot {
+  background: #071d42; color: #b8cce4; text-align: center;
+  padding: 36px 20px; font-size: 13px; line-height: 1.65;
+}
+.isp-foot .fn { color: #fff; font-weight: 800; font-size: 17px; margin-bottom: 8px; }
+.isp-foot a { color: #7dd3fc; font-weight: 700; }
+.isp-foot-web { margin-top: 10px; }
+
+@media (max-width: 900px) {
+  .isp-nav { grid-template-columns: 1fr auto; padding: 8px 12px; }
+  .isp-brand { grid-column: 1; min-width: 0; max-width: calc(100vw - 56px); }
+  .isp-brand-text { min-width: 0; }
+  .isp-brand-name { font-size: clamp(11px, 3.2vw, 16px); }
+  .isp-brand-tag { font-size: 9px; }
+  .isp-brand { grid-column: 1; }
+  .isp-nav-toggle { display: grid; place-items: center; grid-column: 2; }
+  .isp-nav-links, .isp-nav-cta { display: none; grid-column: 1 / -1; width: 100%; }
+  .isp-nav.open .isp-nav-links, .isp-nav.open .isp-nav-cta { display: flex; }
+  .isp-nav.open .isp-nav-links { flex-direction: column; border-top: 1px solid #e8f0f8; padding-top: 8px; }
+  .isp-nav.open .isp-nav-cta { flex-direction: column; padding-bottom: 8px; }
+  .isp-nav.open .isp-btn, .isp-nav.open .isp-nav-signin { width: 100%; text-align: center; padding: 12px; font-size: 10px; }
+  .isp-hero { min-height: auto; overflow: visible; }
+  .isp-hero-inner { grid-template-columns: 1fr; align-items: center; text-align: center; min-height: auto; padding: 16px 12px 24px; }
+  .isp-hero-inner-promo { padding: 16px 10px 68px; }
+  .isp-hero-left { align-items: center; width: 100%; }
+  .isp-hero-right { text-align: center; padding: 0; width: 100%; }
+  .isp-hero-ad {
+    width: 100%; max-width: 100%; margin: 0 auto;
+    padding: 0 2px 8px; transform: none;
+  }
+  .isp-hero-ad.is-changing { transform: translateY(10px); }
+  .isp-hero-dock { padding: 8px 10px; gap: 6px; }
+  .isp-hero-thumb img { width: 62px; height: 38px; }
+  .isp-hero-arrow { font-size: 28px; padding: 0 4px; }
+  .isp-ad-kicker {
+    white-space: normal;
+    font-size: clamp(13px, 4.2vw, 22px);
+    -webkit-text-stroke: 1.5px #002d56;
+    transform: skewX(-5deg);
+    line-height: 1.15;
+    padding: 0 4px;
+  }
+  .isp-ad-product {
+    white-space: normal;
+    margin-bottom: 0;
+    line-height: 1;
+  }
+  .isp-ad-product .hl-a,
+  .isp-ad-product .hl-b {
+    font-size: clamp(30px, 9.5vw, 56px);
+    -webkit-text-stroke: 2.5px #fff;
+  }
+  .isp-ad-price-big {
+    font-size: clamp(50px, 17vw, 88px);
+    -webkit-text-stroke: 3.5px #fff;
+    letter-spacing: -3px;
+    margin: 2px 0 4px;
+  }
+  .isp-ad-sticker {
+    position: relative; right: auto; top: auto;
+    margin: 8px auto 0; transform: rotate(6deg);
+    display: inline-block; max-width: calc(100% - 8px);
+  }
+  .isp-ad-sticker::before { display: none; }
+  .isp-ad-sticker span { font-size: clamp(11px, 3.2vw, 14px); }
+  .isp-ad-offer {
+    margin: 12px auto 0; width: 100%; max-width: 100%;
+    transform: none;
+  }
+  .isp-ad-offer-top .spd { font-size: clamp(24px, 8vw, 36px); }
+  .isp-ad-offer-price { font-size: clamp(16px, 4.5vw, 22px); padding: 10px 12px 12px; }
+  .isp-hero-brand-block { justify-content: center; }
+  .isp-promo-band-inner { grid-template-columns: 1fr; text-align: center; }
+  .isp-promo-actions { justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .isp-brand-name { font-size: 10px; letter-spacing: 0; }
+  .isp-brand-mark { width: 16px; height: 20px; }
+  .isp-brand-mark .chev { border-top-width: 8px; border-bottom-width: 8px; border-left-width: 10px; }
+  .isp-ad-kicker {
+    font-size: clamp(11px, 3.6vw, 15px);
+    letter-spacing: .2px;
+    -webkit-text-stroke: 1px #002d56;
+    text-shadow: 1px 1px 0 #002d56, 2px 2px 0 #002d56;
+  }
+  .isp-ad-product .hl-a,
+  .isp-ad-product .hl-b {
+    display: block;
+    font-size: clamp(24px, 11vw, 38px);
+    -webkit-text-stroke: 2px #fff;
+  }
+  .isp-ad-product .hl-b { margin-left: 0; margin-top: -4px; }
+  .isp-ad-price-big {
+    font-size: clamp(40px, 16vw, 64px);
+    -webkit-text-stroke: 2.5px #fff;
+    letter-spacing: -2px;
+  }
+  .isp-ad-sticker { padding: 8px 16px 9px; margin-top: 6px; }
+  .isp-ad-offer-top { padding: 12px 12px 8px; }
+  .isp-ad-offer-top .lbl { font-size: 11px; }
+  .isp-ad-offer-top .tag { font-size: 10px; }
+  .isp-sec { padding-left: 14px; padding-right: 14px; }
+  .isp-services { padding-left: 14px; padding-right: 14px; }
+}
