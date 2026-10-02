@@ -273,7 +273,7 @@
     </div>
 
     <h1 class="module-title">Sales History</h1>
-    <p class="module-desc">Pindutin ang municipality → barangay → + Add vendo. Gamitin ang monthly filter para balikan ang old sales.</p>
+    <p class="module-desc">Pindutin ang municipality → barangay → ilagay ang amount sa bawat vendo (naka-ready na ang names). Gamitin ang month filter para sa buwan.</p>
 
     <div class="filter-bar" aria-label="Monthly filter">
       <div class="fld">
@@ -304,7 +304,7 @@
         <span id="panel-title">Municipalities</span>
         <span class="actions">
           <button type="button" class="ghost" id="btn-refresh">⟳ refresh</button>
-          <button type="button" class="primary" id="btn-add" style="display:none">+ Add vendo</button>
+          <button type="button" class="primary" id="btn-add" style="display:none">+ New vendo name</button>
         </span>
       </h2>
       <nav class="crumbs" id="crumbs"></nav>
@@ -327,7 +327,7 @@
   <div class="modal" id="modal" role="dialog" aria-modal="true">
     <div class="modal-box">
       <div class="modal-head">
-        <span id="modal-title">Add vendo</span>
+        <span id="modal-title">Encode sales</span>
         <button type="button" class="x" id="btn-x" aria-label="Close">✕</button>
       </div>
       <form class="modal-body" id="add-form">
@@ -347,16 +347,16 @@
           <input class="set-in" id="f-date" type="date" />
         </div>
         <div class="fld">
-          <label for="f-amount">Sales per vendo (₱)</label>
-          <input class="set-in" id="f-amount" type="number" min="0" step="1" required placeholder="0" />
+          <label for="f-amount">Sales amount (₱)</label>
+          <input class="set-in" id="f-amount" type="number" min="0" step="1" required placeholder="0" inputmode="numeric" />
         </div>
         <div class="hint" style="padding:0 0 10px;color:var(--muted)">
-          Edit/Delete allowed only for the sales month and the next month.
-          Example: September sales lock on November 1.
+          Vendo names are pre-listed per barangay — ilagay ang amount lang.
+          Edit allowed only for the sales month and the next month.
         </div>
         <div class="modal-actions">
           <button type="button" class="ghost" id="btn-cancel">Cancel</button>
-          <button type="submit" class="primary" id="btn-save">Save vendo</button>
+          <button type="submit" class="primary" id="btn-save">Save amount</button>
         </div>
       </form>
     </div>
@@ -506,6 +506,51 @@
       );
     }
 
+    /** Working month for encode: selected filter, else current calendar month. */
+    function encodeMonth() {
+      return state.month || monthNow();
+    }
+
+    /** All unique vendo names ever recorded under a barangay (any month). */
+    function knownVendoNames(muni, brgy) {
+      const set = new Set();
+      for (const e of state.entries) {
+        if (String(e.municipality).toUpperCase() !== muni) continue;
+        if (String(e.barangay).toUpperCase() !== brgy) continue;
+        const v = String(e.vendo || "").trim();
+        if (v) set.add(v);
+      }
+      return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    }
+
+    /**
+     * One row per known vendo for the encode month.
+     * Missing month rows are stubs — user only enters amount.
+     */
+    function vendoEncodeRows(muni, brgy) {
+      const ym = encodeMonth();
+      const names = knownVendoNames(muni, brgy);
+      const byName = new Map();
+      for (const e of state.entries) {
+        if (String(e.municipality).toUpperCase() !== muni) continue;
+        if (String(e.barangay).toUpperCase() !== brgy) continue;
+        if (entryMonth(e) !== ym) continue;
+        const v = String(e.vendo || "").trim();
+        if (!v) continue;
+        if (!byName.has(v)) byName.set(v, e);
+      }
+      return names.map((vendo) => {
+        const entry = byName.get(vendo) || null;
+        return {
+          vendo,
+          month: ym,
+          entry,
+          amount: entry ? Number(entry.amount) || 0 : null,
+          pending: !entry,
+        };
+      });
+    }
+
     function availableMonths() {
       const set = new Set(state.entries.map(entryMonth).filter(Boolean));
       set.add(monthNow());
@@ -635,20 +680,23 @@
     function renderBarangays() {
       const tree = coverageTree();
       const list = tree[state.muni] || [];
+      const ym = encodeMonth();
       $("panel-title").textContent = state.muni + " · Barangays";
-      $("panel-hint").textContent = "Pindutin ang barangay (location) — vendo names / address + monthly sales." +
-        (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
+      $("panel-hint").textContent = "Pindutin ang barangay — naka-lista na ang vendo names; amount na lang ang ilalagay · " +
+        formatMonthLabel(ym) + (state.month ? "" : " (current month — piliin ang filter para ibang buwan)");
       $("btn-add").style.display = "none";
-      $("thead-row").innerHTML = "<th>Location (Barangay)</th><th>Vendos</th><th>Total sales</th><th></th>";
+      $("thead-row").innerHTML = "<th>Location (Barangay)</th><th>Vendos</th><th>Encoded</th><th>Total sales</th><th></th>";
       $("rows").innerHTML = list.map((b) => {
-        const rows = entriesFor(state.muni, b);
-        const vendos = new Set(rows.map((r) => r.vendo)).size;
+        const names = knownVendoNames(state.muni, b);
+        const rows = vendoEncodeRows(state.muni, b);
+        const encoded = rows.filter((r) => !r.pending && Number(r.amount) > 0).length;
         const total = rows.reduce((n, r) => n + (Number(r.amount) || 0), 0);
         return `<tr data-brgy="${esc(b)}">
           <td><b>${esc(b)}</b></td>
-          <td>${vendos}</td>
+          <td>${names.length}</td>
+          <td>${encoded}/${names.length || 0}</td>
           <td class="money">${peso(total)}</td>
-          <td class="muted">Open ›</td>
+          <td class="muted">Encode ›</td>
         </tr>`;
       }).join("");
       $("rows").querySelectorAll("tr[data-brgy]").forEach((tr) => {
@@ -657,58 +705,59 @@
     }
 
     function renderVendoList() {
-      const rows = entriesFor(state.muni, state.brgy)
-        .slice()
-        .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || String(a.vendo).localeCompare(String(b.vendo)));
-      $("panel-title").textContent = state.brgy + " · Vendos";
-      $("panel-hint").textContent = state.muni + " › " + state.brgy +
-        (state.month ? " · " + formatMonthLabel(state.month) : " · All months") +
-        " — gamitin ang Edit / Delete sa Actions. Locked pag lagpas na ang grace month.";
-      // + Add only if selected filter month (or current month) is still editable
-      const addMonth = state.month || monthNow();
+      const ym = encodeMonth();
+      const rows = vendoEncodeRows(state.muni, state.brgy);
+      $("panel-title").textContent = state.brgy + " · Encode sales";
+      $("panel-hint").textContent = state.muni + " › " + state.brgy + " · " + formatMonthLabel(ym) +
+        " — vendo names ready; pindutin ang Amount para mag-encode. Locked pag lagpas ang grace month.";
       $("btn-add").style.display = "";
-      $("btn-add").disabled = !isSalesMonthEditable(addMonth);
-      $("btn-add").title = isSalesMonthEditable(addMonth)
-        ? "Add vendo"
-        : salesMonthLockReason(addMonth);
-      $("thead-row").innerHTML = "<th>Vendo name / Address</th><th>Month / Date</th><th>Total sales</th><th>Status</th><th>Actions</th>";
+      $("btn-add").disabled = !isSalesMonthEditable(ym);
+      $("btn-add").title = isSalesMonthEditable(ym)
+        ? "Add a new vendo name under this barangay"
+        : salesMonthLockReason(ym);
+      $("thead-row").innerHTML = "<th>Vendo name / Address</th><th>Month</th><th>Amount</th><th>Status</th><th>Actions</th>";
 
       if (!rows.length) {
-        $("rows").innerHTML = `<tr class="novis"><td colspan="5" class="empty">${
-          state.month
-            ? "No sales for " + esc(formatMonthLabel(state.month)) + " — change month filter or + Add vendo."
-            : "No vendos yet — click \"+ Add vendo\"."
-        }</td></tr>`;
+        $("rows").innerHTML = `<tr class="novis"><td colspan="5" class="empty">
+          Walang naka-lista pang vendo dito. Gamitin ang "+ New vendo name" para magdagdag, tapos amount na lang sa susunod.
+        </td></tr>`;
         return;
       }
 
       $("rows").innerHTML = rows.map((r) => {
-        const unlocked = canEditEntry(r);
-        const lockReason = unlocked ? "" : salesMonthLockReason(entryMonth(r));
-        const status = unlocked
-          ? `<span class="ok-chip">Editable</span>`
-          : `<span class="lock-chip" title="${esc(lockReason)}">Locked</span>`;
+        const unlocked = isSalesMonthEditable(ym);
+        const lockReason = unlocked ? "" : salesMonthLockReason(ym);
+        const status = !unlocked
+          ? `<span class="lock-chip" title="${esc(lockReason)}">Locked</span>`
+          : r.pending
+            ? `<span class="chip">Need amount</span>`
+            : Number(r.amount) > 0
+              ? `<span class="ok-chip">Encoded</span>`
+              : `<span class="chip">₱0</span>`;
         const dis = unlocked ? "" : " disabled";
         const tip = unlocked ? "" : ` title="${esc(lockReason)}"`;
+        const amtLabel = r.pending ? "—" : peso(r.amount);
+        const encodeLabel = r.pending || !(Number(r.amount) > 0) ? "₱ Amount" : "✏️ Edit amount";
+        const delBtn = r.entry
+          ? `<button type="button" class="mini danger" data-del="${esc(r.entry.id)}"${dis}${tip}>🗑 Delete</button>`
+          : "";
         const actions = `<div class="row-actions">
-              <button type="button" class="mini edit-btn" data-edit="${esc(r.id)}"${dis}${tip}>✏️ Edit</button>
-              <button type="button" class="mini danger" data-del="${esc(r.id)}"${dis}${tip}>🗑 Delete</button>
+              <button type="button" class="mini edit-btn" data-encode="${esc(r.vendo)}"${dis}${tip}>${encodeLabel}</button>
+              ${delBtn}
             </div>`;
-        return `<tr class="novis" data-id="${esc(r.id)}">
+        return `<tr class="novis" data-vendo="${esc(r.vendo)}">
           <td><b>${esc(r.vendo)}</b></td>
-          <td><span class="chip">${esc(entryMonth(r) || "—")}</span>
-            <div class="muted" style="margin-top:4px;font-size:11.5px">${esc(r.date || "")}</div></td>
-          <td class="money">${peso(r.amount)}</td>
+          <td><span class="chip">${esc(ym)}</span></td>
+          <td class="money">${amtLabel}</td>
           <td>${status}</td>
           <td>${actions}</td>
         </tr>`;
       }).join("");
 
-      $("rows").querySelectorAll("[data-edit]").forEach((btn) => {
+      $("rows").querySelectorAll("[data-encode]").forEach((btn) => {
         btn.onclick = (ev) => {
           ev.stopPropagation();
-          const entry = state.entries.find((e) => e.id === btn.dataset.edit);
-          if (entry) openForm(entry);
+          openEncodeForm(btn.dataset.encode);
         };
       });
       $("rows").querySelectorAll("[data-del]").forEach((btn) => {
@@ -720,7 +769,7 @@
             toast(salesMonthLockReason(entryMonth(entry)));
             return;
           }
-          if (!confirm(`Delete vendo "${entry.vendo}" (${entryMonth(entry)} · ${peso(entry.amount)})?`)) return;
+          if (!confirm(`Delete "${entry.vendo}" (${entryMonth(entry)} · ${peso(entry.amount)})?`)) return;
           try {
             await removeEntry(entry.id);
             toast("Deleted");
@@ -741,35 +790,59 @@
       else renderVendoList();
     }
 
-    function openForm(entry = null) {
+    function openEncodeForm(vendoName, { allowNewName = false } = {}) {
       $("form-err").textContent = "";
-      state.editId = entry ? entry.id : null;
-      const editing = !!entry;
-      $("modal-title").textContent = editing ? "Edit vendo" : "Add vendo";
-      $("btn-save").textContent = editing ? "Save changes" : "Save vendo";
-      $("modal-where").textContent = state.muni + " › " + state.brgy + (editing ? " · " + entry.id : "");
-      const ym = editing ? entryMonth(entry) : (state.month || monthNow());
+      const ym = encodeMonth();
+      const name = String(vendoName || "").trim();
+      const existing = name
+        ? state.entries.find(
+            (e) =>
+              String(e.municipality).toUpperCase() === state.muni &&
+              String(e.barangay).toUpperCase() === state.brgy &&
+              String(e.vendo || "").trim() === name &&
+              entryMonth(e) === ym
+          )
+        : null;
+      state.editId = existing ? existing.id : null;
+      const lockedName = !!name && !allowNewName;
+      $("modal-title").textContent = existing
+        ? "Edit amount"
+        : lockedName
+          ? "Encode amount"
+          : "New vendo name";
+      $("btn-save").textContent = "Save amount";
+      $("modal-where").textContent = state.muni + " › " + state.brgy + " · " + formatMonthLabel(ym);
       if (!isSalesMonthEditable(ym)) {
         $("form-err").textContent = salesMonthLockReason(ym);
       }
       const d = new Date();
-      const day = editing && entry.date
-        ? entry.date.slice(8, 10)
-        : (state.month && state.month !== monthNow() ? "01" : String(d.getDate()).padStart(2, "0"));
-      $("f-id").value = editing ? entry.id : "";
-      $("f-vendo").value = editing ? entry.vendo : "";
+      const day = existing && existing.date
+        ? existing.date.slice(8, 10)
+        : (ym !== monthNow() ? "01" : String(d.getDate()).padStart(2, "0"));
+      $("f-id").value = existing ? existing.id : "";
+      $("f-vendo").value = name;
+      $("f-vendo").readOnly = lockedName;
+      $("f-vendo").style.opacity = lockedName ? "0.85" : "";
       $("f-month").value = ym;
-      $("f-date").value = editing && entry.date ? entry.date : `${ym}-${day}`;
-      $("f-amount").value = editing ? String(Number(entry.amount) || 0) : "";
+      $("f-month").readOnly = lockedName;
+      $("f-date").value = existing && existing.date ? existing.date : `${ym}-${day}`;
+      $("f-amount").value = existing ? String(Number(existing.amount) || 0) : "";
       $("modal").classList.add("open");
-      setTimeout(() => $("f-vendo").focus(), 40);
+      setTimeout(() => (lockedName ? $("f-amount") : $("f-vendo")).focus(), 40);
+    }
+    function openForm(entry = null) {
+      if (entry) openEncodeForm(entry.vendo);
+      else openEncodeForm("", { allowNewName: true });
     }
     function closeForm() {
       state.editId = null;
+      $("f-vendo").readOnly = false;
+      $("f-vendo").style.opacity = "";
+      $("f-month").readOnly = false;
       $("modal").classList.remove("open");
     }
 
-    $("btn-add").onclick = () => openForm(null);
+    $("btn-add").onclick = () => openEncodeForm("", { allowNewName: true });
     $("btn-cancel").onclick = closeForm;
     $("btn-x").onclick = closeForm;
     $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeForm(); });

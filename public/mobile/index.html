@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700;800&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/mobile/app.css?v=3" />
+  <link rel="stylesheet" href="/mobile/app.css?v=4" />
 </head>
 <body>
   <div class="login-gate open" id="login-gate">
@@ -94,7 +94,7 @@
       </section>
     </main>
 
-    <button type="button" class="fab" id="fab">+ Add vendo</button>
+    <button type="button" class="fab" id="fab">+ New vendo</button>
 
     <nav class="bottom-nav" aria-label="App tabs">
       <button type="button" data-tab="home" class="active"><span class="ico">📍</span>Areas</button>
@@ -106,13 +106,13 @@
   <div class="sheet-backdrop" id="sheet-backdrop"></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
     <div class="grab" aria-hidden="true"></div>
-    <h2 id="sheet-title">Add vendo</h2>
+    <h2 id="sheet-title">Encode amount</h2>
     <div class="where" id="sheet-where">—</div>
     <form id="add-form">
       <div class="err" id="form-err"></div>
       <div class="fld">
         <label for="f-vendo">Vendo name</label>
-        <input id="f-vendo" required placeholder="e.g. veno1" autocomplete="off" />
+        <input id="f-vendo" required placeholder="e.g. V309 VERALLO" autocomplete="off" />
       </div>
       <div class="fld">
         <label for="f-month">Month</label>
@@ -123,17 +123,17 @@
         <input id="f-date" type="date" />
       </div>
       <div class="fld">
-        <label for="f-amount">Sales (₱)</label>
+        <label for="f-amount">Sales amount (₱)</label>
         <input id="f-amount" type="number" min="0" step="1" required inputmode="numeric" placeholder="0" />
       </div>
       <div class="sheet-actions">
         <button type="button" class="cancel" id="btn-cancel">Cancel</button>
-        <button type="submit" class="save" id="btn-save">Save</button>
+        <button type="submit" class="save" id="btn-save">Save amount</button>
       </div>
     </form>
   </div>
 
   <div class="toast" id="toast">Saved</div>
-  <script type="module" src="/mobile/app.js?v=3"></script>
+  <script type="module" src="/mobile/app.js?v=4"></script>
 </body>
 </html>
