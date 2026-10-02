@@ -617,7 +617,7 @@ $("add-form").onsubmit = async (e) => {
         date,
         amount,
       });
-      toast("Updated");
+      toast("Amount updated");
     } else {
       await persistEntry({
         id: "sh_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -629,7 +629,7 @@ $("add-form").onsubmit = async (e) => {
         amount,
         createdAt: new Date().toISOString(),
       });
-      toast("Vendo saved");
+      toast("Amount saved");
     }
     closeSheet();
     if (state.month && state.month !== month) setMonth(month);

@@ -652,8 +652,8 @@
 
     function renderMunicipalities() {
       $("panel-title").textContent = "Municipalities";
-      $("panel-hint").textContent = "Location → barangay → vendo name / address · month · total sales." +
-        (state.month ? " · Filter: " + formatMonthLabel(state.month) : "");
+      $("panel-hint").textContent = "Location → barangay → encode amount sa naka-listang vendos · " +
+        formatMonthLabel(encodeMonth()) + (state.month ? "" : " (or piliin ang month filter)");
       $("btn-add").style.display = "none";
       $("thead-row").innerHTML = "<th>Location (Municipality)</th><th>Barangays</th><th>Vendos</th><th>Total sales</th><th></th>";
       const tree = coverageTree();
@@ -891,7 +891,7 @@
             barangay: state.brgy,
             vendo, month, date, amount,
           });
-          toast("Updated");
+          toast("Amount updated");
         } else {
           await persistEntry({
             id: "sh_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -900,7 +900,7 @@
             vendo, month, date, amount,
             createdAt: new Date().toISOString(),
           });
-          toast("Vendo saved");
+          toast("Amount saved");
         }
         closeForm();
         if (state.month !== month) setMonthFilter(month);
