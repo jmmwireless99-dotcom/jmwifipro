@@ -46,11 +46,16 @@ copy_into lib/sales-history.mjs
 copy_into lib/sales-history-nav.mjs
 copy_into lib/sales-history-lock.mjs
 copy_into lib/sales-history-api.mjs
+copy_into lib/mobile-app.mjs
 copy_into public/sales-history.html
 copy_into public/isp-landing.css
 mkdir -p "$APP/public/landing"
 copy_into public/landing/index.html
 copy_into deploy/sales-history.mjs
+# Mobile PWA tree
+mkdir -p "$APP/public/mobile/icons"
+cp -rf "$TMP/repo/public/mobile/." "$APP/public/mobile/"
+echo "    installed public/mobile/"
 
 echo "==> Patch operator panel + landing + server routes"
 cd "$APP"
@@ -58,12 +63,17 @@ node deploy/sales-history.mjs
 node --input-type=module -e "
   import fs from 'node:fs';
   import { patchSalesHistoryApi } from './lib/sales-history-api.mjs';
+  import { patchMobileAppRoutes } from './lib/mobile-app.mjs';
   const p = 'server.js';
-  const cur = fs.readFileSync(p, 'utf8');
+  let cur = fs.readFileSync(p, 'utf8');
   const next = patchSalesHistoryApi(cur);
   if (next.missing) console.warn('API patch miss:', next.missing);
-  if (next.changed) { fs.writeFileSync(p, next.src); console.log('patched server.js (sales-history API PUT/DELETE + lock)'); }
+  if (next.changed) { fs.writeFileSync(p, next.src); cur = next.src; console.log('patched server.js (sales-history API PUT/DELETE + lock)'); }
   else console.log('server.js API already patched or no match');
+  const mob = patchMobileAppRoutes(cur);
+  if (mob.missing) console.warn('mobile patch miss:', mob.missing);
+  if (mob.changed) { fs.writeFileSync(p, mob.src); console.log('patched server.js (/mobile + /app PWA)'); }
+  else console.log('server.js mobile routes already patched or no match');
 "
 
 # If landing HTML is not under public/landing/index.html on this box,
@@ -95,4 +105,6 @@ echo
 echo "DONE. Verify:"
 echo "  https://jmwifi.pro/                 → green Sales History button"
 echo "  https://jmwifi.pro/sales-history    → vendo list per barangay"
+echo "  https://jmwifi.pro/mobile           → mobile Sales app (PWA)"
+echo "  https://jmwifi.pro/app              → alias → mobile app"
 echo "  https://jmwifi.pro/operator         → sidebar Sales History"

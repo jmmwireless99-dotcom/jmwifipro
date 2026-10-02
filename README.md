@@ -2,6 +2,15 @@
 
 Full **jmwifi.pro** billing backup and deployment files.
 
+## Mobile Sales App (PWA)
+
+Installable phone app for field encoding:
+
+- Live URL: https://jmwifi.pro/mobile (alias: `/app`)
+- Add to Home Screen on Android/iOS
+- Municipalities → barangay → Add / Edit / Delete vendo sales
+- Same `/api/sales-history` + month lock as desktop Sales History
+
 ## Latest backup
 
 `backup/20260703T234918Z/` — pulled from VPS `187.77.145.131` on 2026-07-04 (UTC).
