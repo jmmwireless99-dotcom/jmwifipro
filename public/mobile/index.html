@@ -15,16 +15,33 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700;800&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/mobile/app.css?v=2" />
+  <link rel="stylesheet" href="/mobile/app.css?v=3" />
 </head>
 <body>
-  <div class="app-shell">
+  <div class="login-gate open" id="login-gate">
+    <form class="login-card" id="login-form">
+      <h2>Sales Login</h2>
+      <div class="sub">Admin access required</div>
+      <div class="err" id="login-err"></div>
+      <div class="fld">
+        <label for="login-user">Username</label>
+        <input id="login-user" autocomplete="username" required placeholder="admin" />
+      </div>
+      <div class="fld">
+        <label for="login-pass">Password</label>
+        <input id="login-pass" type="password" autocomplete="current-password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="save" id="login-btn">Login</button>
+    </form>
+  </div>
+  <div class="app-shell" id="app-shell" hidden>
     <header class="topbar">
       <div class="brand-mark" aria-hidden="true">JM</div>
       <div class="brand-copy">
         <h1>JM WIFI Sales</h1>
         <p>Mobile · encode · edit · delete</p>
       </div>
+      <button type="button" class="icon-btn" id="btn-logout" aria-label="Logout" title="Logout">⎋</button>
       <button type="button" class="icon-btn" id="btn-refresh" aria-label="Refresh">⟳</button>
     </header>
 
@@ -117,6 +134,6 @@
   </div>
 
   <div class="toast" id="toast">Saved</div>
-  <script type="module" src="/mobile/app.js?v=2"></script>
+  <script type="module" src="/mobile/app.js?v=3"></script>
 </body>
 </html>

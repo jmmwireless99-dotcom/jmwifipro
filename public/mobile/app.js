@@ -1,9 +1,25 @@
-import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=5";
+import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=6";
 import {
   isSalesMonthEditable,
   salesMonthLockReason,
   monthNow as lockMonthNow,
-} from "/lib/sales-history-lock.mjs?v=5";
+} from "/lib/sales-history-lock.mjs?v=6";
+
+const STORAGE_KEY = "jm_sales_history_vendos_v1";
+const FILTER_KEY = "jm_sales_mobile_month";
+const $ = (id) => document.getElementById(id);
+
+const state = {
+  tab: "home",
+  muni: null,
+  brgy: null,
+  entries: [],
+  month: "",
+  editId: null,
+  q: "",
+  deferredPrompt: null,
+  user: null,
+};
 
 /** Union of apply-coverage + barangays that already have encoded sales. */
 function coverageTree() {
@@ -25,20 +41,41 @@ function coverageTree() {
   return out;
 }
 
-const STORAGE_KEY = "jm_sales_history_vendos_v1";
-const FILTER_KEY = "jm_sales_mobile_month";
-const $ = (id) => document.getElementById(id);
-
-const state = {
-  tab: "home",
-  muni: null,
-  brgy: null,
-  entries: [],
-  month: "",
-  editId: null,
-  q: "",
-  deferredPrompt: null,
-};
+function showLogin(msg = "") {
+  state.user = null;
+  $("app-shell").hidden = true;
+  $("fab").classList.remove("show");
+  $("login-gate").classList.add("open");
+  $("login-err").textContent = msg || "";
+}
+function showApp(user) {
+  state.user = user;
+  $("login-gate").classList.remove("open");
+  $("app-shell").hidden = false;
+}
+async function checkAuth() {
+  try {
+    const r = await fetch("/api/sales-history/me", { credentials: "same-origin" });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok && d.user) return d.user;
+  } catch {}
+  return null;
+}
+async function doLogin(username, password) {
+  const r = await fetch("/api/sales-history/login", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || d.ok === false) throw new Error(d.error || "Login failed");
+  return d.user;
+}
+async function doLogout() {
+  await fetch("/api/sales-history/logout", { method: "POST", credentials: "same-origin" }).catch(() => {});
+  showLogin("");
+}
 
 function esc(s) {
   return String(s ?? "")
@@ -84,6 +121,10 @@ function saveLocal(entries) {
 async function loadEntries() {
   try {
     const r = await fetch("/api/sales-history", { credentials: "same-origin" });
+    if (r.status === 401) {
+      showLogin("Please login again.");
+      throw new Error("login");
+    }
     if (r.ok) {
       const d = await r.json();
       if (d && Array.isArray(d.entries)) {
@@ -92,7 +133,9 @@ async function loadEntries() {
         return;
       }
     }
-  } catch {}
+  } catch (e) {
+    if (e && e.message === "login") throw e;
+  }
   state.entries = loadLocal();
 }
 
@@ -104,6 +147,10 @@ async function apiJson(method, body, qs = "") {
     body: body ? JSON.stringify(body) : undefined,
   });
   const d = await r.json().catch(() => ({}));
+  if (r.status === 401 || d.needLogin) {
+    showLogin("Session expired. Login again.");
+    throw new Error("Login required");
+  }
   if (!r.ok || d.ok === false) {
     throw new Error(d.error || "HTTP " + r.status);
   }
@@ -542,6 +589,24 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/mobile/sw.js").catch(() => {});
 }
 
+$("btn-logout").onclick = () => doLogout();
+$("login-form").onsubmit = async (e) => {
+  e.preventDefault();
+  $("login-err").textContent = "";
+  $("login-btn").disabled = true;
+  try {
+    const user = await doLogin($("login-user").value.trim(), $("login-pass").value);
+    showApp(user);
+    await loadEntries();
+    setTab("home");
+    toast("Welcome, " + (user.username || "admin"));
+  } catch (err) {
+    $("login-err").textContent = err.message || "Login failed";
+  } finally {
+    $("login-btn").disabled = false;
+  }
+};
+
 try {
   state.month = localStorage.getItem(FILTER_KEY) || "";
 } catch {
@@ -549,5 +614,13 @@ try {
 }
 $("flt-month").value = state.month;
 
-await loadEntries();
-setTab("home");
+const user = await checkAuth();
+if (!user) {
+  showLogin("");
+  $("login-user").value = "admin";
+  setTimeout(() => $("login-pass").focus(), 40);
+} else {
+  showApp(user);
+  await loadEntries();
+  setTab("home");
+}

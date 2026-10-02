@@ -336,6 +336,37 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+.login-gate {
+  position: fixed; inset: 0; z-index: 200;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(700px 360px at 20% 0%, rgba(59,123,255,.22), transparent 55%),
+    rgba(6, 10, 20, .94);
+  backdrop-filter: blur(10px);
+}
+.login-gate.open { display: flex; }
+.login-card {
+  width: min(400px, 100%);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+  padding: 22px 18px 18px; box-shadow: 0 12px 36px rgba(0,0,0,.35);
+}
+.login-card h2 { font-size: 20px; margin-bottom: 4px; }
+.login-card .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+.login-card .err { color: var(--warn); font-size: 13px; font-weight: 600; min-height: 1.2em; margin-bottom: 10px; }
+.login-card .fld { margin-bottom: 12px; }
+.login-card label {
+  display: block; font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
+}
+.login-card input {
+  width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 14px; color: var(--text); font: 600 15px var(--sans);
+  padding: 14px; outline: none;
+}
+.login-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,140,255,.18); }
+.login-card .save { width: 100%; margin-top: 4px; }
+
 @media (min-width: 700px) {
   .main { padding-top: 18px; }
 }

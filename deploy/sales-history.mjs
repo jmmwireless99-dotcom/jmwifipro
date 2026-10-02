@@ -19,6 +19,8 @@ import {
   patchOperatorHtml,
 } from "../lib/sales-history-nav.mjs";
 import { patchMobileAppRoutes } from "../lib/mobile-app.mjs";
+import { patchSalesHistoryAuth } from "../lib/sales-history-auth.mjs";
+import { patchSalesHistoryApi } from "../lib/sales-history-api.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -115,6 +117,7 @@ function main() {
     "lib/sales-history-nav.mjs",
     "lib/sales-history-lock.mjs",
     "lib/sales-history-api.mjs",
+    "lib/sales-history-auth.mjs",
     "lib/mobile-app.mjs",
     "public/sales-history.html",
     "public/landing/index.html",
@@ -155,13 +158,33 @@ function main() {
     console.log("server.js already patched or no matching snippets");
   }
 
+  const api = patchSalesHistoryApi(cur);
+  if (api.missing) console.warn("server.js API patch miss:", api.missing);
+  if (api.changed) {
+    fs.writeFileSync(serverPath, api.src);
+    cur = api.src;
+    console.log("patched server.js (sales-history API PUT/DELETE + lock)");
+  } else {
+    console.log("server.js API already patched or no match");
+  }
+
   const mobile = patchMobileAppRoutes(cur);
   if (mobile.missing) console.warn("server.js mobile patch miss:", mobile.missing);
   if (mobile.changed) {
     fs.writeFileSync(serverPath, mobile.src);
+    cur = mobile.src;
     console.log("patched server.js (/mobile + /app PWA)");
   } else {
     console.log("server.js mobile routes already patched or no match");
+  }
+
+  const auth = patchSalesHistoryAuth(cur);
+  if (auth.missing) console.warn("server.js auth patch miss:", auth.missing);
+  if (auth.changed) {
+    fs.writeFileSync(serverPath, auth.src);
+    console.log("patched server.js (sales-history login gate)");
+  } else {
+    console.log("server.js auth already patched or no match");
   }
 }
 
