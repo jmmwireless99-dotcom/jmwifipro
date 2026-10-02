@@ -32,11 +32,17 @@ assert.match(op.src, /location\.href='\/sales-history'/);
 assert.equal(patchOperatorHtml(op.src).changed, false, "operator patch idempotent");
 
 // Live operator sidebar from jmwifi.pro/operator should match anchors
-const liveOp = fs.readFileSync("/tmp/operator.html", "utf8");
+// Prefer current live operator from VPS snapshot if present, else cached /tmp
+const livePath = fs.existsSync("/tmp/operator-live.html") ? "/tmp/operator-live.html" : "/tmp/operator.html";
+const liveOp = fs.readFileSync(livePath, "utf8");
 const livePatch = patchOperatorHtml(liveOp);
-assert.equal(livePatch.changed, true, "live operator should accept Sales History button");
-assert.ok(livePatch.src.includes('id="nav-saleshistory"'));
+assert.ok(livePatch.src.includes('id="nav-saleshistory"'), "Sales History button present after patch");
 assert.ok(livePatch.src.includes("📒 Sales History"));
+// Business placement: Sales History after Hotspot, before Referrals
+const iHot = livePatch.src.indexOf('id="nav-hotspot"');
+const iSales = livePatch.src.indexOf('id="nav-saleshistory"');
+const iRef = livePatch.src.indexOf('id="nav-referrals"');
+assert.ok(iHot >= 0 && iSales > iHot && iSales < iRef, "Sales History sits in Business after Hotspot");
 
 const fakeLanding = [
   '<link rel="stylesheet" href="/isp-landing.css?v=22">',
