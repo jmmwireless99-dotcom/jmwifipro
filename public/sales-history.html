@@ -6,7 +6,7 @@
   <title>Sales History — JM WIFI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0f1419;
@@ -17,14 +17,9 @@
       --muted: #8b9bb0;
       --accent: #1d9e75;
       --accent2: #2ec4a0;
-      --sheet: #1e2a22;
-      --sheet-head: #1a6b4a;
-      --warn: #e8a317;
-      --bad: #e85d6a;
       --ok: #3ecf8e;
-      --chip: #243044;
-      --radius: 10px;
-      --shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+      --bad: #e85d6a;
+      --radius: 12px;
       --mono: "IBM Plex Mono", ui-monospace, monospace;
       --sans: "IBM Plex Sans", system-ui, sans-serif;
     }
@@ -32,132 +27,123 @@
     body {
       font-family: var(--sans);
       background:
-        radial-gradient(900px 480px at 8% -10%, rgba(29, 158, 117, 0.16), transparent 55%),
-        radial-gradient(700px 420px at 92% 0%, rgba(46, 196, 160, 0.08), transparent 50%),
-        linear-gradient(180deg, #121820 0%, var(--bg) 40%);
+        radial-gradient(900px 480px at 8% -10%, rgba(29, 158, 117, 0.14), transparent 55%),
+        linear-gradient(180deg, #121820 0%, var(--bg) 45%);
       color: var(--ink);
       min-height: 100vh;
       line-height: 1.45;
     }
-    .wrap { max-width: 1280px; margin: 0 auto; padding: 20px 18px 48px; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 20px 16px 56px; }
     header.top {
-      display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
-      gap: 14px; margin-bottom: 22px;
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
+      align-items: flex-end; margin-bottom: 18px;
     }
-    .brand {
-      font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--accent2); font-weight: 700; margin-bottom: 6px;
+    .brand { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent2); font-weight: 700; }
+    h1 { font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 700; margin-top: 4px; }
+    .sub { color: var(--muted); font-size: 13.5px; margin-top: 4px; }
+    a.back {
+      display: inline-block; text-decoration: none; color: var(--ink);
+      border: 1px solid var(--line); background: var(--panel); border-radius: 8px;
+      padding: 8px 12px; font-size: 13px; font-weight: 600;
     }
-    h1 { font-size: clamp(1.55rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; }
-    .sub { color: var(--muted); font-size: 14px; margin-top: 4px; max-width: 46ch; }
-    .hint {
-      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 10px 14px; font-size: 12.5px; color: var(--muted); max-width: 340px;
-    }
-    .hint code { font-family: var(--mono); color: var(--accent2); font-size: 11.5px; }
+    a.back:hover { border-color: var(--accent); color: var(--accent2); }
 
-    .kpis {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;
+    .crumbs {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      margin-bottom: 14px; font-size: 13px; color: var(--muted);
     }
-    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
-    .kpi {
-      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 14px 16px; box-shadow: var(--shadow);
-      animation: rise 0.45s ease both;
+    .crumbs button {
+      border: 0; background: transparent; color: var(--accent2); font: inherit;
+      font-weight: 600; cursor: pointer; padding: 0;
     }
-    .kpi:nth-child(2) { animation-delay: 0.05s; }
-    .kpi:nth-child(3) { animation-delay: 0.1s; }
-    .kpi:nth-child(4) { animation-delay: 0.15s; }
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: none; }
-    }
-    .kpi .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-    .kpi .v { font-family: var(--mono); font-size: 1.45rem; font-weight: 600; margin-top: 6px; color: var(--ok); }
-    .kpi .s { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
-
-    .toolbar {
-      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 12px 14px; margin-bottom: 16px;
-    }
-    .seg { display: inline-flex; background: var(--bg2); border-radius: 8px; padding: 3px; border: 1px solid var(--line); }
-    .seg button {
-      border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px;
-      font-weight: 600; padding: 7px 12px; border-radius: 6px; cursor: pointer;
-    }
-    .seg button.active { background: var(--accent); color: #04140f; }
-    label.fld { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    select, input[type="search"] {
-      background: var(--bg2); border: 1px solid var(--line); color: var(--ink);
-      border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; min-width: 150px;
-    }
-    .spacer { flex: 1; }
-    .btn {
-      border: 1px solid var(--line); background: var(--bg2); color: var(--ink);
-      border-radius: 8px; padding: 8px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
-    }
-    .btn:hover { border-color: var(--accent); color: var(--accent2); }
-
-    .grid2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 14px; margin-bottom: 16px; }
-    @media (max-width: 980px) { .grid2 { grid-template-columns: 1fr; } }
+    .crumbs button:hover { text-decoration: underline; }
+    .crumbs .here { color: var(--ink); font-weight: 700; }
 
     .panel {
       background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-      overflow: hidden; box-shadow: var(--shadow);
+      overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,.28);
     }
-    .panel h2 {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
-      font-size: 14px; font-weight: 700; padding: 12px 14px; border-bottom: 1px solid var(--line);
-      background: linear-gradient(90deg, rgba(29, 158, 117, 0.12), transparent);
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 14px; border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(29,158,117,.14), transparent);
     }
-    .panel h2 span.meta { font-weight: 500; color: var(--muted); font-size: 12px; }
+    .panel-head h2 { font-size: 14px; font-weight: 700; }
+    .panel-head .meta { font-size: 12px; color: var(--muted); font-weight: 500; }
 
-    .chart {
-      height: 180px; padding: 14px 16px 18px; display: flex; align-items: flex-end; gap: 6px;
+    .list { list-style: none; }
+    .list li { border-bottom: 1px solid var(--line); }
+    .list li:last-child { border-bottom: 0; }
+    .row {
+      width: 100%; display: flex; align-items: center; gap: 12px;
+      padding: 13px 14px; background: transparent; border: 0; color: var(--ink);
+      font: inherit; text-align: left; cursor: pointer;
     }
-    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; height: 100%; justify-content: flex-end; }
-    .bar {
-      width: 100%; max-width: 42px; border-radius: 6px 6px 2px 2px;
-      background: linear-gradient(180deg, var(--accent2), var(--accent));
-      transition: height 0.35s ease; min-height: 2px;
+    .row:hover { background: rgba(46, 196, 160, 0.08); }
+    .row .ico {
+      width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+      background: #203042; border: 1px solid var(--line); flex: 0 0 34px; font-size: 15px;
     }
-    .bar-col .lbl { font-family: var(--mono); font-size: 9.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: center; }
-    .bar-col .amt { font-family: var(--mono); font-size: 10px; color: var(--ink); opacity: 0.85; }
+    .row .txt { flex: 1; min-width: 0; }
+    .row .name { font-weight: 700; font-size: 14px; }
+    .row .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .row .chev { color: var(--muted); font-size: 18px; }
 
-    .scroll { overflow: auto; max-height: 420px; }
-    table.sheet {
-      width: 100%; border-collapse: collapse; font-size: 13px;
-      font-family: var(--mono);
+    .plus {
+      width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
+      background: linear-gradient(135deg, #0d6b4a, #1d9e75); color: #fff;
+      font-size: 26px; font-weight: 700; line-height: 1; box-shadow: 0 6px 18px rgba(29,158,117,.35);
     }
-    table.sheet thead th {
-      position: sticky; top: 0; z-index: 1;
-      background: var(--sheet-head); color: #eafff5; font-weight: 600;
-      text-align: left; padding: 9px 12px; font-size: 11px; letter-spacing: 0.04em;
-      text-transform: uppercase; border-bottom: 1px solid #0f3d2c;
-    }
-    table.sheet tbody td {
-      padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--sheet);
-      vertical-align: top;
-    }
-    table.sheet tbody tr:nth-child(even) td { background: #1a2820; }
-    table.sheet tbody tr:hover td { background: #243528; }
-    table.sheet .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--ok); font-weight: 600; }
-    table.sheet .empty { text-align: center; color: var(--muted); padding: 28px; font-family: var(--sans); }
+    .plus:hover { filter: brightness(1.08); }
 
-    .vendos { display: flex; flex-wrap: wrap; gap: 4px; }
-    .chip {
-      display: inline-block; background: var(--chip); border: 1px solid var(--line);
-      border-radius: 999px; padding: 2px 8px; font-size: 11px; color: var(--ink);
-      font-family: var(--sans);
+    .vendo-card {
+      padding: 12px 14px; border-bottom: 1px solid var(--line);
+      display: grid; gap: 4px;
     }
-    .chip.zero { opacity: 0.45; }
+    .vendo-card:last-child { border-bottom: 0; }
+    .vendo-card .vn { font-weight: 700; font-size: 14px; }
+    .vendo-card .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    .vendo-card .amt { font-family: var(--mono); font-weight: 600; color: var(--ok); font-size: 14px; }
+    .empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 13.5px; }
 
-    .foot {
-      margin-top: 18px; color: var(--muted); font-size: 12.5px;
-      display: flex; flex-wrap: wrap; gap: 10px 18px; justify-content: space-between;
+    /* Modal form */
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(5, 10, 16, .72);
+      display: none; align-items: flex-end; justify-content: center; z-index: 80;
+      padding: 16px;
     }
-    .foot a { color: var(--accent2); }
+    .modal-bg.open { display: flex; }
+    @media (min-width: 640px) { .modal-bg { align-items: center; } }
+    .modal {
+      width: min(440px, 100%); background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; padding: 16px; box-shadow: 0 20px 50px rgba(0,0,0,.45);
+      animation: up .2s ease;
+    }
+    @keyframes up { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal h3 { font-size: 16px; margin-bottom: 4px; }
+    .modal .where { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+    .fld { display: grid; gap: 5px; margin-bottom: 12px; }
+    .fld label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+    .fld input, .fld select {
+      background: var(--bg2); border: 1px solid var(--line); color: var(--ink);
+      border-radius: 9px; padding: 10px 12px; font: inherit; font-size: 14px; width: 100%;
+    }
+    .fld input:focus, .fld select:focus { outline: 2px solid rgba(29,158,117,.45); border-color: var(--accent); }
+    .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+    .btn {
+      border: 1px solid var(--line); background: var(--bg2); color: var(--ink);
+      border-radius: 9px; padding: 10px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .btn.primary { background: linear-gradient(135deg, #0d6b4a, #1d9e75); border-color: transparent; color: #fff; }
+    .btn:hover { filter: brightness(1.05); }
+    .err { color: var(--bad); font-size: 12.5px; min-height: 18px; margin-bottom: 6px; }
+    .toast {
+      position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+      background: #123528; border: 1px solid var(--accent); color: var(--ok);
+      padding: 10px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      display: none; z-index: 90;
+    }
+    .toast.show { display: block; }
   </style>
 </head>
 <body>
@@ -166,274 +152,68 @@
       <div>
         <div class="brand">JM WIFI NETWORK</div>
         <h1>Sales History</h1>
-        <p class="sub">Vendo list per barangay — total sale bawat vendo. Weekly / monthly / yearly dashboard. Barangays from jmwifi.pro/apply.</p>
+        <p class="sub">Municipal → Barangay → + Add vendo (name, month/date, sales)</p>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-        <a href="/" class="btn" style="text-decoration:none">← Back to jmwifi.pro</a>
-        <div class="hint">Magdagdag ng sale: edit <code>lib/sales-history-data.mjs</code> (parang Excel rows) then refresh.</div>
-      </div>
+      <a class="back" href="/operator">← Operator</a>
     </header>
 
-    <section class="kpis" id="kpis" aria-label="Overall sales">
-      <div class="kpi"><div class="k">This week</div><div class="v" id="kpi-week">₱0</div><div class="s" id="kpi-week-key">—</div></div>
-      <div class="kpi"><div class="k">This month</div><div class="v" id="kpi-month">₱0</div><div class="s" id="kpi-month-key">Overall monthly</div></div>
-      <div class="kpi"><div class="k">This year</div><div class="v" id="kpi-year">₱0</div><div class="s" id="kpi-year-key">Overall yearly</div></div>
-      <div class="kpi"><div class="k">All encoded</div><div class="v" id="kpi-all">₱0</div><div class="s" id="kpi-rows">0 rows</div></div>
-    </section>
-
-    <div class="toolbar">
-      <div class="seg" role="tablist" aria-label="Period">
-        <button type="button" class="active" data-range="weekly" id="rg-weekly">Weekly</button>
-        <button type="button" data-range="monthly" id="rg-monthly">Monthly</button>
-        <button type="button" data-range="yearly" id="rg-yearly">Yearly</button>
-      </div>
-      <label class="fld">Municipality
-        <select id="flt-muni"><option value="">All municipalities</option></select>
-      </label>
-      <label class="fld">Barangay
-        <select id="flt-brgy"><option value="">All barangays</option></select>
-      </label>
-      <label class="fld">Search vendo
-        <input type="search" id="flt-q" placeholder="vendo name…" />
-      </label>
-      <div class="spacer"></div>
-      <button type="button" class="btn" id="btn-only-sales">Show with sales only</button>
-      <button type="button" class="btn" id="btn-reset">Reset filters</button>
-    </div>
-
-    <div class="grid2">
-      <section class="panel">
-        <h2>Period chart <span class="meta" id="chart-meta">weekly</span></h2>
-        <div class="chart" id="chart" aria-label="Sales by period"></div>
-      </section>
-      <section class="panel">
-        <h2>Vendo totals <span class="meta" id="vendo-meta">filtered</span></h2>
-        <div class="scroll" style="max-height:220px">
-          <table class="sheet">
-            <thead><tr><th>Vendo</th><th>Barangay</th><th>Total</th></tr></thead>
-            <tbody id="vendo-rows"><tr><td colspan="3" class="empty">—</td></tr></tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-
-    <section class="panel" style="margin-bottom:16px">
-      <h2>
-        Per barangay
-        <span class="meta" id="brgy-meta">vendo name · total sale</span>
-      </h2>
-      <div class="scroll">
-        <table class="sheet">
-          <thead>
-            <tr>
-              <th>Municipality</th>
-              <th>Barangay</th>
-              <th>Vendo name(s)</th>
-              <th>Vendos</th>
-              <th>Total sale</th>
-            </tr>
-          </thead>
-          <tbody id="brgy-rows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </section>
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
 
     <section class="panel">
-      <h2>
-        Excel sheet (encoded rows)
-        <span class="meta" id="sheet-meta">date · muni · brgy · vendo · amount</span>
-      </h2>
-      <div class="scroll" style="max-height:360px">
-        <table class="sheet">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Municipality</th>
-              <th>Barangay</th>
-              <th>Vendo</th>
-              <th>Amount</th>
-              <th>Note</th>
-            </tr>
-          </thead>
-          <tbody id="sheet-rows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
-        </table>
+      <div class="panel-head">
+        <div>
+          <h2 id="panel-title">Municipalities</h2>
+          <div class="meta" id="panel-meta">Piliin ang municipality</div>
+        </div>
+        <button type="button" class="plus" id="btn-add" title="Add vendo" style="display:none" aria-label="Add vendo">+</button>
       </div>
+      <div id="view"></div>
     </section>
-
-    <footer class="foot">
-      <div>Coverage: <span id="cov-count">—</span> barangays from <a href="https://jmwifi.pro/apply" target="_blank" rel="noopener">jmwifi.pro/apply</a></div>
-      <div>Open at <code style="font-family:var(--mono);color:var(--accent2)">/sales-history</code></div>
-    </footer>
   </div>
 
-  <script type="module">
-    import { APPLY_COVERAGE, listAllBarangays } from "/lib/apply-coverage.mjs";
-    import { SALES_ROWS } from "/lib/sales-history-data.mjs";
-    import {
-      overallTotals,
-      barangaySummary,
-      vendoSummary,
-      periodSeries,
-      filterRows,
-      peso,
-    } from "/lib/sales-history.mjs";
+  <div class="modal-bg" id="modal-bg" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <form class="modal" id="add-form">
+      <h3 id="modal-title">Add vendo</h3>
+      <div class="where" id="modal-where">—</div>
+      <div class="err" id="form-err"></div>
+      <div class="fld">
+        <label for="f-vendo">Vendo name</label>
+        <input id="f-vendo" name="vendo" required placeholder="e.g. Vendo Candelaria Plaza" autocomplete="off" />
+      </div>
+      <div class="fld">
+        <label for="f-month">Month</label>
+        <input id="f-month" name="month" type="month" required />
+      </div>
+      <div class="fld">
+        <label for="f-date">Date (optional day)</label>
+        <input id="f-date" name="date" type="date" />
+      </div>
+      <div class="fld">
+        <label for="f-amount">Sales per vendo (₱)</label>
+        <input id="f-amount" name="amount" type="number" min="0" step="1" required placeholder="0" />
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="btn-cancel">Cancel</button>
+        <button type="submit" class="btn primary">Save vendo</button>
+      </div>
+    </form>
+  </div>
+  <div class="toast" id="toast">Saved</div>
 
+  <script type="module">
+    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs";
+
+    const STORAGE_KEY = "jm_sales_history_vendos_v1";
     const state = {
-      range: "weekly",
-      municipality: "",
-      barangay: "",
-      q: "",
-      onlySales: false,
+      muni: null,
+      brgy: null,
+      entries: [],
     };
 
     const $ = (id) => document.getElementById(id);
 
-    function filters() {
-      const f = {};
-      if (state.municipality) f.municipality = state.municipality;
-      if (state.barangay) f.barangay = state.barangay;
-      return f;
-    }
-
-    function fillMuni() {
-      const sel = $("flt-muni");
-      const keys = Object.keys(APPLY_COVERAGE);
-      sel.innerHTML =
-        '<option value="">All municipalities</option>' +
-        keys.map((k) => `<option value="${k}">${k}</option>`).join("");
-    }
-
-    function fillBrgy() {
-      const sel = $("flt-brgy");
-      const m = state.municipality;
-      const list = m
-        ? APPLY_COVERAGE[m] || []
-        : listAllBarangays().map((x) => x.barangay);
-      const uniq = m ? list : [...new Set(list)].sort();
-      const prev = state.barangay;
-      sel.innerHTML =
-        '<option value="">All barangays</option>' +
-        uniq.map((b) => `<option value="${b}">${b}</option>`).join("");
-      if (prev && uniq.includes(prev)) {
-        sel.value = prev;
-      } else {
-        state.barangay = "";
-        sel.value = "";
-      }
-    }
-
-    function matchQ(name) {
-      if (!state.q) return true;
-      return String(name || "").toLowerCase().includes(state.q.toLowerCase());
-    }
-
-    function renderKpis() {
-      const t = overallTotals(SALES_ROWS, filters());
-      $("kpi-week").textContent = peso(t.weekly);
-      $("kpi-month").textContent = peso(t.monthly);
-      $("kpi-year").textContent = peso(t.yearly);
-      $("kpi-all").textContent = peso(t.all);
-      $("kpi-week-key").textContent = t.weekKey;
-      $("kpi-month-key").textContent = "Overall · " + t.monthKey;
-      $("kpi-year-key").textContent = "Overall · " + t.yearKey;
-      const n = filterRows(SALES_ROWS, filters()).length;
-      $("kpi-rows").textContent = n + " encoded row" + (n === 1 ? "" : "s");
-    }
-
-    function renderChart() {
-      const series = periodSeries(SALES_ROWS, state.range, filters());
-      $("chart-meta").textContent = state.range + (state.municipality ? " · " + state.municipality : "") + (state.barangay ? " / " + state.barangay : "");
-      const max = Math.max(1, ...series.map((s) => s.total));
-      const el = $("chart");
-      if (!series.length) {
-        el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:24px">No sales in this filter.</div>';
-        return;
-      }
-      el.innerHTML = series
-        .map((s) => {
-          const h = Math.max(2, Math.round((s.total / max) * 130));
-          const short = s.period.replace(/^20/, "");
-          return `<div class="bar-col" title="${s.period}: ${peso(s.total)}">
-            <div class="amt">${peso(s.total)}</div>
-            <div class="bar" style="height:${h}px"></div>
-            <div class="lbl">${short}</div>
-          </div>`;
-        })
-        .join("");
-    }
-
-    function renderBarangay() {
-      let list = barangaySummary(SALES_ROWS, filters());
-      if (state.onlySales) list = list.filter((r) => r.total > 0);
-      if (state.q) {
-        list = list
-          .map((r) => ({ ...r, vendos: r.vendos.filter(matchQ) }))
-          .filter((r) => r.vendos.length || matchQ(r.barangay));
-      }
-      $("brgy-meta").textContent = list.length + " barangay(s)";
-      const tb = $("brgy-rows");
-      if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="5" class="empty">Walang match sa filter.</td></tr>';
-        return;
-      }
-      tb.innerHTML = list
-        .map((r) => {
-          const chips =
-            r.vendos.length === 0
-              ? '<span class="chip zero">no vendo yet</span>'
-              : r.vendos.map((v) => `<span class="chip">${esc(v)}</span>`).join("");
-          return `<tr>
-            <td>${esc(r.municipality)}</td>
-            <td><b>${esc(r.barangay)}</b></td>
-            <td><div class="vendos">${chips}</div></td>
-            <td class="num">${r.vendoCount}</td>
-            <td class="num">${peso(r.total)}</td>
-          </tr>`;
-        })
-        .join("");
-    }
-
-    function renderVendos() {
-      let list = vendoSummary(SALES_ROWS, filters());
-      if (state.q) list = list.filter((r) => matchQ(r.vendo));
-      $("vendo-meta").textContent = list.length + " vendo(s)";
-      const tb = $("vendo-rows");
-      if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="3" class="empty">No vendo sales.</td></tr>';
-        return;
-      }
-      tb.innerHTML = list
-        .map(
-          (r) => `<tr>
-            <td>${esc(r.vendo)}</td>
-            <td>${esc(r.barangay)}</td>
-            <td class="num">${peso(r.total)}</td>
-          </tr>`
-        )
-        .join("");
-    }
-
-    function renderSheet() {
-      let rows = filterRows(SALES_ROWS, filters()).slice().sort((a, b) => b.date.localeCompare(a.date));
-      if (state.q) rows = rows.filter((r) => matchQ(r.vendo) || matchQ(r.barangay));
-      $("sheet-meta").textContent = rows.length + " row(s)";
-      const tb = $("sheet-rows");
-      if (!rows.length) {
-        tb.innerHTML = '<tr><td colspan="6" class="empty">Walang encoded sales sa filter.</td></tr>';
-        return;
-      }
-      tb.innerHTML = rows
-        .map(
-          (r) => `<tr>
-            <td>${esc(r.date)}</td>
-            <td>${esc(r.municipality)}</td>
-            <td>${esc(r.barangay)}</td>
-            <td>${esc(r.vendo)}</td>
-            <td class="num">${peso(r.amount)}</td>
-            <td>${esc(r.note || "")}</td>
-          </tr>`
-        )
-        .join("");
+    function peso(n) {
+      return "₱" + Number(n || 0).toLocaleString("en-PH", { maximumFractionDigits: 0 });
     }
 
     function esc(s) {
@@ -444,56 +224,267 @@
         .replace(/"/g, "&quot;");
     }
 
-    function render() {
-      renderKpis();
-      renderChart();
-      renderBarangay();
-      renderVendos();
-      renderSheet();
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
     }
 
-    document.querySelectorAll(".seg button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".seg button").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        state.range = btn.dataset.range;
-        render();
+    function saveLocal(entries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    async function loadEntries() {
+      // Prefer server file; fall back to localStorage
+      try {
+        const r = await fetch("/api/sales-history", { credentials: "same-origin" });
+        if (r.ok) {
+          const d = await r.json();
+          if (d && Array.isArray(d.entries)) {
+            state.entries = d.entries;
+            saveLocal(d.entries);
+            return;
+          }
+        }
+      } catch {}
+      state.entries = loadLocal();
+    }
+
+    async function persistEntry(entry) {
+      state.entries = [entry, ...state.entries];
+      saveLocal(state.entries);
+      try {
+        await fetch("/api/sales-history", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(entry),
+        });
+      } catch {}
+    }
+
+    function entriesFor(muni, brgy) {
+      return state.entries.filter(
+        (e) =>
+          String(e.municipality).toUpperCase() === muni &&
+          String(e.barangay).toUpperCase() === brgy
+      );
+    }
+
+    function countBrgy(muni) {
+      return (APPLY_COVERAGE[muni] || []).length;
+    }
+
+    function countVendos(muni, brgy) {
+      const set = new Set(entriesFor(muni, brgy).map((e) => e.vendo));
+      return set.size;
+    }
+
+    function toast(msg) {
+      const el = $("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    function renderCrumbs() {
+      const el = $("crumbs");
+      const parts = [];
+      parts.push(`<button type="button" data-go="root">Municipalities</button>`);
+      if (state.muni) {
+        parts.push(`<span>›</span>`);
+        if (state.brgy) {
+          parts.push(`<button type="button" data-go="muni">${esc(state.muni)}</button>`);
+          parts.push(`<span>›</span>`);
+          parts.push(`<span class="here">${esc(state.brgy)}</span>`);
+        } else {
+          parts.push(`<span class="here">${esc(state.muni)}</span>`);
+        }
+      }
+      el.innerHTML = parts.join(" ");
+      el.querySelectorAll("button[data-go]").forEach((btn) => {
+        btn.onclick = () => {
+          if (btn.dataset.go === "root") {
+            state.muni = null;
+            state.brgy = null;
+          } else if (btn.dataset.go === "muni") {
+            state.brgy = null;
+          }
+          render();
+        };
       });
+    }
+
+    function renderMunicipalities() {
+      $("panel-title").textContent = "Municipalities";
+      $("panel-meta").textContent = Object.keys(APPLY_COVERAGE).length + " municipalities · from jmwifi.pro/apply";
+      $("btn-add").style.display = "none";
+      const munis = Object.keys(APPLY_COVERAGE);
+      $("view").innerHTML =
+        `<ul class="list">` +
+        munis
+          .map((m) => {
+            const n = countBrgy(m);
+            return `<li>
+              <button type="button" class="row" data-muni="${esc(m)}">
+                <span class="ico">🏘</span>
+                <span class="txt">
+                  <div class="name">${esc(m)}</div>
+                  <div class="desc">${n} barangay${n === 1 ? "" : "s"}</div>
+                </span>
+                <span class="chev">›</span>
+              </button>
+            </li>`;
+          })
+          .join("") +
+        `</ul>`;
+      $("view").querySelectorAll("[data-muni]").forEach((btn) => {
+        btn.onclick = () => {
+          state.muni = btn.dataset.muni;
+          state.brgy = null;
+          render();
+        };
+      });
+    }
+
+    function renderBarangays() {
+      const list = APPLY_COVERAGE[state.muni] || [];
+      $("panel-title").textContent = state.muni;
+      $("panel-meta").textContent = list.length + " barangays · pindutin para mag-add ng vendo";
+      $("btn-add").style.display = "none";
+      $("view").innerHTML =
+        `<ul class="list">` +
+        list
+          .map((b) => {
+            const v = countVendos(state.muni, b);
+            return `<li>
+              <button type="button" class="row" data-brgy="${esc(b)}">
+                <span class="ico">📍</span>
+                <span class="txt">
+                  <div class="name">${esc(b)}</div>
+                  <div class="desc">${v} vendo${v === 1 ? "" : "s"} encoded</div>
+                </span>
+                <span class="chev">›</span>
+              </button>
+            </li>`;
+          })
+          .join("") +
+        `</ul>`;
+      $("view").querySelectorAll("[data-brgy]").forEach((btn) => {
+        btn.onclick = () => {
+          state.brgy = btn.dataset.brgy;
+          render();
+        };
+      });
+    }
+
+    function renderBarangayDetail() {
+      const rows = entriesFor(state.muni, state.brgy);
+      $("panel-title").textContent = state.brgy;
+      $("panel-meta").textContent = state.muni + " · " + rows.length + " sale row(s)";
+      $("btn-add").style.display = "";
+
+      if (!rows.length) {
+        $("view").innerHTML = `<div class="empty">Wala pang vendo dito.<br>Pindutin ang <b>+</b> para mag-add.</div>`;
+        return;
+      }
+
+      // Group by vendo name
+      const byVendo = new Map();
+      for (const r of rows) {
+        const key = r.vendo || "(unnamed)";
+        if (!byVendo.has(key)) byVendo.set(key, []);
+        byVendo.get(key).push(r);
+      }
+
+      $("view").innerHTML = [...byVendo.entries()]
+        .map(([name, list]) => {
+          const total = list.reduce((n, x) => n + (Number(x.amount) || 0), 0);
+          const months = [...new Set(list.map((x) => x.month || (x.date || "").slice(0, 7)))].filter(Boolean);
+          return `<div class="vendo-card">
+            <div class="vn">${esc(name)}</div>
+            <div class="meta">${esc(months.join(", ") || "—")} · ${list.length} entry</div>
+            <div class="amt">${peso(total)}</div>
+          </div>`;
+        })
+        .join("");
+    }
+
+    function render() {
+      renderCrumbs();
+      if (!state.muni) renderMunicipalities();
+      else if (!state.brgy) renderBarangays();
+      else renderBarangayDetail();
+    }
+
+    function openForm() {
+      $("form-err").textContent = "";
+      $("modal-where").textContent = state.muni + " › " + state.brgy;
+      const now = new Date();
+      const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      const ymd = `${ym}-${String(now.getDate()).padStart(2, "0")}`;
+      $("f-vendo").value = "";
+      $("f-month").value = ym;
+      $("f-date").value = ymd;
+      $("f-amount").value = "";
+      $("modal-bg").classList.add("open");
+      setTimeout(() => $("f-vendo").focus(), 50);
+    }
+
+    function closeForm() {
+      $("modal-bg").classList.remove("open");
+    }
+
+    $("btn-add").onclick = openForm;
+    $("btn-cancel").onclick = closeForm;
+    $("modal-bg").addEventListener("click", (e) => {
+      if (e.target === $("modal-bg")) closeForm();
     });
 
-    $("flt-muni").addEventListener("change", (e) => {
-      state.municipality = e.target.value;
-      fillBrgy();
-      render();
-    });
-    $("flt-brgy").addEventListener("change", (e) => {
-      state.barangay = e.target.value;
-      render();
-    });
-    $("flt-q").addEventListener("input", (e) => {
-      state.q = e.target.value.trim();
-      render();
-    });
-    $("btn-only-sales").addEventListener("click", () => {
-      state.onlySales = !state.onlySales;
-      $("btn-only-sales").textContent = state.onlySales ? "Show all barangays" : "Show with sales only";
-      render();
-    });
-    $("btn-reset").addEventListener("click", () => {
-      state.municipality = "";
-      state.barangay = "";
-      state.q = "";
-      state.onlySales = false;
-      $("flt-muni").value = "";
-      $("flt-q").value = "";
-      $("btn-only-sales").textContent = "Show with sales only";
-      fillBrgy();
-      render();
-    });
+    $("add-form").onsubmit = async (e) => {
+      e.preventDefault();
+      $("form-err").textContent = "";
+      const vendo = $("f-vendo").value.trim();
+      const month = $("f-month").value;
+      let date = $("f-date").value;
+      const amount = Number($("f-amount").value);
+      if (!vendo) {
+        $("form-err").textContent = "Lagyan ng vendo name.";
+        return;
+      }
+      if (!month) {
+        $("form-err").textContent = "Piliin ang month.";
+        return;
+      }
+      if (!(amount >= 0)) {
+        $("form-err").textContent = "Invalid sales amount.";
+        return;
+      }
+      if (!date) date = month + "-01";
+      // keep date inside selected month
+      if (date.slice(0, 7) !== month) date = month + "-01";
 
-    $("cov-count").textContent = String(listAllBarangays().length);
-    fillMuni();
-    fillBrgy();
+      const entry = {
+        id: "sh_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        municipality: state.muni,
+        barangay: state.brgy,
+        vendo,
+        month,
+        date,
+        amount,
+        createdAt: new Date().toISOString(),
+      };
+      await persistEntry(entry);
+      closeForm();
+      toast("Vendo saved");
+      render();
+    };
+
+    await loadEntries();
     render();
   </script>
 </body>
