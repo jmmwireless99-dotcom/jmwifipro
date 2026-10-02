@@ -26,7 +26,12 @@ const ROUTE_MARKER = 'pathname === "/sales-history"';
 const ROUTE_SNIPPET = `    if (pathname === "/sales-history" && req.method === "GET") {
       try {
         const buf = fs.readFileSync(path.join(__dirname, "public", "sales-history.html"));
-        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+        res.writeHead(200, {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          "Pragma": "no-cache",
+          "Expires": "0",
+        });
         return res.end(buf);
       } catch (e) {
         res.writeHead(404, { "Content-Type": "text/plain" });
@@ -37,7 +42,11 @@ const ROUTE_SNIPPET = `    if (pathname === "/sales-history" && req.method === "
       try {
         const safe = path.normalize(pathname.replace(/^\\/lib\\//, "")).replace(/^(\\.\\.[/\\\\])+/, "");
         const buf = fs.readFileSync(path.join(__dirname, "lib", safe));
-        res.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
+        res.writeHead(200, {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          "Pragma": "no-cache",
+        });
         return res.end(buf);
       } catch (e) {
         res.writeHead(404, { "Content-Type": "text/plain" });
@@ -95,6 +104,8 @@ function main() {
     "lib/sales-history-data.mjs",
     "lib/sales-history.mjs",
     "lib/sales-history-nav.mjs",
+    "lib/sales-history-lock.mjs",
+    "lib/sales-history-api.mjs",
     "public/sales-history.html",
     "public/landing/index.html",
     "public/isp-landing.css",

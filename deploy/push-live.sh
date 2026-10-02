@@ -44,6 +44,8 @@ copy_into lib/apply-coverage.mjs
 copy_into lib/sales-history-data.mjs
 copy_into lib/sales-history.mjs
 copy_into lib/sales-history-nav.mjs
+copy_into lib/sales-history-lock.mjs
+copy_into lib/sales-history-api.mjs
 copy_into public/sales-history.html
 copy_into public/isp-landing.css
 mkdir -p "$APP/public/landing"
@@ -53,6 +55,16 @@ copy_into deploy/sales-history.mjs
 echo "==> Patch operator panel + landing + server routes"
 cd "$APP"
 node deploy/sales-history.mjs
+node --input-type=module -e "
+  import fs from 'node:fs';
+  import { patchSalesHistoryApi } from './lib/sales-history-api.mjs';
+  const p = 'server.js';
+  const cur = fs.readFileSync(p, 'utf8');
+  const next = patchSalesHistoryApi(cur);
+  if (next.missing) console.warn('API patch miss:', next.missing);
+  if (next.changed) { fs.writeFileSync(p, next.src); console.log('patched server.js (sales-history API PUT/DELETE + lock)'); }
+  else console.log('server.js API already patched or no match');
+"
 
 # If landing HTML is not under public/landing/index.html on this box,
 # try to find the live homepage file that contains isp-nav-cta and patch it.

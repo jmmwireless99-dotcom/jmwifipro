@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
   <title>Sales History — JMM Internet Services</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -102,7 +104,10 @@
     button.danger {
       background: rgba(255,93,109,.12); border-color: rgba(255,93,109,.45); color: var(--warn);
     }
-    button.mini { padding: 5px 10px; font-size: 11.5px; }
+    button.mini { padding: 6px 12px; font-size: 12px; font-weight: 700; }
+    button.edit-btn {
+      background: rgba(74,140,255,.16); border-color: rgba(74,140,255,.55); color: #9ec1ff;
+    }
     button:disabled, .btn:disabled { opacity: .45; cursor: not-allowed; filter: none !important; }
     .lock-chip {
       display: inline-block; background: rgba(255,93,109,.12); border: 1px solid rgba(255,93,109,.4);
@@ -308,8 +313,11 @@
   <div class="toast" id="toast">Saved</div>
 
   <script type="module">
-    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs";
-    import { isSalesMonthEditable, salesMonthLockReason } from "/lib/sales-history-lock.mjs";
+    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=4";
+    import {
+      isSalesMonthEditable,
+      salesMonthLockReason,
+    } from "/lib/sales-history-lock.mjs?v=4";
 
     const STORAGE_KEY = "jm_sales_history_vendos_v1";
     const FILTER_KEY = "jm_sales_history_month_filter";
@@ -539,7 +547,7 @@
       $("panel-title").textContent = state.brgy + " · Vendos";
       $("panel-hint").textContent = state.muni + " › " + state.brgy +
         (state.month ? " · " + formatMonthLabel(state.month) : " · All months") +
-        " — Edit/Delete only for current month + previous month grace.";
+        " — gamitin ang Edit / Delete sa Actions. Locked pag lagpas na ang grace month.";
       // + Add only if selected filter month (or current month) is still editable
       const addMonth = state.month || monthNow();
       $("btn-add").style.display = "";
@@ -560,15 +568,16 @@
 
       $("rows").innerHTML = rows.map((r) => {
         const unlocked = canEditEntry(r);
+        const lockReason = unlocked ? "" : salesMonthLockReason(entryMonth(r));
         const status = unlocked
           ? `<span class="ok-chip">Editable</span>`
-          : `<span class="lock-chip" title="${esc(salesMonthLockReason(entryMonth(r)))}">Locked</span>`;
-        const actions = unlocked
-          ? `<div class="row-actions">
-              <button type="button" class="mini ghost" data-edit="${esc(r.id)}">Edit</button>
-              <button type="button" class="mini danger" data-del="${esc(r.id)}">Delete</button>
-            </div>`
-          : `<span class="muted" style="font-size:11.5px">No edit/delete</span>`;
+          : `<span class="lock-chip" title="${esc(lockReason)}">Locked</span>`;
+        const dis = unlocked ? "" : " disabled";
+        const tip = unlocked ? "" : ` title="${esc(lockReason)}"`;
+        const actions = `<div class="row-actions">
+              <button type="button" class="mini edit-btn" data-edit="${esc(r.id)}"${dis}${tip}>✏️ Edit</button>
+              <button type="button" class="mini danger" data-del="${esc(r.id)}"${dis}${tip}>🗑 Delete</button>
+            </div>`;
         return `<tr class="novis" data-id="${esc(r.id)}">
           <td><b>${esc(r.vendo)}</b></td>
           <td><span class="chip">${esc(entryMonth(r) || "—")}</span>
