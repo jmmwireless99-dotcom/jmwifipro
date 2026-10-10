@@ -1340,6 +1340,10 @@
   <button id="nav-helpdesk" onclick="showView('helpdesk')"><span class="ico">🎫</span>Helpdesk <span id="hd-badge" class="nav-badge" style="display:none">0</span></button>
   <button id="nav-sms" onclick="showView('sms')"><span class="ico">💬</span>SMS <span id="sms-badge" class="nav-badge" style="display:none">0</span></button>
   <button id="nav-reports" onclick="showView('reports')"><span class="ico">📊</span>Sales &amp; Reports</button>
+  <div class="grp">JM Ops</div>
+  <button type="button" id="nav-vpnclients" onclick="location.href='/cctv/?tab=vpn'"><span class="ico">🖧</span>VPN Clients</button>
+  <button type="button" id="nav-cctv" onclick="location.href='/cctv/?tab=cctv'"><span class="ico">📹</span>CCTV</button>
+  <button type="button" id="nav-gasoline" onclick="location.href='/cctv/?tab=gas'"><span class="ico">⛽</span>Gasoline</button>
   <div class="me-box">
     <div class="navsep"></div>
     <div class="me-label" id="me-label">—</div>
@@ -1365,6 +1369,9 @@
       <button type="button" class="ghost" onclick="location.href=(window.APP_BASE||'')+'/sales-history'" style="background:var(--panel-2)">📒 Sales History</button>
       <button type="button" class="ghost" onclick="location.href=(window.APP_BASE||'')+'/mobile'" style="background:var(--panel-2)">📱 Sales Mobile</button>
 
+      <button type="button" class="ghost" onclick="location.href='/cctv/?tab=vpn'" style="background:var(--panel-2)">🖧 VPN</button>
+      <button type="button" class="ghost" onclick="location.href='/cctv/?tab=cctv'" style="background:var(--panel-2)">📹 CCTV</button>
+      <button type="button" class="ghost" onclick="location.href='/cctv/?tab=gas'" style="background:var(--panel-2)">⛽ Gasoline</button>
       <button class="refresh" id="golive-btn" onclick="openGoLive()" style="background:var(--grad);color:#fff;border-color:transparent;font-weight:700">🚀 Go-Live</button>
     </div>
   </div>
