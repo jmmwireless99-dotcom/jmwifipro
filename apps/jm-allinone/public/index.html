@@ -3337,19 +3337,38 @@ function opsFrameId(tab) {
   if (tab === "cctv") return "frame-cctv";
   return "frame-gasoline";
 }
-function loadOpsFrame(tab) {
+async function getOpsSsoToken(force) {
+  try {
+    if (!force) {
+      const cached = sessionStorage.getItem("ops_sso");
+      if (cached) {
+        const o = JSON.parse(cached);
+        if (o && o.token && o.exp && o.exp > Date.now()) return o;
+      }
+    }
+  } catch {}
+  const r = await api("/api/ops/sso");
+  if (!r.ok || !r.data || !r.data.token) throw new Error((r && r.error) || "ops SSO failed");
+  const o = { ...r.data, exp: Date.now() + 10 * 60 * 60 * 1000 };
+  try { sessionStorage.setItem("ops_sso", JSON.stringify(o)); } catch {}
+  return o;
+}
+async function loadOpsFrame(tab, forceReload) {
   const el = $(opsFrameId(tab));
   if (!el) return;
-  const url = "/cctv/?tab=" + encodeURIComponent(tab) + "&embed=1";
-  // Keep same-tab session: only set src once unless forced reload
-  if (el.getAttribute("src") !== url) el.setAttribute("src", url);
+  try {
+    const sso = await getOpsSsoToken(!!forceReload);
+    const url = "/cctv/?tab=" + encodeURIComponent(tab) + "&embed=1&sso=" + encodeURIComponent(sso.token)
+      + "&ssoRole=" + encodeURIComponent(sso.role || "admin")
+      + "&ssoName=" + encodeURIComponent(sso.displayName || "Admin");
+    if (forceReload || el.getAttribute("src") !== url) el.setAttribute("src", url);
+  } catch (e) {
+    console.error(e);
+    alert("Hindi ma-open ang JM Ops: " + (e.message || e));
+  }
 }
 function reloadOpsFrame(tab) {
-  const el = $(opsFrameId(tab));
-  if (!el) return;
-  const url = "/cctv/?tab=" + encodeURIComponent(tab) + "&embed=1";
-  el.setAttribute("src", "about:blank");
-  setTimeout(() => el.setAttribute("src", url), 30);
+  loadOpsFrame(tab, true);
 }
 
 
