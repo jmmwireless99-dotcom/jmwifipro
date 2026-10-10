@@ -2970,11 +2970,6 @@ async function loadVpsStatus() {
       $("s-vps-mem").innerHTML = mem + "<small>% · " + esc(fmtBytes(d.ram_used)) + " / " + esc(fmtBytes(d.ram_total)) + "</small>";
       if ($("s-vps-mem-bar")) $("s-vps-mem-bar").style.width = mem + "%";
     }
-    if ($("dash-net-line")) {
-      const host = d.hostname ? esc(d.hostname) : "VPS";
-      const cores = d.cpu_cores != null ? d.cpu_cores + " cores" : "";
-      $("dash-net-line").textContent = host + (cores ? " · " + cores : "") + " · CPU " + cpu + "% · RAM " + mem + "%";
-    }
   } catch (e) {
     if ($("s-vps-cpu")) $("s-vps-cpu").textContent = "—";
     if ($("s-vps-mem")) $("s-vps-mem").textContent = "—";
