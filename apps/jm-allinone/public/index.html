@@ -678,6 +678,12 @@
   .dash-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
   .dash-head-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .dash-head-actions button { margin:0; width:auto; padding:8px 14px; font-size:12px; }
+
+  .ops-embed-wrap { height: calc(100vh - 110px); min-height: 520px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0b1220; }
+  .ops-embed-wrap iframe { width: 100%; height: 100%; border: 0; display: block; background: #0b1220; }
+  .ops-embed-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  .ops-embed-head .module-desc { margin:0; }
+
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:18px; }
   .kpi.kpi-link { cursor:pointer; }
   .kpi.kpi-link:hover { border-color:rgba(74,140,255,.45); }
@@ -1341,9 +1347,9 @@
   <button id="nav-sms" onclick="showView('sms')"><span class="ico">💬</span>SMS <span id="sms-badge" class="nav-badge" style="display:none">0</span></button>
   <button id="nav-reports" onclick="showView('reports')"><span class="ico">📊</span>Sales &amp; Reports</button>
   <div class="grp">JM Ops</div>
-  <button type="button" id="nav-vpnclients" onclick="location.href='/cctv/?tab=vpn'"><span class="ico">🖧</span>VPN Clients</button>
-  <button type="button" id="nav-cctv" onclick="location.href='/cctv/?tab=cctv'"><span class="ico">📹</span>CCTV</button>
-  <button type="button" id="nav-gasoline" onclick="location.href='/cctv/?tab=gas'"><span class="ico">⛽</span>Gasoline</button>
+  <button type="button" id="nav-vpnclients" onclick="showView('vpnclients')"><span class="ico">🖧</span>VPN Clients</button>
+  <button type="button" id="nav-cctv" onclick="showView('cctv')"><span class="ico">📹</span>CCTV</button>
+  <button type="button" id="nav-gasoline" onclick="showView('gasoline')"><span class="ico">⛽</span>Gasoline</button>
   <div class="me-box">
     <div class="navsep"></div>
     <div class="me-label" id="me-label">—</div>
@@ -1369,9 +1375,9 @@
       <button type="button" class="ghost" onclick="location.href=(window.APP_BASE||'')+'/sales-history'" style="background:var(--panel-2)">📒 Sales History</button>
       <button type="button" class="ghost" onclick="location.href=(window.APP_BASE||'')+'/mobile'" style="background:var(--panel-2)">📱 Sales Mobile</button>
 
-      <button type="button" class="ghost" onclick="location.href='/cctv/?tab=vpn'" style="background:var(--panel-2)">🖧 VPN</button>
-      <button type="button" class="ghost" onclick="location.href='/cctv/?tab=cctv'" style="background:var(--panel-2)">📹 CCTV</button>
-      <button type="button" class="ghost" onclick="location.href='/cctv/?tab=gas'" style="background:var(--panel-2)">⛽ Gasoline</button>
+      <button type="button" class="ghost" onclick="showView('vpnclients')" style="background:var(--panel-2)">🖧 VPN</button>
+      <button type="button" class="ghost" onclick="showView('cctv')" style="background:var(--panel-2)">📹 CCTV</button>
+      <button type="button" class="ghost" onclick="showView('gasoline')" style="background:var(--panel-2)">⛽ Gasoline</button>
       <button class="refresh" id="golive-btn" onclick="openGoLive()" style="background:var(--grad);color:#fff;border-color:transparent;font-weight:700">🚀 Go-Live</button>
     </div>
   </div>
@@ -1456,6 +1462,38 @@
     </div>
   </section>
 </div><!-- /view-ops -->
+
+<div id="view-vpnclients" class="hidden">
+  <div class="ops-embed-head">
+    <div>
+      <h1 class="module-title" style="margin-bottom:2px">VPN Clients</h1>
+      <p class="module-desc">SSTP tunnels &amp; Winbox — opens inside this dashboard.</p>
+    </div>
+    <button type="button" class="ghost" onclick="reloadOpsFrame('vpn')">⟳ Reload</button>
+  </div>
+  <div class="ops-embed-wrap"><iframe id="frame-vpnclients" title="VPN Clients" allow="fullscreen"></iframe></div>
+</div>
+<div id="view-cctv" class="hidden">
+  <div class="ops-embed-head">
+    <div>
+      <h1 class="module-title" style="margin-bottom:2px">CCTV</h1>
+      <p class="module-desc">NVR areas &amp; live cameras — opens inside this dashboard.</p>
+    </div>
+    <button type="button" class="ghost" onclick="reloadOpsFrame('cctv')">⟳ Reload</button>
+  </div>
+  <div class="ops-embed-wrap"><iframe id="frame-cctv" title="CCTV" allow="fullscreen"></iframe></div>
+</div>
+<div id="view-gasoline" class="hidden">
+  <div class="ops-embed-head">
+    <div>
+      <h1 class="module-title" style="margin-bottom:2px">Gasoline</h1>
+      <p class="module-desc">Gasoline vendo sales — opens inside this dashboard.</p>
+    </div>
+    <button type="button" class="ghost" onclick="reloadOpsFrame('gas')">⟳ Reload</button>
+  </div>
+  <div class="ops-embed-wrap"><iframe id="frame-gasoline" title="Gasoline" allow="fullscreen"></iframe></div>
+</div>
+
 
 <div id="view-clients" class="hidden">
   <header class="module-head">
@@ -3186,7 +3224,7 @@ async function loadProfiles() {
 // ---------- view switching ----------
 let plansCache = [];
 window.APP_BASE = (function(){ try { const p = location.pathname || "/"; if (p === "/billing" || p.startsWith("/billing/")) return "/billing"; } catch(e){} return ""; })();
-const VIEWS = ["ops", "clients", "inventory", "joborders", "freeinstall", "techs", "expenses", "map", "routers", "plans", "hotspot", "referrals", "helpdesk", "sms", "reports"];
+const VIEWS = ["ops", "clients", "inventory", "joborders", "freeinstall", "techs", "expenses", "map", "routers", "plans", "hotspot", "referrals", "helpdesk", "sms", "reports", "vpnclients", "cctv", "gasoline"];
 const CLIENT_TABS = {
   management: "Clients",
   ipoe: "IPoE",
@@ -3259,8 +3297,10 @@ function showView(name, tab) {
   if (tab === "install") tab = "management";
   closeDrawer(); // on mobile, tapping a nav item closes the menu
   VIEWS.forEach(v => {
-    $("view-" + v).classList.toggle("hidden", v !== name);
-    $("nav-" + v).classList.toggle("active", v === name);
+    const viewEl = $("view-" + v);
+    if (viewEl) viewEl.classList.toggle("hidden", v !== name);
+    const navEl = $("nav-" + v);
+    if (navEl) navEl.classList.toggle("active", v === name);
   });
   if (acctRateTimer) { clearInterval(acctRateTimer); acctRateTimer = null; }
   if (clientStatusTimer) { clearInterval(clientStatusTimer); clientStatusTimer = null; }
@@ -3286,8 +3326,32 @@ function showView(name, tab) {
   if (name === "routers") { loadRouters(); startRoutersAutoRefresh(); } else stopRoutersAutoRefresh();
   if (name === "reports") { loadSalesResetStats(); fillAllSiteFilters(); loadSales(currentRange); loadFinance(); loadReminders(); loadCashflow(); loadSalesByRouter(); loadProfitByRouter(); }
   if (name === "referrals") loadReferralsPage();
+  if (name === "vpnclients") loadOpsFrame("vpn");
+  if (name === "cctv") loadOpsFrame("cctv");
+  if (name === "gasoline") loadOpsFrame("gas");
   syncFieldNavActive(name);
 }
+
+function opsFrameId(tab) {
+  if (tab === "vpn") return "frame-vpnclients";
+  if (tab === "cctv") return "frame-cctv";
+  return "frame-gasoline";
+}
+function loadOpsFrame(tab) {
+  const el = $(opsFrameId(tab));
+  if (!el) return;
+  const url = "/cctv/?tab=" + encodeURIComponent(tab) + "&embed=1";
+  // Keep same-tab session: only set src once unless forced reload
+  if (el.getAttribute("src") !== url) el.setAttribute("src", url);
+}
+function reloadOpsFrame(tab) {
+  const el = $(opsFrameId(tab));
+  if (!el) return;
+  const url = "/cctv/?tab=" + encodeURIComponent(tab) + "&embed=1";
+  el.setAttribute("src", "about:blank");
+  setTimeout(() => el.setAttribute("src", url), 30);
+}
+
 
 async function loadCustomersPage() {
   await Promise.all([loadSummary(), loadPlansCache()]);
