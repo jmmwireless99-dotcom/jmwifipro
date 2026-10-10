@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a0e2e">
+<meta name="description" content="Sign in to your account, view your plan, and pay with QR Ph.">
+<link rel="manifest" href="/account-manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JM WIFI">
+<link rel="apple-touch-icon" href="/icon-account-192.png">
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
+<title>My Account — JM WIFI NETWORK</title>
+<style>
+  :root{
+    --bg:#1a0e2e;--panel:#2a1850;--panel2:#33205e;--inbg:#21123d;--line:#3d2a66;
+    --ink:#f4eefe;--muted:#b9a9d6;--pink:#e8195f;--violet:#7c3aed;--cyan:#22d3ee;--ok:#34d399;--bad:#fb7185;--warn:#fbbf24;
+    --grad:linear-gradient(120deg,#e8195f,#a21caf 55%,#7c3aed)
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{text-decoration:none;color:inherit}
+  .bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+     radial-gradient(1000px 600px at 50% -10%, rgba(124,58,237,.4), transparent 60%),
+     radial-gradient(800px 500px at 50% 110%, rgba(232,25,95,.25), transparent 60%), var(--bg)}
+  .nav{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;background:rgba(26,14,46,.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:17px}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:18px;box-shadow:0 0 22px rgba(232,25,95,.5);overflow:hidden;flex-shrink:0}
+  .logo img{width:100%;height:100%;object-fit:cover;display:block}
+  .navlinks{display:flex;gap:8px;flex-wrap:wrap}
+  .navlinks a{color:var(--muted);font-weight:600;font-size:14px;padding:9px 15px;border-radius:24px;transition:.15s}
+  .navlinks a:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .navlinks a.active{color:#fff;background:var(--grad);font-weight:700}
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:40px 22px}
+  .card{background:linear-gradient(170deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:20px;padding:26px}
+  h1{font-size:26px;font-weight:850;letter-spacing:-.5px}
+  .sub{color:var(--muted);font-size:14px;margin:6px 0 4px}
+  label{display:block;font-size:12px;font-weight:700;margin:16px 0 6px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  input,select{width:100%;background:var(--inbg);border:1px solid var(--line);color:var(--ink);border-radius:11px;padding:14px;font-size:15px;font-family:inherit}
+  input:focus,select:focus{outline:none;border-color:var(--pink)}
+  button{cursor:pointer;font-family:inherit}
+  .btn-main{width:100%;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:15px;font-size:16px;font-weight:800;margin-top:18px;box-shadow:0 8px 22px rgba(232,25,95,.4)}
+  .btn-main:disabled{opacity:.6}
+  .hint{font-size:12px;color:var(--muted);margin-top:12px}
+  .msg{margin-top:14px;padding:13px;border-radius:11px;font-size:14px;display:none}
+  .msg.err{display:block;background:rgba(251,113,133,.12);border:1px solid var(--bad);color:#fecdd3}
+  .msg.ok{display:block;background:rgba(52,211,153,.12);border:1px solid var(--ok);color:#a7f3d0}
+  .login-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;max-width:92vw;width:min(420px,92vw);padding:14px 16px;border-radius:12px;font-size:14px;font-weight:700;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}
+  .login-toast.show{display:block;animation:toastIn .25s ease}
+  .login-toast.err{background:#7f1d1d;border:1px solid var(--bad);color:#fecdd3}
+  .login-toast.warn{background:#78350f;border:1px solid #f59e0b;color:#fde68a}
+  input.input-bad{border-color:var(--bad)!important;box-shadow:0 0 0 2px rgba(251,113,133,.25)}
+  input.shake{animation:shake .35s ease}
+  @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* subscriber card */
+  .acct{display:none}
+  .subcard{background:var(--grad);border-radius:20px;padding:24px;color:#fff;position:relative;overflow:hidden}
+  .subcard::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.12)}
+  .subcard .lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:.85;font-weight:700}
+  .subcard .who{font-size:24px;font-weight:850;margin-top:2px}
+  .subcard .code{font-size:12.5px;opacity:.8;font-family:ui-monospace,monospace;margin-top:2px}
+  .subcard .pills{display:flex;gap:8px;margin-top:14px}
+  .subcard .pill{background:rgba(255,255,255,.16);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700}
+  .statpill{position:absolute;top:24px;right:24px;background:rgba(255,255,255,.18);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:800;z-index:1}
+  .statpill.suspended{background:rgba(0,0,0,.3)}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border-radius:14px;overflow:hidden;margin:16px 0}
+  .gcell{background:var(--panel);padding:14px}
+  .gcell .k{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .gcell .v{font-size:15px;font-weight:800;margin-top:3px}
+  .wallet{background:var(--inbg);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 0;flex-wrap:wrap}
+  .wallet .wk{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .wallet .wv{font-size:26px;font-weight:850;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .wallet-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .wbtn{background:var(--grad);color:#fff;border:none;border-radius:24px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer}
+  .wbtn.secondary{background:var(--inbg);border:1px solid var(--line);color:var(--ink)}
+  .wbtn:disabled{opacity:.45;cursor:not-allowed}
+  .wallet-hint{font-size:12px;color:var(--muted);margin:-6px 0 10px;line-height:1.45}
+  .referral{background:var(--inbg);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0}
+  .referral .rk{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .referral .rv{font-size:22px;font-weight:850;margin-top:4px}
+  .referral .rcode{font-family:ui-monospace,monospace;font-size:15px;font-weight:800;color:var(--cyan);margin-top:6px}
+  .referral .rshare{font-size:12px;color:var(--muted);margin-top:8px;word-break:break-all}
+  .refrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .refbtn{background:var(--inbg);border:1px solid var(--line);color:var(--ink);border-radius:24px;padding:9px 14px;font-size:12px;font-weight:800}
+  .refbtn.go{background:var(--grad);border:none;color:#fff}
+  .actions{display:grid;gap:10px;margin-top:14px}
+  .actions .full{grid-column:1/-1}
+  .actrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .abtn{background:var(--inbg);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:14px;font-size:14px;font-weight:700;transition:.15s}
+  .abtn:hover{border-color:var(--violet)}
+  .abtn.primary{background:var(--grad);border:none;color:#fff;box-shadow:0 8px 22px rgba(232,25,95,.4)}
+  .modal{position:fixed;inset:0;z-index:90;background:rgba(10,6,20,.7);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+  .modal.show{display:flex}
+  .mbox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:380px;width:100%;margin:auto;max-height:none}
+  .mbox h3{font-size:18px;margin-bottom:6px}
+  .mbox .x{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+  .amtrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .amtrow .chip{flex:1;min-width:70px;background:var(--inbg);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px;font-weight:800;font-size:14px;text-align:center}
+  .amtrow .chip.sel{background:var(--grad);border-color:transparent;color:#fff}
+  footer{position:relative;z-index:1;text-align:center;color:var(--muted);font-size:13px;padding:30px 22px 40px}
+  /* GCash / Maya payment cards */
+  .paytabs{display:flex;gap:8px;margin:4px 0 12px}
+  .paytab{flex:1;background:var(--inbg);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+  .paytab.sel.gcash{background:#0a7cff;border-color:transparent;color:#fff}
+  .paytab.sel.maya{background:#00b14f;border-color:transparent;color:#fff}
+  .paycard{background:var(--inbg);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+  .paycard .pcname{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700}
+  .paycard .pcnum{font-size:22px;font-weight:850;letter-spacing:.5px;margin:4px 0;font-family:ui-monospace,monospace}
+  .paycard .pcacct{font-size:14px;color:var(--ink);font-weight:600}
+  .paycard .pcqr{width:var(--qr-size);height:var(--qr-size);max-width:100%;margin:14px auto 6px;border-radius:12px;background:#fff;padding:var(--qr-pad);display:block;object-fit:contain}
+  /* PayMongo QR Ph — phone-first sizing for Android app / portrait */
+  :root{--qr-size:min(92vw,360px);--qr-pad:12px}
+  .qrph-box{background:var(--inbg);border:1px solid var(--line);border-radius:14px;padding:18px 14px;text-align:center;margin:12px 0}
+  .qrph-box img,#inline-img,#qrph-img{
+    width:var(--qr-size);height:var(--qr-size);max-width:100%;
+    border-radius:14px;background:#fff;padding:var(--qr-pad);
+    object-fit:contain;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges
+  }
+  .qrph-amt{font-size:clamp(26px,7vw,34px);font-weight:850;margin:10px 0 6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .qrph-wait{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.45}
+  .gcash-open{display:inline-block;margin-top:14px;background:#007dff;color:#fff;border:none;border-radius:12px;padding:15px 22px;font-size:16px;font-weight:800;cursor:pointer;width:100%;max-width:min(92vw,340px);box-shadow:0 6px 18px rgba(0,125,255,.35)}
+  .gcash-open:hover{filter:brightness(1.08)}
+  .gcash-hint{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.45;padding:0 4px}
+  .paycard .pccopy{margin-top:10px;background:var(--grad);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;width:auto;box-shadow:none}
+  .paycard .pchint{font-size:12px;color:var(--muted);margin-top:10px}
+  @media (max-width:640px),(orientation:portrait){
+    .wrap{padding:28px 14px 32px;max-width:100%}
+    .nav{padding:12px 14px}
+    .navlinks a{font-size:13px;padding:8px 12px}
+    .mbox{max-width:min(96vw,440px);padding:20px 16px;margin:12px auto}
+    .modal{padding:12px 8px;align-items:flex-start}
+    .subcard .who{font-size:22px}
+    .grid3 .gcell{padding:12px 8px}
+    .grid3 .v{font-size:14px}
+    #inline-pay{margin:12px 0 8px}
+    .qrph-box{padding:16px 10px}
+    :root{--qr-size:min(94vw,380px)}
+  }
+  @media (min-width:641px) and (orientation:landscape){
+    :root{--qr-size:280px}
+  }
+  .suspend-banner{background:rgba(251,113,133,.12);border:1px solid var(--bad);color:#fecdd3;border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:14px;display:none}
+  .suspend-banner.show{display:block}
+  .plan-pick{background:var(--inbg);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+  .plan-pick h3{font-size:15px;font-weight:800;margin:0 0 4px}
+  .plan-pick .psub{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.45}
+  .plan-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.15s}
+  .plan-opt:hover{border-color:var(--violet)}
+  .plan-opt.sel{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink)}
+  .plan-opt .pn{font-weight:800;font-size:14px}
+  .plan-opt .pd{font-size:12px;color:var(--muted);margin-top:2px}
+  .plan-opt .pr{font-weight:850;font-size:16px;white-space:nowrap}
+  .plan-opt .tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--cyan);margin-left:6px}
+  #pwa-install{position:fixed;bottom:18px;right:18px;z-index:1200;background:var(--grad);color:#fff;border:none;border-radius:24px;padding:12px 18px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(232,25,95,.45);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="bgfx"></div>
+  <nav class="nav">
+    <div class="brand" aria-label="brand"><span class="logo" id="brand-logo"><span id="brand-logo-fb">📡</span></span> <span id="brand-name">JM WIFI NETWORK</span></div>
+    <div class="navlinks">
+      <a href="/apply">Apply</a>
+      <a href="/voucher">Buy Voucher</a>
+      <a href="/account" class="active">My Account</a>
+      <a href="/help">Help</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="login-toast" id="login-toast" role="alert" aria-live="assertive"></div>
+    <div class="suspend-banner" id="suspend-banner">Your service is paused. Sign in below, then scan the QR Ph code with GCash to pay and reconnect.</div>
+    <!-- sign in -->
+    <div class="card" id="signin">
+      <h1>Sign in to your account</h1>
+      <div class="sub">Enter your first name and password to see your status and pay.</div>
+      <label>First name</label>
+      <input id="first" placeholder="Your first name" autocomplete="given-name">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Your last name" autocomplete="family-name">
+      <button class="btn-main" id="go" type="button" onclick="lookup()">Check my account</button>
+      <div class="msg" id="msg"></div>
+      <div class="hint">Use the first name and last name on your account. Your password is your last name.</div>
+    </div>
+
+    <!-- account -->
+    <div class="acct" id="acct">
+      <div class="subcard">
+        <div class="statpill" id="a-status">ACTIVE</div>
+        <div class="lbl">Subscriber</div>
+        <div class="who" id="a-name">—</div>
+        <div class="code" id="a-code">—</div>
+        <div class="pills"><span class="pill" id="a-conn">—</span><span class="pill" id="a-speed">—</span></div>
+      </div>
+
+      <div class="grid3">
+        <div class="gcell"><div class="k">Plan rate</div><div class="v" id="a-rate">—</div></div>
+        <div class="gcell"><div class="k">Due date</div><div class="v" id="a-due">—</div></div>
+        <div class="gcell"><div class="k">Status</div><div class="v" id="a-stat2">—</div></div>
+      </div>
+
+      <div class="plan-pick" id="ipoe-plan-wrap" style="display:none">
+        <h3>Choose your prepaid plan</h3>
+        <div class="psub" id="ipoe-plan-hint">Pick any plan for your next period — you can change plan every renewal.</div>
+        <div id="ipoe-plan-list"></div>
+      </div>
+
+      <!-- inline QR Ph — auto-shown for suspended / pay flows -->
+      <div id="inline-pay" style="display:none;margin:16px 0">
+        <div class="qrph-box">
+          <div style="font-weight:800;font-size:16px;margin-bottom:4px">Pay with GCash (QR Ph)</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:10px" id="inline-pay-sub">Scan below to pay and reconnect.</div>
+          <div id="inline-loading" style="padding:16px"><div class="qrph-wait">Generating QR code…</div></div>
+          <div id="inline-qr" style="display:none">
+            <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700">Scan with GCash</div>
+            <div class="qrph-amt" id="inline-amt">₱0</div>
+            <img id="inline-img" alt="QR Ph payment code">
+            <div class="qrph-wait" id="inline-wait">Waiting for payment…</div>
+            <button type="button" class="gcash-open" onclick="openGcashApp()">Open GCash app</button>
+            <div class="gcash-hint">Tap <b>Open GCash</b> → <b>Scan QR</b> → point at the code above.<br>Have wallet credit? Use <b>Pay with wallet</b> below — no scan needed.</div>
+          </div>
+          <div class="msg" id="inline-msg"></div>
+        </div>
+      </div>
+
+      <div class="wallet">
+        <div><div class="wk">Wallet balance</div><div class="wv" id="a-balance">₱0</div></div>
+        <div class="wallet-actions">
+          <button class="wbtn secondary" type="button" onclick="openPay('topup')">Top up</button>
+          <button class="wbtn" type="button" id="wallet-pay-btn" onclick="payWithWallet()" disabled>Pay with wallet</button>
+        </div>
+      </div>
+      <div class="wallet-hint" id="wallet-pay-hint">Use wallet balance to pay your bill instantly — no GCash needed if you have enough credit.</div>
+
+      <div class="referral">
+        <div class="rk">Referral points</div>
+        <div class="rv" id="a-points">0 pts</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="a-point-val">100 points = ₱100 toward your bill (1 point = ₱1)</div>
+        <div class="rk" style="margin-top:14px">Your referral code</div>
+        <div class="rcode" id="a-refcode">—</div>
+        <div class="rshare" id="a-refshare">Share your link so friends earn you points when they sign up.</div>
+        <div class="refrow">
+          <button class="refbtn" type="button" onclick="copyRef()">Copy code</button>
+          <button class="refbtn" type="button" onclick="copyRefLink()">Copy link</button>
+          <button class="refbtn go" type="button" id="ref-pay-btn" onclick="payWithPoints()">Pay with points</button>
+        </div>
+        <div class="msg" id="ref-msg"></div>
+      </div>
+
+      <div class="actions">
+        <button class="abtn primary full" id="renew-btn" onclick="openPay('renew')">⟳ Renew / pay plan</button>
+        <div class="actrow">
+          <button class="abtn" onclick="openPay('bill')">Pay bill</button>
+          <button class="abtn" onclick="location.href='/help'">Support ticket</button>
+        </div>
+        <button class="abtn full" onclick="signOut()">Check another account</button>
+      </div>
+      <div class="hint" id="a-updated" style="text-align:center"></div>
+    </div>
+  </div>
+
+  <!-- payment modal — QR Ph only -->
+  <div class="modal" id="paymodal">
+    <div class="mbox">
+      <button class="x" onclick="closePay()">✕</button>
+      <h3 id="pay-title">Renew / pay plan</h3>
+      <div class="sub" id="pay-sub">Scan the QR Ph code with GCash to pay. Your account reconnects automatically once paid.</div>
+      <div id="pay-loading" style="text-align:center;padding:24px 8px">
+        <div class="qrph-wait">Generating QR code…</div>
+      </div>
+      <div id="qrph-pane" style="display:none">
+        <div class="qrph-box">
+          <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700">Scan with GCash, Maya, or any bank app</div>
+          <div class="qrph-amt" id="qrph-amt">₱0</div>
+          <img id="qrph-img" alt="QR Ph payment code">
+          <div class="qrph-wait" id="qrph-wait">Waiting for payment… Scan with GCash, Maya, or your bank app.</div>
+          <button type="button" class="gcash-open" onclick="openGcashApp()">Open GCash app</button>
+          <div class="gcash-hint">Tap <b>Open GCash</b>, then choose <b>Scan QR</b> and point your camera at the code above.</div>
+        </div>
+      </div>
+      <div class="msg" id="pay-msg"></div>
+    </div>
+  </div>
+
+  <footer><span id="foot-name">📡 JM WIFI NETWORK</span> <span id="foot-addr">· Candelaria, Uson, Masbate</span><div id="foot-contact" style="margin-top:5px"></div></footer>
+
+<script>
+  function $(id){return document.getElementById(id)}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+  function peso(n){n=Number(n)||0;return "\u20B1"+n.toLocaleString(undefined,{maximumFractionDigits:2})}
+  let ACC=null, PAY_PURPOSE="topup", PLAN_RATE=0, QR_POLL=null, AUTO_PAY=false, LOGIN_FIRST="", LOGIN_LAST="";
+  let GATEWAY_MODE="link", GATEWAY_OK=false;
+  let IPOE_PLANS=[], SELECTED_PLAN_ID=null;
+  const URL_PARAMS=new URLSearchParams(location.search);
+  const PRE_U=URL_PARAMS.get("u")||"";
+  AUTO_PAY=URL_PARAMS.get("pay")==="1";
+  if(AUTO_PAY) $("suspend-banner").classList.add("show");
+
+  function isIpoePrepaid(){ return ACC && String(ACC.conn_type||"").toLowerCase()==="ipoe"; }
+  function selectedPlan(){
+    if(!SELECTED_PLAN_ID) return null;
+    return IPOE_PLANS.find(p=>Number(p.id)===Number(SELECTED_PLAN_ID))||null;
+  }
+  function payPlanId(){
+    if(!isIpoePrepaid()) return null;
+    return SELECTED_PLAN_ID || ACC.plan_id || null;
+  }
+  function payPlanPayload(){
+    const id=payPlanId();
+    return id?{plan_id:Number(id)}:{};
+  }
+  function renewalAmount(){
+    if(isIpoePrepaid()){
+      const p=selectedPlan();
+      if(p) return Math.round(Number(p.price)||0);
+      if(SELECTED_PLAN_ID||ACC.plan_id){
+        const rate=Math.round(Number(ACC.rate||PLAN_RATE||0));
+        if(rate>=20) return rate;
+      }
+    }
+    return payAmountForPurpose();
+  }
+  function walletAmountDue(){
+    const due=Math.round(Number(renewalAmount()||(ACC&&ACC.amount_due)||PLAN_RATE||0));
+    return due>=20?due:20;
+  }
+  function updateWalletPayUi(){
+    const btn=$("wallet-pay-btn"), hint=$("wallet-pay-hint");
+    if(!btn||!ACC) return;
+    const bal=Number(ACC.balance||0);
+    const due=walletAmountDue();
+    const canPay=bal>=due && due>=20;
+    btn.disabled=!canPay;
+    if(hint){
+      if(canPay) hint.textContent="You have "+peso(bal)+". Tap Pay with wallet to use "+peso(due)+" and reconnect instantly.";
+      else if(bal>0) hint.textContent="Wallet: "+peso(bal)+". Need "+peso(due)+" to pay from balance — top up "+peso(Math.max(0,due-bal))+" more or pay with GCash.";
+      else hint.textContent="Top up your wallet with GCash, then pay your bill instantly from balance.";
+    }
+  }
+  async function payWithWallet(){
+    if(!ACC) return;
+    const due=walletAmountDue();
+    const purpose=accountNeedsPay(ACC)?"renew":"bill";
+    if(isIpoePrepaid()&&!ensureIpoePlanSelected()) return;
+    if(Number(ACC.balance||0)<due){ alert("Not enough wallet balance. Top up first or pay with GCash."); return; }
+    const p=selectedPlan();
+    const planLabel=isIpoePrepaid()&&p?p.name:"your plan";
+    if(!confirm("Pay "+peso(due)+" from your wallet balance to "+(purpose==="renew"?"renew "+planLabel:"pay your bill")+"?")) return;
+    const btn=$("wallet-pay-btn"); if(btn) btn.disabled=true;
+    const msg=$("inline-msg")||$("pay-msg");
+    try{
+      const r=await fetch("/api/pay/wallet",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({first:LOGIN_FIRST||customerNameFirst(ACC),password:LOGIN_LAST||customerNameLast(ACC),purpose,...payPlanPayload()})});
+      const d=await r.json();
+      if(d.ok){
+        if(d.wallet!=null) ACC.balance=d.wallet;
+        if(d.expiry) ACC.due=d.expiry;
+        if(d.status) ACC.status=d.status;
+        if(d.plan) ACC.plan=d.plan;
+        clearQrPoll(); closePay();
+        if($("inline-pay")) $("inline-pay").style.display="none";
+        if($("suspend-banner")) $("suspend-banner").classList.remove("show");
+        showAccount(ACC);
+        alert(d.message||"Paid from wallet!");
+        if(accountNeedsPay(ACC)) afterAccountLoaded();
+      } else {
+        alert(d.error||"Could not pay from wallet.");
+      }
+    }catch(e){ alert("Network error. Please try again."); }
+    updateWalletPayUi();
+  }
+  function payAmountForPurpose(){
+    if(isIpoePrepaid()&&(PAY_PURPOSE==="renew"||PAY_PURPOSE==="bill")){
+      const amt=renewalAmount();
+      if(amt>=20) return amt;
+    }
+    const rate=Math.round(Number(PLAN_RATE||0));
+    if(rate>=20) return rate;
+    return 20;
+  }
+  function ensureIpoePlanSelected(){
+    if(!isIpoePrepaid()) return true;
+    if(!IPOE_PLANS.length){ alert("No prepaid plans available right now. Please contact support."); return false; }
+    if(!payPlanId()){ alert("Please choose a prepaid plan first."); return false; }
+    return true;
+  }
+  function openGcashApp(){
+    const ua=navigator.userAgent||"";
+    const isIOS=/iPad|iPhone|iPod/i.test(ua);
+    const isAndroid=/Android/i.test(ua);
+    if(isAndroid){
+      window.location.href="intent://app/scanner#Intent;scheme=gcash;package=com.globe.gcash.android;end";
+      setTimeout(function(){ window.location.href="gcash://app/scanner"; },600);
+      setTimeout(function(){ window.location.href="gcash://"; },1200);
+    } else if(isIOS){
+      window.location.href="gcash://app/scanner";
+      setTimeout(function(){ window.location.href="gcash://"; },800);
+    } else {
+      window.open("https://www.gcash.com/","_blank");
+    }
+  }
+
+  function accountNeedsPay(a){
+    const st=(a.status||"active").toLowerCase();
+    return st==="suspended"||st==="expired"||st!=="active";
+  }
+  function mapLookupCustomer(c){
+    return { code:c.account||c.username||"", name:c.name, plan:c.plan_name||"", speed:c.plan_speed||"",
+      status:c.status||"active", due:c.expiry||"", balance:Number(c.wallet||0), rate:Number(c.plan_price||0),
+      amount_due:Number(c.amount_due||c.plan_price||0),
+      username:c.username||"", conn_type:c.conn_type||"pppoe", customer_id:c.id, plan_id:c.plan_id||null };
+  }
+  function afterAccountLoaded(){
+    if(!ACC) return;
+    const needsPay=AUTO_PAY||accountNeedsPay(ACC);
+    if(accountNeedsPay(ACC)) $("suspend-banner").classList.add("show");
+    if(needsPay){
+      PAY_PURPOSE=accountNeedsPay(ACC)?"renew":"bill";
+      whenGatewayReady(function(){ startInlinePay(); });
+    } else if($("inline-pay")) $("inline-pay").style.display="none";
+  }
+  let _gatewayReadyPromise=fetch("/api/plans").then(r=>r.json()).then(d=>{
+    window.__cfg=d.config||{};
+    GATEWAY_MODE=(d.config&&d.config.payment_mode)||"link";
+    GATEWAY_OK=!!(d.config&&d.config.payment_configured);
+    applyBranding(window.__cfg);
+  }).catch(()=>{});
+  function whenGatewayReady(fn){ _gatewayReadyPromise.then(fn).catch(fn); }
+
+  async function quickLookupByUsername(u){
+    if(!u) return false;
+    try{
+      const r=await fetch("/api/pay/lookup?u="+encodeURIComponent(u));
+      const d=await r.json();
+      if(!d.customer) return false;
+      showAccount(mapLookupCustomer(d.customer));
+      afterAccountLoaded();
+      return true;
+    }catch(e){ return false; }
+  }
+
+  async function lookup(){
+    const msg=$("msg"); msg.className="msg";
+    clearLoginError();
+    let first=$("first").value.trim(), password=$("password").value.trim();
+    if(first.includes(" ") && !password){
+      const parts=first.split(/\s+/).filter(Boolean);
+      first=parts[0]||"";
+      password=parts[parts.length-1]||"";
+    } else if(first.includes(" ")){
+      first=first.split(/\s+/)[0]||first;
+    }
+    if(!first||!password){showLoginError("missing","Please enter your first name and password (last name)."); return}
+    LOGIN_FIRST=first; LOGIN_LAST=password;
+    $("go").disabled=true;$("go").textContent="Checking...";
+    try{
+      const r=await fetch("/api/myaccount",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({first,password})});
+      const d=await r.json();
+      if(d.ok){ hideLoginToast(); showAccount(d.account); afterAccountLoaded(); }
+      else { showLoginError(d.code||"error", d.error||"Sign in failed. Please try again."); }
+    }catch(e){ showLoginError("network","Network error. Please try again."); }
+    $("go").disabled=false;$("go").textContent="Check my account";
+  }
+  let _loginToastTimer=null;
+  function hideLoginToast(){
+    const t=$("login-toast"); if(!t) return;
+    t.className="login-toast"; t.textContent="";
+    if(_loginToastTimer){ clearTimeout(_loginToastTimer); _loginToastTimer=null; }
+  }
+  function clearLoginError(){
+    hideLoginToast();
+    const msg=$("msg"); if(msg){ msg.className="msg"; msg.textContent=""; }
+    ["first","password"].forEach(id=>{ const el=$(id); if(el) el.classList.remove("input-bad","shake"); });
+  }
+  function showLoginError(code, text){
+    const msg=$("msg");
+    const toast=$("login-toast");
+    const isWrong = code==="wrong_password";
+    const isMissing = code==="missing";
+    if(msg){ msg.className="msg err"; msg.textContent=text; }
+    if(toast){
+      toast.textContent=(isWrong?"Wrong password: ":"")+text;
+      toast.className="login-toast show "+(isWrong?"err":isMissing?"warn":"err");
+      if(_loginToastTimer) clearTimeout(_loginToastTimer);
+      _loginToastTimer=setTimeout(hideLoginToast, isWrong?6000:4500);
+    }
+    if(isWrong || code==="not_found"){
+      const pw=$("password"); if(pw){
+        pw.classList.add("input-bad","shake");
+        pw.focus(); pw.select();
+        setTimeout(()=>pw.classList.remove("shake"),400);
+      }
+    } else if(isMissing){
+      const miss=!$("first").value.trim()?$("first"):$("password");
+      if(miss){ miss.classList.add("input-bad"); miss.focus(); }
+    }
+  }
+  function showAccount(a){
+    ACC=a;
+    $("a-name").textContent=a.name||"—";
+    $("a-code").textContent=a.code||"—";
+    const st=(a.status||"active").toLowerCase();
+    $("a-status").textContent=(a.status||"active").toUpperCase();
+    $("a-status").className="statpill"+(st==="suspended"?" suspended":"");
+    $("a-stat2").textContent=a.status||"active";
+    $("a-conn").textContent=(a.conn_type==="ipoe"?"IPoE":(a.conn_type==="hotspot"?"Hotspot":"PPPoE"));
+    $("a-speed").textContent=(a.speed||"").trim()||"—";
+    $("a-rate").textContent=a.rate?peso(a.rate):"—";
+    PLAN_RATE=Number(a.rate||0);
+    $("a-due").textContent=a.due?String(a.due).slice(0,10):"—";
+    $("a-balance").textContent=peso(a.balance);
+    updateWalletPayUi();
+    const pts=Number(a.referral_points||0);
+    const ptVal=Number(a.point_peso||1)||1;
+    $("a-points").textContent=pts.toLocaleString()+" pts";
+    const pesoVal=pts*ptVal;
+    $("a-point-val").textContent=pts>0
+      ? (pts.toLocaleString()+" points = "+peso(pesoVal)+" toward your bill ("+peso(ptVal)+" per point)")
+      : ("Earn 100 points (worth "+peso(100*ptVal)+") when a friend signs up using your code");
+    const refCode=(a.referral_code||"").trim();
+    $("a-refcode").textContent=refCode||"—";
+    const shareLink=refCode?referralApplyUrl(refCode):"";
+    $("a-refshare").textContent=shareLink?("Share: "+shareLink):"Share your code when friends apply. You earn points when their account is activated.";
+    if($("ref-pay-btn")) $("ref-pay-btn").disabled=pts<=0;
+    $("a-updated").textContent=a.updated_at?("Updated "+String(a.updated_at).slice(0,16)):"";
+    $("signin").style.display="none"; $("acct").style.display="block";
+    if(isIpoePrepaid()){
+      $("renew-btn").textContent="⟳ Choose plan & pay";
+      loadIpoePlans();
+    } else {
+      $("renew-btn").textContent="⟳ Renew / pay plan";
+      $("ipoe-plan-wrap").style.display="none";
+    }
+  }
+  async function loadIpoePlans(){
+    const wrap=$("ipoe-plan-wrap"), list=$("ipoe-plan-list");
+    if(!wrap||!list||!ACC) return;
+    wrap.style.display="block";
+    list.innerHTML='<div class="psub">Loading plans…</div>';
+    try{
+      const r=await fetch("/api/pay/plans?type=ipoe&prepaid=1");
+      const d=await r.json();
+      IPOE_PLANS=(d.plans||[]).filter(p=>String(p.client_type||p.type||"").toLowerCase()==="ipoe");
+      if(!IPOE_PLANS.length){ list.innerHTML='<div class="psub">No prepaid plans available. Contact support.</div>'; return; }
+      const curId=Number(ACC.plan_id)||null;
+      const match=curId?IPOE_PLANS.find(p=>Number(p.id)===curId):IPOE_PLANS.find(p=>p.name===ACC.plan);
+      SELECTED_PLAN_ID=match?match.id:IPOE_PLANS[0].id;
+      renderIpoePlanPicker();
+    }catch(e){
+      list.innerHTML='<div class="psub">Could not load plans. Try again later.</div>';
+    }
+  }
+  function renderIpoePlanPicker(){
+    const list=$("ipoe-plan-list"), hint=$("ipoe-plan-hint");
+    if(!list||!ACC) return;
+    const curName=(ACC.plan||"").trim();
+    if(hint){
+      hint.textContent=curName
+        ? ("Current plan: "+curName+". Pick any plan below for your next period.")
+        : "Pick any prepaid plan for your next period.";
+    }
+    list.innerHTML=IPOE_PLANS.map(p=>{
+      const sel=Number(p.id)===Number(SELECTED_PLAN_ID);
+      const cur=Number(p.id)===Number(ACC.plan_id)||(!ACC.plan_id&&p.name===ACC.plan);
+      const dur=p.duration_label||((p.validity_mins>=1440)?Math.round(p.validity_mins/1440)+" day(s)":"");
+      return '<div class="plan-opt'+(sel?" sel":"")+'" onclick="selectIpoePlan('+p.id+')">'+
+        '<div><div class="pn">'+esc(p.name)+(cur?'<span class="tag">current</span>':"")+'</div>'+
+        '<div class="pd">'+esc(p.speed||"")+(dur?" · "+esc(dur):"")+'</div></div>'+
+        '<div class="pr">'+peso(p.price)+'</div></div>';
+    }).join("");
+    applySelectedPlanUi();
+  }
+  function selectIpoePlan(id){
+    SELECTED_PLAN_ID=Number(id)||null;
+    renderIpoePlanPicker();
+    updateWalletPayUi();
+    if($("inline-pay").style.display!=="none"&&accountNeedsPay(ACC)) startInlinePay();
+  }
+  function applySelectedPlanUi(){
+    const p=selectedPlan();
+    if(!p) return;
+    PLAN_RATE=Number(p.price)||PLAN_RATE;
+    $("a-rate").textContent=peso(p.price);
+    if(p.speed) $("a-speed").textContent=p.speed;
+  }
+  function referralApplyUrl(code){
+    const c=String(code||"").trim().toUpperCase();
+    if(!c||c==="—") return "";
+    const base=String((window.__cfg&&window.__cfg.public_url)||"https://jmwifi.pro").replace(/\/$/,"");
+    return base+"/apply?ref="+encodeURIComponent(c);
+  }
+  function copyRef(){
+    const c=$("a-refcode").textContent;
+    if(!c||c==="—") return;
+    navigator.clipboard.writeText(c).then(()=>{const m=$("ref-msg");m.className="msg ok";m.textContent="Referral code copied!";setTimeout(()=>{m.className="msg";},2500);}).catch(()=>{});
+  }
+  function copyRefLink(){
+    const c=$("a-refcode").textContent;
+    const link=referralApplyUrl(c);
+    if(!link) return;
+    navigator.clipboard.writeText(link).then(()=>{const m=$("ref-msg");m.className="msg ok";m.textContent="Referral link copied!";setTimeout(()=>{m.className="msg";},2500);}).catch(()=>{});
+  }
+  async function payWithPoints(){
+    if(!ACC) return;
+    const msg=$("ref-msg"); msg.className="msg";
+    const purpose=accountNeedsPay(ACC)?"renew":"bill";
+    if(isIpoePrepaid()&&!ensureIpoePlanSelected()) return;
+    const pts=Number(ACC.referral_points||0);
+    if(pts<=0){msg.className="msg err";msg.textContent="You have no referral points yet.";return}
+    if(!confirm("Use your referral points ("+pts.toLocaleString()+" pts) to "+(purpose==="renew"?"renew your plan":"pay your bill")+"?")) return;
+    $("ref-pay-btn").disabled=true;
+    try{
+      const r=await fetch("/api/pay/referral-redeem",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({first:LOGIN_FIRST||customerNameFirst(ACC),password:LOGIN_LAST||customerNameLast(ACC),purpose,...payPlanPayload()})});
+      const d=await r.json();
+      if(d.ok){
+        msg.className="msg ok"; msg.textContent=d.message||"Points applied!";
+        if(d.referral_points!=null) ACC.referral_points=d.referral_points;
+        if(d.expiry) ACC.due=d.expiry;
+        if(d.plan) ACC.plan=d.plan;
+        showAccount(ACC);
+      } else { msg.className="msg err"; msg.textContent=d.error||"Could not redeem points."; }
+    }catch(e){ msg.className="msg err"; msg.textContent="Network error. Please try again."; }
+    $("ref-pay-btn").disabled=(Number(ACC.referral_points||0)<=0);
+  }
+  function customerNameFirst(a){ const p=String((a&&a.name)||"").trim().split(/\s+/).filter(Boolean); return p[0]||""; }
+  function customerNameLast(a){ const p=String((a&&a.name)||"").trim().split(/\s+/).filter(Boolean); return p.length>1?p[p.length-1]:p[0]||""; }
+  function signOut(){ ACC=null; LOGIN_FIRST=""; LOGIN_LAST=""; $("acct").style.display="none"; $("signin").style.display="block"; $("first").value="";$("password").value=""; clearLoginError(); $("ref-msg").className="msg"; }
+
+  function openPay(purpose){
+    if(!ACC) return;
+    if(isIpoePrepaid()&&(purpose==="renew"||purpose==="bill")&&!ensureIpoePlanSelected()) return;
+    PAY_PURPOSE=purpose;
+    const amount=payAmountForPurpose();
+    const p=selectedPlan();
+    $("pay-title").textContent = purpose==="renew"?(isIpoePrepaid()?"Pay for "+(p?p.name:"plan"):"Renew / pay plan"):purpose==="bill"?"Pay bill":"Top up wallet";
+    $("pay-sub").textContent = "Pay "+peso(amount)+" — scan with GCash.";
+    $("pay-msg").className="msg";
+    $("pay-loading").style.display="block";
+    if($("qrph-pane")) $("qrph-pane").style.display="none";
+    $("paymodal").classList.add("show");
+    startPay(true);
+  }
+  function closePay(){
+    clearQrPoll();
+    $("paymodal").classList.remove("show");
+  }
+
+  function startInlinePay(){
+    if(!ensureIpoePlanSelected()) return;
+    const box=$("inline-pay"); if(!box) return;
+    const amount=payAmountForPurpose();
+    box.style.display="block";
+    $("inline-pay-sub").textContent="Pay "+peso(amount)+" — scan with GCash. Your account reconnects automatically once paid.";
+    $("inline-loading").style.display="block";
+    $("inline-qr").style.display="none";
+    $("inline-msg").className="msg";
+    startPay(false);
+  }
+
+  function clearQrPoll(){ if(QR_POLL){ clearInterval(QR_POLL); QR_POLL=null; } }
+  function showQrph(d, amount, useModal){
+    useModal=useModal!==false;
+    const loading=useModal?$("pay-loading"):$("inline-loading");
+    const pane=useModal?$("qrph-pane"):$("inline-qr");
+    const amtEl=useModal?$("qrph-amt"):$("inline-amt");
+    const imgEl=useModal?$("qrph-img"):$("inline-img");
+    const waitEl=useModal?$("qrph-wait"):$("inline-wait");
+    if(loading) loading.style.display="none";
+    if(pane) pane.style.display="block";
+    if(amtEl) amtEl.textContent=peso(d.amount||amount);
+    if(imgEl) imgEl.src=d.qr_image_url||"";
+    if(waitEl) waitEl.textContent="Waiting for payment… Scan with GCash.";
+    if(useModal && $("paymodal")) $("paymodal").classList.add("show");
+    clearQrPoll();
+    const pi=d.payment_intent_id||d.id;
+    if(!pi) return;
+    QR_POLL=setInterval(async function(){
+      try{
+        const r=await fetch("/api/pay/status?pi="+encodeURIComponent(pi));
+        const st=await r.json();
+        if(st.ok&&st.paid){
+          clearQrPoll();
+          if(waitEl) waitEl.textContent="Payment received! Updating your account…";
+          setTimeout(function(){ closePay(); location.href="/account?paid=1"; },1500);
+        }
+      }catch(e){}
+    },4000);
+  }
+
+  async function startPay(useModal){
+    useModal=useModal!==false;
+    if(isIpoePrepaid()&&(PAY_PURPOSE==="renew"||PAY_PURPOSE==="bill")&&!ensureIpoePlanSelected()) return;
+    const msg=useModal?$("pay-msg"):$("inline-msg");
+    const loading=useModal?$("pay-loading"):$("inline-loading");
+    const amount=payAmountForPurpose();
+    if(msg) msg.className="msg";
+    if(!(amount>=20)){
+      if(msg){ msg.className="msg err"; msg.textContent="Plan amount is below the minimum online payment (₱20). Please contact support."; }
+      if(loading) loading.style.display="none"; return;
+    }
+    await _gatewayReadyPromise.catch(()=>{});
+    if(!GATEWAY_OK){
+      if(msg){ msg.className="msg err"; msg.textContent="Online payment is not set up yet. Please contact support."; }
+      if(loading) loading.style.display="none"; return;
+    }
+    if(loading) loading.style.display="block";
+    if(useModal && $("qrph-pane")) $("qrph-pane").style.display="none";
+    if(!useModal && $("inline-qr")) $("inline-qr").style.display="none";
+    try{
+      const r=await fetch("/api/pay-start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({first:LOGIN_FIRST||customerNameFirst(ACC),password:LOGIN_LAST||customerNameLast(ACC),amount,purpose:PAY_PURPOSE,...payPlanPayload()})});
+      const d=await r.json();
+      if(d.ok&&d.mode==="qrph"&&d.qr_image_url){ showQrph(d, amount, useModal); return; }
+      if(d.ok&&(d.url||d.checkout_url)){ window.location.href=d.url||d.checkout_url; return; }
+      if(msg){ msg.className="msg err"; msg.textContent=d.error||"Could not generate QR code. Please try again."; }
+      if(loading) loading.style.display="none";
+    }catch(e){
+      if(msg){ msg.className="msg err"; msg.textContent="Network error. Please try again."; }
+      if(loading) loading.style.display="none";
+    }
+  }
+
+  // SMS / suspended redirect: ?u=username pre-fills and looks up; ?pay=1 opens pay modal after login
+  if(PRE_U){
+    quickLookupByUsername(PRE_U);
+  }
+  ["first","password"].forEach(id=>{
+    const el=$(id);
+    if(!el) return;
+    el.addEventListener("input",()=>{ el.classList.remove("input-bad"); });
+    el.addEventListener("keydown",e=>{ if(e.key==="Enter") lookup(); });
+  });
+
+  // if returned from a successful checkout, show a friendly note
+  if(new URLSearchParams(location.search).get("paid")==="1"){
+    setTimeout(()=>{ alert("Thank you! Your payment is being confirmed and your account will update shortly."); },300);
+  }
+
+  // Sync brand name, address and contact from system settings (no hardcoded business info).
+  function applyBranding(cfg){
+    cfg=cfg||{};
+    var nm=cfg.biz_name||"", ad=cfg.biz_address||"", ct=cfg.biz_contact||"";
+    if(nm){
+      var bn=document.getElementById("brand-name"); if(bn) bn.textContent=nm;
+      var fn=document.getElementById("foot-name"); if(fn) fn.textContent=(fn.textContent.indexOf("\u{1F4E1}")===0?"\u{1F4E1} ":"")+nm;
+      try{ if(document.title.indexOf("\u2014")>-1){} }catch(e){}
+    }
+    var lg=cfg.brand_logo||"";
+    var box=document.getElementById("brand-logo"), fb=document.getElementById("brand-logo-fb");
+    if(box){
+      var img=box.querySelector("img");
+      if(lg){
+        if(!img){ img=document.createElement("img"); img.alt=""; box.appendChild(img); }
+        img.src=lg; if(fb) fb.style.display="none"; box.style.background="transparent";
+      } else {
+        if(img) img.remove(); if(fb) fb.style.display="";
+        box.style.background="";
+      }
+    }
+    if(ad){ var fa=document.getElementById("foot-addr"); if(fa) fa.textContent=ad; }
+    var fc=document.getElementById("foot-contact");
+    if(fc){ fc.textContent = ct ? ("\u260E "+ct) : ""; }
+  }
+
+  // Install as app (Android Chrome / desktop Edge) — hide inside JM WIFI Android app
+  (function(){
+    if(/JMWifiApp\//i.test(navigator.userAgent)) return;
+    var deferredPrompt=null;
+    window.addEventListener("beforeinstallprompt",function(e){
+      e.preventDefault(); deferredPrompt=e;
+      if(document.getElementById("pwa-install")) return;
+      var b=document.createElement("button");
+      b.id="pwa-install"; b.textContent="\uD83D\uDCF2 Install app";
+      b.onclick=function(){
+        if(!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function(){ deferredPrompt=null; b.remove(); });
+      };
+      document.body.appendChild(b);
+    });
+    window.addEventListener("appinstalled",function(){
+      var b=document.getElementById("pwa-install"); if(b) b.remove();
+    });
+  })();
+</script>
+<script src="/portal/chat-bot.js"></script>
+</body>
+</html>

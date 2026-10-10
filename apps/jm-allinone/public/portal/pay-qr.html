@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a0e2e">
+<title>Scan to pay — JM WIFI NETWORK</title>
+<style>
+  :root{--bg:#1a0e2e;--panel:#2a1850;--line:#3d2a66;--ink:#f4eefe;--muted:#b9a9d6;--grad:linear-gradient(120deg,#e8195f,#a21caf 55%,#7c3aed);--ok:#34d399;--bad:#fb7185;--qr-size:min(92vw,360px);--qr-pad:12px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 16px;max-width:min(96vw,440px);width:100%;text-align:center}
+  h1{font-size:22px;font-weight:850;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.5}
+  .amt{font-size:34px;font-weight:850;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin:8px 0}
+  .who{font-size:14px;color:var(--muted);margin-bottom:16px}
+  .qrbox{background:#fff;border-radius:16px;padding:var(--qr-pad);display:inline-block;margin:8px auto 14px;max-width:100%}
+  .qrbox img{width:var(--qr-size);height:var(--qr-size);max-width:100%;display:block;object-fit:contain;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges}
+  .wait{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .gcash-open{display:inline-block;margin-top:14px;background:#007dff;color:#fff;border:none;border-radius:12px;padding:15px 22px;font-size:16px;font-weight:800;cursor:pointer;width:100%;max-width:min(92vw,340px)}
+  @media (max-width:640px),(orientation:portrait){:root{--qr-size:min(94vw,380px)}}
+  .gcash-hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+  .err{color:#fecdd3;background:rgba(251,113,133,.12);border:1px solid var(--bad);border-radius:12px;padding:14px;font-size:14px;display:none}
+  .err.show{display:block}
+  .spin{width:36px;height:36px;border:3px solid var(--line);border-top-color:#e8195f;border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  a.home{display:inline-block;margin-top:18px;color:var(--muted);font-size:13px;text-decoration:none}
+  a.home:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="title">Scan QR Ph to pay</h1>
+    <div class="sub" id="desc">Open GCash, Maya, or your bank app and scan the code below.</div>
+    <div id="load"><div class="spin"></div><div class="wait">Generating your QR code…</div></div>
+    <div id="pay" style="display:none">
+      <div class="amt" id="amt">₱0</div>
+      <div class="who" id="who"></div>
+      <div class="qrbox"><img id="qr" alt="QR Ph payment code"></div>
+      <div class="wait" id="status">Waiting for payment… Scan with GCash, Maya, or your bank app.</div>
+      <button type="button" class="gcash-open" onclick="openGcashApp()">Open GCash app</button>
+      <div class="gcash-hint">Tap <b>Open GCash</b>, then choose <b>Scan QR</b> and point your camera at the code above.</div>
+    </div>
+    <div class="err" id="err"></div>
+    <a class="home" href="/account">← Back to My Account</a>
+  </div>
+<script>
+  function peso(n){n=Number(n)||0;return "\u20B1"+n.toLocaleString(undefined,{maximumFractionDigits:2})}
+  function openGcashApp(){
+    const ua=navigator.userAgent||"";
+    if(/Android/i.test(ua)){
+      window.location.href="intent://scan/#Intent;scheme=gcash;package=com.globe.gcash.android;end";
+      setTimeout(function(){ window.location.href="gcash://"; },800);
+    } else if(/iPad|iPhone|iPod/i.test(ua)){
+      window.location.href="gcash://";
+    } else {
+      window.open("https://www.gcash.com/","_blank");
+    }
+  }
+  const params=new URLSearchParams(location.search);
+  const invoiceId=params.get("invoice");
+  let poll=null;
+  function fail(msg){$("load").style.display="none";$("pay").style.display="none";$("err").textContent=msg;$("err").classList.add("show")}
+  function $(id){return document.getElementById(id)}
+  function showQr(d){
+    $("load").style.display="none";
+    $("pay").style.display="block";
+    $("amt").textContent=peso(d.amount);
+    $("who").textContent=d.description||d.customer_name||"";
+    $("qr").src=d.qr_image_url||"";
+    $("title").textContent="Scan to pay "+peso(d.amount);
+    const pi=d.payment_intent_id||"";
+    if(!pi)return;
+    poll=setInterval(async function(){
+      try{
+        const r=await fetch("/api/pay/status?pi="+encodeURIComponent(pi));
+        const st=await r.json();
+        if(st.ok&&st.paid){
+          clearInterval(poll);
+          $("status").textContent="Payment received! Thank you — your account will update shortly.";
+          setTimeout(function(){location.href="/account?paid=1"},2000);
+        }
+      }catch(e){}
+    },4000);
+  }
+  (async function(){
+    if(!invoiceId){fail("Missing invoice. Go back to My Account and try again.");return}
+    try{
+      const r=await fetch("/api/pay/qr?invoice="+encodeURIComponent(invoiceId));
+      const d=await r.json();
+      if(d.ok&&d.qr_image_url) showQr(d);
+      else fail(d.error||"Could not generate QR code.");
+    }catch(e){fail("Network error. Please try again.");}
+  })();
+</script>
+</body>
+</html>

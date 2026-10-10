@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Client VPN Portal — JM TECH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0c1412;
+      --foam: #e8f2ee;
+      --lime: #b7e34a;
+      --muted: #8aa198;
+      --panel: rgba(12, 28, 22, .82);
+      --line: rgba(232,242,238,.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: "IBM Plex Sans", sans-serif; color: var(--foam);
+      background:
+        radial-gradient(700px 400px at 20% 0%, rgba(183,227,74,.16), transparent 60%),
+        linear-gradient(160deg, #07110e, #132820 50%, #0a1511);
+      padding: 1.25rem;
+    }
+    .card {
+      width: 100%; max-width: 440px; background: var(--panel);
+      border: 1px solid var(--line); border-radius: 20px; padding: 1.5rem 1.4rem 1.35rem;
+      backdrop-filter: blur(8px);
+    }
+    h1 {
+      font-family: Syne, sans-serif; font-size: 1.55rem; margin: 0 0 .35rem;
+      letter-spacing: -.02em;
+    }
+    .sub { color: var(--muted); font-size: .92rem; margin: 0 0 1.2rem; line-height: 1.4; }
+    label { display: block; font-size: .82rem; color: var(--muted); margin: 0 0 .35rem; }
+    input {
+      width: 100%; padding: .75rem .85rem; border-radius: 12px; border: 1px solid var(--line);
+      background: rgba(0,0,0,.25); color: var(--foam); font: inherit; margin-bottom: .85rem;
+    }
+    input:focus { outline: 2px solid rgba(183,227,74,.45); border-color: transparent; }
+    button {
+      width: 100%; border: 0; border-radius: 999px; padding: .85rem 1rem;
+      background: var(--lime); color: var(--ink); font-weight: 700; font: inherit; cursor: pointer;
+    }
+    button:disabled { opacity: .55; cursor: wait; }
+    .err { color: #ff8f9d; font-size: .88rem; margin: .5rem 0 0; display: none; }
+    .result { display: none; margin-top: 1rem; }
+    .result h2 { font-family: Syne, sans-serif; font-size: 1.1rem; margin: 0 0 .6rem; }
+    .kv { font-family: "IBM Plex Mono", monospace; font-size: .82rem; background: rgba(0,0,0,.28);
+      border-radius: 12px; padding: .75rem .85rem; margin-bottom: .75rem; white-space: pre-wrap; word-break: break-all; }
+    textarea {
+      width: 100%; min-height: 160px; font-family: "IBM Plex Mono", monospace; font-size: .75rem;
+      background: rgba(0,0,0,.28); color: var(--foam); border: 1px solid var(--line);
+      border-radius: 12px; padding: .75rem; resize: vertical;
+    }
+    .links { margin-top: 1rem; text-align: center; font-size: .85rem; }
+    .links a { color: var(--lime); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Client VPN Portal</h1>
+    <p class="sub">Mag-register para makakuha ng SSTP VPN script para sa MikroTik mo. Server: <span id="srv">…</span></p>
+    <form id="f">
+      <label for="name">Full name</label>
+      <input id="name" name="name" placeholder="Joel Madera" autocomplete="name" />
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required placeholder="you@gmail.com" autocomplete="email" />
+      <button type="submit" id="go">Generate SSTP Script</button>
+      <p class="err" id="err"></p>
+    </form>
+    <div class="result" id="out">
+      <h2>Credentials</h2>
+      <div class="kv" id="creds"></div>
+      <h2>MikroTik script</h2>
+      <textarea id="script" readonly></textarea>
+      <button type="button" id="copy" style="margin-top:.75rem;background:#e8f2ee">Copy script</button>
+    </div>
+    <div class="links">
+      <a href="/hub">Hub</a> · <a href="/">Staff billing login</a>
+    </div>
+  </div>
+  <script>
+    const err = document.getElementById("err");
+    const out = document.getElementById("out");
+    fetch("/api/vpn/info").then((r) => r.json()).then((j) => {
+      document.getElementById("srv").textContent = (j.data && j.data.sstp_server) || "(set vpn_sstp_server in Settings)";
+    }).catch(() => { document.getElementById("srv").textContent = "(unknown)"; });
+
+    document.getElementById("f").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      err.style.display = "none";
+      out.style.display = "none";
+      const go = document.getElementById("go");
+      go.disabled = true;
+      try {
+        const res = await fetch("/api/vpn/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: document.getElementById("name").value.trim(),
+            email: document.getElementById("email").value.trim(),
+          }),
+        });
+        const j = await res.json();
+        if (!j.ok) throw new Error(j.error || "Failed");
+        const d = j.data;
+        document.getElementById("creds").textContent =
+          "Server: " + d.sstp_server + "\nUser: " + d.username + "\nPass: " + d.password;
+        document.getElementById("script").value = d.mikrotik_script || "";
+        out.style.display = "block";
+      } catch (ex) {
+        err.textContent = ex.message || String(ex);
+        err.style.display = "block";
+      } finally {
+        go.disabled = false;
+      }
+    });
+
+    document.getElementById("copy").addEventListener("click", async () => {
+      const t = document.getElementById("script");
+      t.select();
+      try { await navigator.clipboard.writeText(t.value); } catch { document.execCommand("copy"); }
+    });
+  </script>
+</body>
+</html>
