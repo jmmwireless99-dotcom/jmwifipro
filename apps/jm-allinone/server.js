@@ -1822,6 +1822,40 @@ const requestHandler = async (req, res) => {
       const warn = (user && user.role === "admin") ? Auth.isDefaultAdminPassword() : false;
       return send(res, 200, { ok: true, user: user || null, defaultPassword: warn });
     }
+    // SSO into JM Ops (VPN / CCTV / Gasoline) using billing session — no second login UI
+    if (pathname === "/api/ops/sso" && req.method === "GET") {
+      if (!user) return send(res, 401, { ok: false, needLogin: true, error: "login required" });
+      const role = String(user.role || "");
+      const allowed = ["admin", "technician", "staff", "cashier"].includes(role);
+      if (!allowed) return send(res, 403, { ok: false, error: "not allowed" });
+      const mrpUrl = (process.env.MRP_URL || "http://127.0.0.1:8081").replace(/\/$/, "");
+      const mrpUser = process.env.MRP_USER || "admin";
+      const mrpPass = process.env.MRP_PASSWORD || "";
+      if (!mrpPass) return send(res, 500, { ok: false, error: "MRP_PASSWORD not configured" });
+      try {
+        const r = await fetch(mrpUrl + "/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: mrpUser, password: mrpPass }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.token) {
+          return send(res, 502, { ok: false, error: data.error || "ops login failed" });
+        }
+        return send(res, 200, {
+          ok: true,
+          data: {
+            token: data.token,
+            role: data.role || "admin",
+            displayName: data.displayName || user.username || "Admin",
+            canPlayback: !!data.canPlayback,
+            canManageAccounts: !!data.canManageAccounts,
+          },
+        });
+      } catch (e) {
+        return send(res, 502, { ok: false, error: e.message || "ops unreachable" });
+      }
+    }
     if (pathname === "/api/auth/logout" && req.method === "POST") {
       Auth.logout(cookies.sid);
       res.setHeader("Set-Cookie", "sid=; HttpOnly; Path=/; Max-Age=0");
