@@ -1,0 +1,5 @@
+.env
+billing.db
+billing.db-*
+tools/cloudflared.exe
+*.log

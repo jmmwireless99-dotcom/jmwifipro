@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JM TECH SOLUTION — All-in-One Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0c1412;
+      --foam: #e8f2ee;
+      --moss: #1f6b4f;
+      --lime: #b7e34a;
+      --sand: #d9c4a0;
+      --muted: #6b7c74;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", sans-serif;
+      color: var(--foam);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(183,227,74,.18), transparent 55%),
+        radial-gradient(900px 500px at 90% 0%, rgba(31,107,79,.35), transparent 50%),
+        linear-gradient(165deg, #07110e 0%, #10221b 45%, #0a1511 100%);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    .brand {
+      font-family: Syne, sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      letter-spacing: -.03em;
+      line-height: .95;
+      margin: 0 0 .75rem;
+    }
+    .brand span { color: var(--lime); }
+    .lede { max-width: 36rem; color: #c5d5cd; font-size: 1.05rem; margin: 0 0 1.75rem; }
+    .cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 2.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .85rem 1.2rem; border-radius: 999px; text-decoration: none;
+      font-weight: 600; border: 1px solid transparent; transition: transform .15s ease, background .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--lime); color: var(--ink); }
+    .btn-ghost { background: transparent; color: var(--foam); border-color: rgba(232,242,238,.25); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    a.card {
+      display: block; text-decoration: none; color: inherit;
+      padding: 1.15rem 1.2rem;
+      border: 1px solid rgba(232,242,238,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+      border-radius: 18px;
+      min-height: 140px;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    a.card:hover { border-color: rgba(183,227,74,.45); background: rgba(183,227,74,.06); }
+    a.card h3 {
+      font-family: Syne, sans-serif; font-size: 1.15rem; margin: 0 0 .4rem; letter-spacing: -.02em;
+    }
+    a.card p { margin: 0; color: var(--muted); font-size: .92rem; line-height: 1.4; }
+    footer { margin-top: 2.5rem; color: var(--muted); font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1 class="brand">JM TECH<br /><span>SOLUTION</span></h1>
+    <p class="lede">All-in-one hub: ISP billing, MikroTik VPN clients, at VPS inventory — isang panel para sa field at office.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="/">Open Billing Panel</a>
+      <a class="btn btn-ghost" href="/vpn">Register VPN Client</a>
+      <a class="btn btn-ghost" href="/apply">Apply for JM WIFI</a>
+    </div>
+    <section class="grid" aria-label="Modules">
+      <a class="card" href="/"><h3>Billing System</h3><p>Customers, invoices, payments, plans, MikroTik PPPoE/IPoE/Hotspot.</p></a>
+      <a class="card" href="/vpn"><h3>VPN Client</h3><p>Generate SSTP MikroTik scripts for field routers — gaya ng jmtechsolution.cloud.</p></a>
+      <a class="card" href="/#/routers"><h3>VPS &amp; Routers</h3><p>Track VPS hosts and MikroTik sites reachable over VPN.</p></a>
+      <a class="card" href="/voucher"><h3>Voucher / Hotspot</h3><p>Public voucher pay flow and captive portal pages.</p></a>
+      <a class="card" href="/account"><h3>Customer Portal</h3><p>Account login, pay bill, helpdesk.</p></a>
+      <a class="card" href="/help"><h3>Helpdesk</h3><p>Public tickets and status check.</p></a>
+    </section>
+    <footer>JM TECH SOLUTION · Candelaria, Uson, Masbate · All-in-one on this VPS</footer>
+  </main>
+</body>
+</html>
