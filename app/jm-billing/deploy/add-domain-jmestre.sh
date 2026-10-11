@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-# Add jmestre.tech to the JM VPS nginx + Let's Encrypt (same panel as jmwifi.pro).
-# Run ON the VPS as root after DNS A records point here:
-#   A  @    → 187.77.145.131
-#   A  www  → 187.77.145.131
+# Bind jmestre.tech to this VPS (default target: 112.209.31.253) via nginx + Let's Encrypt.
+# Same JEFF NETWORK SERVICE panel (port 3000).
+#
+# DNS first (Hostinger):
+#   A  @    → 112.209.31.253
+#   A  www  → 112.209.31.253
 #
 #   sudo bash /opt/jm-billing/deploy/add-domain-jmestre.sh
 #
 set -euo pipefail
 
-DOMAIN_MAIN="${DOMAIN_MAIN:-jmwifi.pro}"
-DOMAIN_NEW="${DOMAIN_NEW:-jmestre.tech}"
+DOMAIN="${DOMAIN:-jmestre.tech}"
+EXPECT_IP="${EXPECT_IP:-112.209.31.253}"
 APP_PORT="${APP_PORT:-3000}"
-SITE_NAME="${SITE_NAME:-jm-billing}"
+SITE_NAME="${SITE_NAME:-jmestre.tech}"
 NGINX_AVAIL="/etc/nginx/sites-available/${SITE_NAME}"
 NGINX_EN="/etc/nginx/sites-enabled/${SITE_NAME}"
 
@@ -21,27 +23,31 @@ die(){ printf "\033[1;31m✗ %s\033[0m\n" "$*"; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "Run with sudo / as root"
 
-step "Check DNS for ${DOMAIN_NEW} points at this VPS"
+step "Check DNS for ${DOMAIN} → ${EXPECT_IP}"
 VPS_IP="$(curl -4 -sS --max-time 8 ifconfig.me || curl -4 -sS --max-time 8 icanhazip.com || true)"
-DNS_IP="$(getent ahostsv4 "${DOMAIN_NEW}" | awk '{print $1; exit}' || true)"
-echo "  VPS public IP: ${VPS_IP:-unknown}"
-echo "  ${DOMAIN_NEW} → ${DNS_IP:-unresolved}"
-if [ -n "${VPS_IP:-}" ] && [ -n "${DNS_IP:-}" ] && [ "${VPS_IP}" != "${DNS_IP}" ]; then
-  die "DNS for ${DOMAIN_NEW} is ${DNS_IP}, not this VPS (${VPS_IP}). Fix Hostinger A records first."
+DNS_IP="$(getent ahostsv4 "${DOMAIN}" | awk '{print $1; exit}' || true)"
+echo "  This server IP: ${VPS_IP:-unknown}"
+echo "  ${DOMAIN} resolves: ${DNS_IP:-unresolved}"
+echo "  Expected: ${EXPECT_IP}"
+if [ -n "${VPS_IP:-}" ] && [ "${VPS_IP}" != "${EXPECT_IP}" ]; then
+  echo "  (warning) Public IP ${VPS_IP} ≠ EXPECT_IP ${EXPECT_IP} — continuing if DNS matches this host."
 fi
 if [ -z "${DNS_IP:-}" ]; then
-  die "Could not resolve ${DOMAIN_NEW}. Point A @ and www to this VPS, wait for propagation, then re-run."
+  die "Could not resolve ${DOMAIN}. Set Hostinger A @ and www to ${EXPECT_IP}, wait, re-run."
 fi
-ok "DNS looks correct"
+if [ "${DNS_IP}" != "${EXPECT_IP}" ] && [ -n "${VPS_IP:-}" ] && [ "${DNS_IP}" != "${VPS_IP}" ]; then
+  die "DNS for ${DOMAIN} is ${DNS_IP}, not ${EXPECT_IP}/${VPS_IP}. Fix A records first."
+fi
+ok "DNS OK (${DNS_IP})"
 
-step "Write nginx site (${SITE_NAME})"
+step "Write nginx site ${SITE_NAME}"
 apt-get install -y nginx certbot python3-certbot-nginx >/dev/null
 cat > "${NGINX_AVAIL}" <<NGINX
-# Managed by deploy/add-domain-jmestre.sh — jmwifi.pro + jmestre.tech → :${APP_PORT}
+# Managed by deploy/add-domain-jmestre.sh — ${DOMAIN} → :${APP_PORT}
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name ${DOMAIN_MAIN} www.${DOMAIN_MAIN} ${DOMAIN_NEW} www.${DOMAIN_NEW} _;
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN} www.${DOMAIN} ${EXPECT_IP};
 
     client_max_body_size 20m;
 
@@ -58,26 +64,32 @@ server {
 NGINX
 ln -sf "${NGINX_AVAIL}" "${NGINX_EN}"
 rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
-# Avoid duplicate default_server conflicts from old site files
-rm -f /etc/nginx/sites-enabled/jmwifi.pro 2>/dev/null || true
 nginx -t
 systemctl reload nginx
 ok "nginx reloaded (HTTP)"
 
-step "Let's Encrypt certificate (expand to include ${DOMAIN_NEW})"
+step "Let's Encrypt for ${DOMAIN}"
 certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email \
   --redirect \
-  -d "${DOMAIN_MAIN}" -d "www.${DOMAIN_MAIN}" \
-  -d "${DOMAIN_NEW}" -d "www.${DOMAIN_NEW}" \
-  || certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email \
-       --redirect \
-       -d "${DOMAIN_NEW}" -d "www.${DOMAIN_NEW}"
+  -d "${DOMAIN}" -d "www.${DOMAIN}"
 nginx -t && systemctl reload nginx
 ok "TLS ready"
 
+# Optional: keep PUBLIC_URL in sync if .env exists
+if [ -f /opt/jm-billing/.env ]; then
+  step "Update PUBLIC_URL in /opt/jm-billing/.env"
+  if grep -q '^PUBLIC_URL=' /opt/jm-billing/.env; then
+    sed -i "s|^PUBLIC_URL=.*|PUBLIC_URL=https://${DOMAIN}|" /opt/jm-billing/.env
+  else
+    echo "PUBLIC_URL=https://${DOMAIN}" >> /opt/jm-billing/.env
+  fi
+  systemctl restart jm-billing 2>/dev/null || true
+  ok "PUBLIC_URL=https://${DOMAIN}"
+fi
+
 step "Smoke check"
-CODE="$(curl -sS -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN_NEW}" http://127.0.0.1/ || true)"
-echo "  Host: ${DOMAIN_NEW} → HTTP ${CODE}"
-CODE2="$(curl -sS -o /dev/null -w '%{http_code}' "https://${DOMAIN_NEW}/" || true)"
-echo "  https://${DOMAIN_NEW}/ → HTTP ${CODE2}"
-ok "Done — panel should answer on https://${DOMAIN_NEW} and https://${DOMAIN_MAIN}"
+CODE="$(curl -sS -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/ || true)"
+echo "  Host: ${DOMAIN} → HTTP ${CODE}"
+CODE2="$(curl -sS -o /dev/null -w '%{http_code}' "https://${DOMAIN}/" || true)"
+echo "  https://${DOMAIN}/ → HTTP ${CODE2}"
+ok "Done — use https://${DOMAIN}"

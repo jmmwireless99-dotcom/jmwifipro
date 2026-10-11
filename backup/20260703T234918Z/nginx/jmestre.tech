@@ -1,15 +1,14 @@
-# Alias domain for JM VPS (same panel as jmwifi.pro).
-# Prefer the managed site: /etc/nginx/sites-available/jm-billing
-# (see app/jm-billing/deploy/nginx-jm-billing.conf and add-domain-jmestre.sh).
+# jmestre.tech → VPS 112.209.31.253 (JEFF NETWORK SERVICE)
+# DNS:
+#   jmestre.tech     A   112.209.31.253
+#   www.jmestre.tech A   112.209.31.253
 #
-# DNS required before TLS:
-#   jmestre.tech     A   187.77.145.131
-#   www.jmestre.tech A   187.77.145.131
+# Live setup: app/jm-billing/deploy/add-domain-jmestre.sh
 
 server {
     listen 80;
     listen [::]:80;
-    server_name jmestre.tech www.jmestre.tech;
+    server_name jmestre.tech www.jmestre.tech 112.209.31.253;
 
     location / {
         proxy_pass http://127.0.0.1:3000;

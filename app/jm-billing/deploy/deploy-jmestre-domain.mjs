@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-// Upload add-domain-jmestre.sh + nginx conf and run them on the JM VPS.
+// Bind jmestre.tech on VPS 112.209.31.253 (upload scripts + run add-domain-jmestre.sh).
 // Prerequisites:
-//   1) Hostinger DNS: A @ and www for jmestre.tech → 187.77.145.131
-//   2) VPS_PASS set
+//   1) Hostinger DNS: A @ and www for jmestre.tech → 112.209.31.253
+//   2) VPS_PASS (SSH to that host)
 //
-// Usage: VPS_PASS=... node deploy/deploy-jmestre-domain.mjs
+// Usage:
+//   VPS_PASS=... node deploy/deploy-jmestre-domain.mjs
+//   VPS_HOST=112.209.31.253 VPS_PASS=... node deploy/deploy-jmestre-domain.mjs
 import fs from "node:fs";
 import path from "node:path";
 import { Client } from "ssh2";
@@ -25,20 +27,20 @@ function loadEnv() {
 }
 loadEnv();
 
-const HOST = process.env.VPS_HOST || "187.77.145.131";
+const HOST = process.env.VPS_HOST || "112.209.31.253";
 const USER = process.env.VPS_USER || "root";
 const PASS = process.env.VPS_PASS || "";
 const REMOTE = process.env.VPS_REMOTE || "/opt/jm-billing";
 
 if (!PASS) {
-  console.error("VPS_PASS not set. Also point jmestre.tech A/@ and www to", HOST);
+  console.error("VPS_PASS not set. Point jmestre.tech A/@ and www to", HOST, "then run:");
   console.error("  VPS_PASS=... node deploy/deploy-jmestre-domain.mjs");
   process.exit(1);
 }
 
 const FILES = [
   "deploy/add-domain-jmestre.sh",
-  "deploy/nginx-jm-billing.conf",
+  "deploy/nginx-jmestre.tech.conf",
 ];
 
 function mkdirp(sftp, remoteDir) {
@@ -50,12 +52,12 @@ function mkdirp(sftp, remoteDir) {
   });
 }
 
-function uploadFile(sftp, local, remote) {
+function uploadFile(sftp, local, remote, mode = 0o644) {
   return new Promise(async (resolve, reject) => {
     try {
       await mkdirp(sftp, path.posix.dirname(remote));
       const rs = fs.createReadStream(local);
-      const ws = sftp.createWriteStream(remote, { mode: 0o755 });
+      const ws = sftp.createWriteStream(remote, { mode });
       ws.on("close", resolve);
       ws.on("error", reject);
       rs.on("error", reject);
@@ -91,15 +93,19 @@ conn
         process.exit(1);
       }
       try {
-        console.log(`Uploading domain setup to ${USER}@${HOST}:${REMOTE}\n`);
+        console.log(`Deploying jmestre.tech → ${USER}@${HOST}:${REMOTE}\n`);
         for (const rel of FILES) {
           const local = path.join(ROOT, rel);
           if (!fs.existsSync(local)) throw new Error("missing " + rel);
+          const mode = rel.endsWith(".sh") ? 0o755 : 0o644;
           console.log("  " + rel);
-          await uploadFile(sftp, local, `${REMOTE}/${rel}`);
+          await uploadFile(sftp, local, `${REMOTE}/${rel}`, mode);
         }
         console.log("\nRunning add-domain-jmestre.sh on VPS...\n");
-        await exec(conn, `bash ${REMOTE}/deploy/add-domain-jmestre.sh`);
+        await exec(
+          conn,
+          `EXPECT_IP=${HOST} DOMAIN=jmestre.tech bash ${REMOTE}/deploy/add-domain-jmestre.sh`
+        );
         console.log("\nDone.");
         conn.end();
       } catch (e) {
