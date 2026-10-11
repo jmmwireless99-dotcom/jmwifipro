@@ -646,9 +646,18 @@
   html.embed-mode .side-brand,
   body.embed-mode .side-brand { display:none !important; }
   html.embed-mode .main,
-  body.embed-mode .main { margin:0 !important; padding:8px 10px 14px !important; max-width:none !important; width:100% !important; }
+  body.embed-mode .main { margin:0 !important; padding:0 !important; max-width:none !important; width:100% !important; }
+  html.embed-mode .content,
+  body.embed-mode .content { max-width:none !important; width:100% !important; margin:0 !important; padding:10px 12px 16px !important; }
+  html.embed-mode .page-head,
+  body.embed-mode .page-head { display:none !important; }
   html.embed-mode .topbar,
   body.embed-mode .topbar { padding-left:0 !important; }
+  /* CCTV/VPN cards: one panel only — no nested column box */
+  html.embed-mode .sites-panel,
+  body.embed-mode .sites-panel { border:0 !important; border-radius:0 !important; background:transparent !important; box-shadow:none !important; }
+  html.embed-mode .site-grid,
+  body.embed-mode .site-grid { padding-left:0 !important; padding-right:0 !important; }
   html.embed-mode a.nav-ext[href="/"],
   body.embed-mode a.nav-ext[href="/"],
   html.embed-mode .chat-fab,
@@ -3906,8 +3915,10 @@ function App() {
         </div>`}
       </div>`;
     } else {
-      body = html`<div>
-        <div class="sites-hub" style=${{border:'1px solid var(--line)',borderRadius:'14px',marginBottom:'14px'}}>
+      const camN = shownNvrs.reduce((n, x) => n + (Number(x.cameraCount) || 0), 0);
+      const vpnUpN = shownNvrs.filter(n => stations.find(s => s.id === n.stationId)?.online).length;
+      body = html`<div class="sites-panel">
+        <div class="sites-hub">
           <h3>CCTV · NVR Areas</h3>
           <p>Pindutin ang <b style=${{color:'var(--txt)'}}>Add NVR Area</b> → ilagay ang <b style=${{color:'var(--txt)'}}>NVR Name</b> at <b style=${{color:'var(--txt)'}}>Area</b>. Pagkatapos, pindutin ang NVR Area button para mag-add at mag-view ng cameras.</p>
           <p style=${{marginTop:'10px',display:'flex',flexWrap:'wrap',gap:'8px'}}>
@@ -3921,14 +3932,22 @@ function App() {
             </a>
           </p>
         </div>
-        <div class="section-head">
-          <div><h3>NVR Areas</h3><div class="sub">${nvrs.length} NVR · ${cams.length} cameras</div></div>
+        <div class="site-kpis">
+          <div class="site-kpi"><div class="k">NVR areas</div><div class="v">${shownNvrs.length}</div></div>
+          <div class="site-kpi"><div class="k">Cameras</div><div class="v">${camN}</div></div>
+          <div class="site-kpi"><div class="k">VPN up</div><div class="v" style=${{color:vpnUpN?'var(--ok)':'inherit'}}>${vpnUpN}</div></div>
+          <div class="site-kpi"><div class="k">VPN down</div><div class="v" style=${{color:(shownNvrs.length-vpnUpN)?'var(--warn)':'inherit'}}>${Math.max(0, shownNvrs.length - vpnUpN)}</div></div>
+        </div>
+        <div class="section-head" style=${{padding:'12px 18px 0',margin:0,border:0}}>
+          <div><h3 style=${{margin:0}}>NVR Areas</h3><div class="sub">${nvrs.length} NVR · ${cams.length} cameras</div></div>
           <button onClick=${()=>setModal({type:'nvr'})}>+ Add NVR Area</button>
         </div>
-        <div class="site-grid" style=${{padding:'8px 0'}}>
+        <div class="site-grid">
           ${shownNvrs.map(n=>{
             const st = stations.find(s=>s.id===n.stationId);
-            return html`<div key=${n.id} class=${'site-card'+(st?.online?' up':' down')} style=${{cursor:'pointer'}}
+            const up = !!st?.online;
+            const cardCls = 'site-card'+(up?' up':' down');
+            return html`<div key=${n.id} class=${cardCls} style=${{cursor:'pointer'}}
               onClick=${()=>setNav({cctvNvrId:n.id})}>
               <div class="site-card-head">
                 <div class="site-card-icon">🖥</div>
@@ -3937,9 +3956,16 @@ function App() {
                   <div class="site-card-meta">${n.notes || 'Area'} · ${st?.name || n.stationName || '—'}</div>
                   <div class="site-card-badges">
                     <span class="site-badge def">${n.cameraCount||0} cam</span>
-                    ${st?.online?html`<span class="site-badge def">VPN up</span>`:html`<span class="site-badge off">VPN down</span>`}
+                    ${up?html`<span class="site-badge def">VPN up</span>`:html`<span class="site-badge off">VPN down</span>`}
+                    ${n.brand?html`<span class="site-badge">${String(n.brand).toUpperCase()}</span>`:null}
                   </div>
                 </div>
+              </div>
+              <div class="site-card-stats">
+                <div class="site-stat"><div class="k">Cams</div><div class="v ${n.cameraCount?'ok':''}">${n.cameraCount||0}</div></div>
+                <div class="site-stat"><div class="k">Channels</div><div class="v" style=${{fontSize:'13px'}}>${n.channels||'—'}</div></div>
+                <div class="site-stat"><div class="k">LAN</div><div class="v" style=${{fontSize:'11px'}}>${n.lanIp||'—'}</div></div>
+                <div class="site-stat"><div class="k">VPN</div><div class="v ${up?'ok':'bad'}">${up?'up':'down'}</div></div>
               </div>
               <div class="site-card-foot" onClick=${e=>e.stopPropagation()}>
                 <button class="mini go" onClick=${()=>setNav({cctvNvrId:n.id})}>Open →</button>

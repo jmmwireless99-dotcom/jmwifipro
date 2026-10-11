@@ -679,10 +679,14 @@
   .dash-head-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .dash-head-actions button { margin:0; width:auto; padding:8px 14px; font-size:12px; }
 
-  .ops-embed-wrap { height: calc(100vh - 110px); min-height: 520px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0b1220; }
-  .ops-embed-wrap iframe { width: 100%; height: 100%; border: 0; display: block; background: #0b1220; }
-  .ops-embed-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  /* One shell only — no second boxed column around JM Ops iframes */
+  .ops-embed-wrap { height: calc(100vh - 88px); min-height: 520px; border: 0; border-radius: 0; overflow: hidden; background: transparent; }
+  .ops-embed-wrap iframe { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
+  .ops-embed-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
   .ops-embed-head .module-desc { margin:0; }
+  #view-cctv .ops-embed-head,
+  #view-vpnclients .ops-embed-head,
+  #view-gasoline .ops-embed-head { display:none; }
 
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:18px; }
   .kpi.kpi-link { cursor:pointer; }
