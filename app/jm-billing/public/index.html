@@ -1331,7 +1331,6 @@
   <button id="nav-expenses" onclick="showView('expenses')"><span class="ico">💸</span>Expenses</button>
   <button id="nav-map" onclick="showView('map')"><span class="ico">🌍</span>Earth Map</button>
   <div class="grp">Business</div>
-  <button id="nav-routers" onclick="showView('routers')"><span class="ico">🖧</span>Multi-site routers</button>
   <button id="nav-plans" onclick="showView('plans')"><span class="ico">📑</span>Plans / Packages</button>
   <button id="nav-hotspot" onclick="showView('hotspot')"><span class="ico">🎟</span>Hotspot vouchers</button>
   <button id="nav-saleshistory" onclick="location.href='/sales-history'"><span class="ico">📒</span>Sales History</button>
@@ -1420,7 +1419,7 @@
     <div id="wd-body" style="padding:10px 16px 14px;font-family:var(--sans);font-size:12.5px;color:var(--muted)">Waiting for the first check…</div>
   </section>
   <!-- multi-site overview (only shown with 2+ routers) -->
-  <section class="panel" id="sites-panel" style="display:none">
+  <section class="panel hidden" id="sites-panel" style="display:none" aria-hidden="true">
     <h2>Multi-site overview <button class="refresh" onclick="loadSitesOverview(true)">⟳ refresh</button>
       <span class="chart-total" id="sites-line" style="margin-left:auto">—</span></h2>
     <div id="sites-body" style="padding:8px 12px 14px"></div>
@@ -10101,7 +10100,7 @@ const USER_ACCOUNT_ROLES = ["admin", "site_admin", ...STAFF_ACCOUNT_ROLES];
 const ROLE_VIEWS = {
   admin: null,
   site_admin: null,
-  cashier: ["ops", "clients", "plans", "hotspot", "joborders", "techs", "inventory", "expenses", "referrals", "helpdesk", "sms", "reports", "map", "routers"],
+  cashier: ["ops", "clients", "plans", "hotspot", "joborders", "techs", "inventory", "expenses", "referrals", "helpdesk", "sms", "reports", "map"],
   technician: ["joborders", "techs", "inventory", "hotspot", "referrals", "map", "helpdesk"],
   staff: ["ops", "clients", "hotspot", "joborders", "techs", "inventory", "referrals", "helpdesk", "map"],
   helper: ["clients", "inventory", "hotspot", "joborders", "techs", "referrals", "helpdesk", "map"],
