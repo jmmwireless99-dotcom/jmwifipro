@@ -6663,11 +6663,15 @@ function rescheduleRouterPoll() {
 }
 
 // Recurring sweep timer (re-armed when the interval setting changes).
+// expiry_check_mins = 0 → disabled (safe / view-only hosts like jmvps until cutover).
 let _sweepTimer = null;
 function rescheduleSweep() {
   if (_sweepTimer) { clearInterval(_sweepTimer); _sweepTimer = null; }
   let mins = Number(Settings.get("expiry_check_mins", "1"));
-  if (!Number.isFinite(mins) || mins < 1) mins = 1;
+  if (!Number.isFinite(mins) || mins < 0) mins = 0;
+  // Dry-run / preview hosts must never auto-touch MikroTik (even if mins > 0).
+  if (Settings.get("dry_run", "0") === "1") mins = 0;
+  if (mins < 1) return 0;
   _sweepTimer = setInterval(() => { runExpirySweep().catch(() => {}); }, mins * 60 * 1000);
   setTimeout(() => runExpirySweep().catch(() => {}), 8000);
   setTimeout(() => { reconcileActiveCustomersOnRouter().catch(() => {}); }, 15000);

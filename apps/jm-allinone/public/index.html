@@ -1391,6 +1391,10 @@
     Pag may site na, i-assign ng main admin sa <b>User accounts → sites</b>. Pwede ka nang mag-add ng staff, plans, at customers.
   </div>
 
+  <div id="safe-mode-banner" class="hidden" style="margin:0 0 14px;padding:12px 14px;background:rgba(255,180,84,.14);border:1px solid #ffb454;border-radius:10px;color:#ffb454;font-family:var(--sans);font-size:13px;line-height:1.5">
+    ⚠ <b>SAFE MODE (dry-run)</b> — panel ay view/preview lang. <b>Walang command</b> ang papunta sa MikroTik mula rito; ang live writer ay <b>jmwifi.pro</b> hanggang cutover.
+  </div>
+
   <section class="ai" id="ai-panel">
     <div class="label">AI command</div>
     <div class="ai-row">
@@ -6242,6 +6246,7 @@ async function onDryRunToggle(cb) {
   // save immediately so it takes effect now
   const r = await api("/api/billing/settings", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ dry_run: cb.checked ? "1" : "0" }) });
   if (!r.ok) { alert(r.error || "Failed"); cb.checked = !cb.checked; return; }
+  updateSafeModeBanner();
   if (cb.checked) { alert("Dry-run mode ON. Router changes will be previewed (logged) but NOT sent. Turn it off to apply for real."); loadDryRunLog(); }
 }
 async function loadDryRunLog() {
@@ -7671,7 +7676,14 @@ async function loadHsSales(range) {
   drawBars($("hs-sales-canvas"), r.data.series, range);
 }
 
-function refreshAll(){ loadDashNetwork(); loadCollectionsChart(); loadKpis(); loadWatchdog(); loadSitesOverview(); }
+function updateSafeModeBanner() {
+  api("/api/billing/settings").then((s) => {
+    const dry = !!(s && s.ok && s.data && (s.data.dry_run === "1" || s.data.dry_run === 1));
+    const el = $("safe-mode-banner");
+    if (el) el.classList.toggle("hidden", !dry);
+  }).catch(() => {});
+}
+function refreshAll(){ loadDashNetwork(); loadCollectionsChart(); loadKpis(); loadWatchdog(); loadSitesOverview(); updateSafeModeBanner(); }
 let _smsActive = null, _smsAll = [];
 // ---------- IPoE subscribers ----------
 let _ipoeAll = [], _ipoeVlans = [], _ipoeDhcp = [], _ipoePlans = [], _ipoeEditId = null;
