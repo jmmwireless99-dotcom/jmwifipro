@@ -1392,7 +1392,7 @@
   </div>
 
   <div id="safe-mode-banner" class="hidden" style="margin:0 0 14px;padding:12px 14px;background:rgba(255,180,84,.14);border:1px solid #ffb454;border-radius:10px;color:#ffb454;font-family:var(--sans);font-size:13px;line-height:1.5">
-    ⚠ <b>SAFE MODE (dry-run)</b> — panel ay view/preview lang. <b>Walang command</b> ang papunta sa MikroTik mula rito; ang live writer ay <b>jmwifi.pro</b> hanggang cutover.
+    ⚠ <b>SAFE MODE</b> — MikroTik sites dito ay <b>OFFLINE / paused</b> + dry-run. <b>Walang poll/command</b> papunta sa routers mula sa jmvps; live writer = <b>jmwifi.pro</b>.
   </div>
 
   <section class="ai" id="ai-panel">
@@ -7677,10 +7677,16 @@ async function loadHsSales(range) {
 }
 
 function updateSafeModeBanner() {
-  api("/api/billing/settings").then((s) => {
+  Promise.all([
+    api("/api/billing/settings"),
+    api("/api/billing/routers").catch(() => ({ ok: false })),
+  ]).then(([s, rt]) => {
     const dry = !!(s && s.ok && s.data && (s.data.dry_run === "1" || s.data.dry_run === 1));
+    const list = (rt && rt.ok && (rt.data?.routers || rt.data)) || [];
+    const routers = Array.isArray(list) ? list : (list.routers || []);
+    const paused = routers.length > 0 && routers.every((r) => Number(r.enabled) === 0);
     const el = $("safe-mode-banner");
-    if (el) el.classList.toggle("hidden", !dry);
+    if (el) el.classList.toggle("hidden", !(dry || paused));
   }).catch(() => {});
 }
 function refreshAll(){ loadDashNetwork(); loadCollectionsChart(); loadKpis(); loadWatchdog(); loadSitesOverview(); updateSafeModeBanner(); }

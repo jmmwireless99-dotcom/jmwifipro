@@ -221,6 +221,9 @@ rebuildMt();
 const _routerConns = new Map();   // id -> connection object
 function connForRouter(r) {
   if (!r) return mt;   // no router row → use the legacy global connection (single-router compatibility)
+  if (Number(r.enabled) === 0) {
+    throw new Error(`Router "${r.name || r.id}" is paused/offline — enable it first.`);
+  }
   const key = r.id;
   const cached = _routerConns.get(key);
   // rebuild if connection details changed
@@ -268,18 +271,22 @@ function resolveRouterCtx(routerId) {
   if (routerId != null && routerId !== "") {
     router = Routers.get(Number(routerId));
     if (!router) throw new Error("Router/site not found.");
-    if (router.enabled === 0) throw new Error(`Router "${router.name}" is paused — enable it first.`);
   } else {
     router = Routers.getDefault();
   }
   if (router) {
+    if (Number(router.enabled) === 0) {
+      throw new Error(`Router "${router.name}" is paused/offline — enable it first.`);
+    }
     return { conn: connForRouter(router), router };
   }
   if (hasRouterConfigured()) {
     const def = Routers.getDefault();
-    if (def && def.host) return { conn: connForRouter(def), router: def };
+    if (def && def.host && Number(def.enabled) !== 0) return { conn: connForRouter(def), router: def };
   }
-  return { conn: mt, router: { id: null, name: "Default site" } };
+  // No enabled multi-site router — only use legacy global mt if it has a host.
+  if ((mtConfig().host || "").trim()) return { conn: mt, router: { id: null, name: "Default site" } };
+  throw new Error("No enabled MikroTik site — all routers are paused/offline on this panel.");
 }
 
 async function pppoeEditOnRouter(b) {
@@ -336,6 +343,9 @@ function hasRouterConfigured() {
 // Test a router's connection by fetching its identity. Returns {ok, identity?|error}.
 async function testRouterConnection(r) {
   if (!r || !r.host) return { ok: false, error: "No host set for this router." };
+  if (Number(r.enabled) === 0) {
+    return { ok: false, error: `Router "${r.name}" is paused/offline on this panel (safe mode).` };
+  }
   try {
     const conn = connForRouter(r);
     const id = await conn.identity();
@@ -611,10 +621,13 @@ async function scanCoinLogs(record) {
 
 // Combined active/inactive view for PPPoE and hotspot (+ hotspot remaining time).
 async function listAllPppoeActive() {
-  const routers = Routers.list().filter((r) => r.enabled !== 0 && r.host);
-  if (routers.length <= 1) {
-    const { conn } = resolveRouterCtx(null);
-    return (await conn.listPppoeActive()) || [];
+  const routers = Routers.list().filter((r) => Number(r.enabled) !== 0 && r.host);
+  if (routers.length === 0) return []; // all sites paused/offline on this panel
+  if (routers.length === 1) {
+    try {
+      const conn = connForRouter(routers[0]);
+      return ((await conn.listPppoeActive()) || []).map((a) => ({ ...a, router_id: routers[0].id, router_name: routers[0].name }));
+    } catch { return []; }
   }
   const all = [];
   for (const r of routers) {
@@ -628,11 +641,13 @@ async function listAllPppoeActive() {
 }
 
 async function listAllPppoeSecrets() {
-  const routers = Routers.list().filter((r) => r.enabled !== 0 && r.host);
-  if (routers.length <= 1) {
-    const { conn, router } = resolveRouterCtx(null);
-    const rid = router?.id || Routers.getDefault()?.id || null;
-    return ((await conn.listPppoe()) || []).map((row) => ({ ...row, _router_id: rid }));
+  const routers = Routers.list().filter((r) => Number(r.enabled) !== 0 && r.host);
+  if (routers.length === 0) return [];
+  if (routers.length === 1) {
+    try {
+      const conn = connForRouter(routers[0]);
+      return ((await conn.listPppoe()) || []).map((row) => ({ ...row, _router_id: routers[0].id }));
+    } catch { return []; }
   }
   const all = [];
   for (const r of routers) {
@@ -6657,8 +6672,11 @@ function rescheduleRouterPoll() {
   // Dedicated router API sync interval (seconds). Default 60s, floor 20s so we don't hammer
   // RouterOS over VPN. This drives the live PPPoE/hotspot counts shown in the Routers table.
   const secs = Math.max(20, Number(Settings.get("router_sync_secs", "60")) || 60);
-  // only run if there are 2+ routers (single-router installs use the normal watchdog)
-  try { if (Routers.list().length >= 2) _rpTimer = setInterval(() => { pollAllRouters().catch(() => {}); }, secs * 1000); } catch {}
+  // only run when there are 2+ ENABLED routers (paused/offline sites must not be polled)
+  try {
+    const enabledN = Routers.list().filter((r) => Number(r.enabled) !== 0 && r.host).length;
+    if (enabledN >= 2) _rpTimer = setInterval(() => { pollAllRouters().catch(() => {}); }, secs * 1000);
+  } catch {}
   return secs;
 }
 
