@@ -15,7 +15,7 @@ is required** (Node <22 fails with a `node:sqlite` error). There is **no `packag
 variant of the same app and is not the thing to run.
 
 ### Working copy (`run/`) — regenerated, do not edit for real
-The update script extracts the app tarball into `run/jm-billing/` (git-ignored) and drops in
+`scripts/cloud-agent-install.sh` extracts the app tarball into `run/jm-billing/` (git-ignored) and drops in
 a dev `.env` (`PORT=3000`). It deliberately deletes the bundled `billing.db*` so the app
 starts from a **fresh SQLite DB**. Consequences:
 - The `run/` copy is **regenerated on every session start**, so edits made inside
