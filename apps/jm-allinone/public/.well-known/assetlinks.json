@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "pro.jmwifi.portal",
+    "sha256_cert_fingerprints": ["32:92:18:B9:10:99:C9:AA:6C:9C:49:C3:FE:CA:8F:2D:78:E5:14:CF:C9:23:B3:9C:C4:2E:BA:77:8A:14:83:4A"]
+  }
+}]

@@ -1,0 +1,14 @@
+# Cloudflare Tunnel → local billing panel (port 3000)
+# Domain DNS is at Hostinger — add CNAME records in hPanel (see setup notes below).
+
+tunnel: TUNNEL_ID
+credentials-file: C:\Users\jmmwi\.cloudflared\TUNNEL_ID.json
+
+ingress:
+  - hostname: jmwifi.pro
+    service: http://localhost:3000
+  - hostname: www.jmwifi.pro
+    service: http://localhost:3000
+  - hostname: panel.jmwifi.pro
+    service: http://localhost:3000
+  - service: http_status:404

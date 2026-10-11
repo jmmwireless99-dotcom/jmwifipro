@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#003d7a">
+<meta name="description" content="JM ESTRE WIFI & CCTV — fast, reliable home and business internet.">
+<title>JM ESTRE WIFI & CCTV</title>
+<link rel="stylesheet" href="/isp-landing.css?v=23">
+</head>
+<body class="isp-landing">
+  <header class="isp-nav">
+    <a href="/" class="isp-brand">
+      <div class="isp-brand-text">
+        <div id="isp-brand-name" class="isp-brand-name">JM ESTRE WIFI & CCTV</div>
+        <div id="isp-nav-tag" class="isp-brand-tag">Fast and Reliable Internet</div>
+      </div>
+      <span class="isp-brand-mark" aria-hidden="true"><span class="chev chev-a"></span><span class="chev chev-b"></span></span>
+      <img id="isp-brand-logo" class="isp-brand-logo" alt="" style="display:none" decoding="async">
+    </a>
+    <button type="button" id="isp-nav-toggle" class="isp-nav-toggle" aria-label="Menu">☰</button>
+    <nav id="isp-nav-links" class="isp-nav-links">
+      <a href="/" class="on">Home</a>
+      <a href="#services">Services</a>
+      <a href="#plans">Plans</a>
+      <a href="#features">Support</a>
+    </nav>
+    <div id="isp-nav-cta" class="isp-nav-cta">
+      <a id="isp-apply-nav" class="isp-btn isp-btn-navy" href="/apply">Apply Now</a>
+      <a id="isp-sales-history-nav" class="isp-btn isp-btn-sales" href="/sales-history">Sales History</a>
+      <a class="isp-btn isp-btn-outline" href="/account">Client Log in Account</a>
+      <button type="button" class="isp-nav-signin" id="isp-signin-open">Sign in</button>
+    </div>
+  </header>
+
+  <div id="isp-signin-panel" class="isp-signin-panel" hidden>
+    <div class="isp-signin-panel-inner">
+      <div class="isp-signin-panel-head">
+        <span>Staff login</span>
+        <button type="button" id="isp-signin-close" class="isp-signin-close" aria-label="Close">×</button>
+      </div>
+      <form class="isp-signin-form" onsubmit="return doLogin(event)">
+        <input id="li-user" placeholder="Username" autocomplete="username">
+        <input id="li-pass" type="password" placeholder="Password" autocomplete="current-password">
+        <button type="submit" class="isp-signin-submit">Login</button>
+        <div id="li-err" class="isp-signin-err"></div>
+      </form>
+    </div>
+  </div>
+
+  <section class="isp-hero" id="isp-hero">
+    <div class="isp-hero-sky" aria-hidden="true"></div>
+    <div class="isp-hero-streaks" aria-hidden="true"></div>
+    <div class="isp-hero-deco isp-hero-deco-mail" aria-hidden="true"></div>
+    <div class="isp-hero-deco isp-hero-deco-globe" aria-hidden="true"></div>
+
+    <div class="isp-hero-inner isp-hero-inner-promo">
+      <div class="isp-hero-right">
+        <div class="isp-hero-ad" id="isp-hero-ad">
+          <p class="isp-ad-kicker" id="isp-hero-kicker">Sulit na Sulit, Sulit pa!</p>
+          <div class="isp-ad-product" id="isp-hero-headline">
+            <span class="hl-a">Unlimited</span><span class="hl-b">Internet</span>
+          </div>
+          <div class="isp-ad-price-big" id="isp-hero-price">999!</div>
+          <div class="isp-ad-sticker" id="isp-hero-badge"><span>NEW Plan!</span><span>NEW Offer!</span></div>
+          <div class="isp-ad-offer" id="isp-hero-offer">
+            <div class="isp-ad-offer-top">
+              <span class="lbl">Enjoy up to</span>
+              <span class="spd" id="isp-hero-speed">— Mbps</span>
+              <span class="tag" id="isp-hero-tag">Unlimited Internet</span>
+            </div>
+            <div class="isp-ad-offer-div"></div>
+            <div class="isp-ad-offer-price" id="isp-hero-monthly">₱999 per month</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="isp-hero-dock" id="isp-hero-dock">
+      <button type="button" class="isp-hero-arrow" id="isp-hero-prev" aria-label="Previous promo">‹</button>
+      <div class="isp-hero-thumbs" id="isp-hero-thumbs"></div>
+      <button type="button" class="isp-hero-arrow" id="isp-hero-next" aria-label="Next promo">›</button>
+    </div>
+  </section>
+
+  <section class="isp-services" id="services">
+    <div class="isp-services-inner">
+      <div class="isp-sec-head">
+        <h2>Our Services</h2>
+        <p>Internet, billing, vendo, smart city, at customized solutions para sa bahay at negosyo.</p>
+      </div>
+      <div class="isp-svc-grid" id="isp-svc-grid">
+        <a class="isp-svc-card isp-svc-icon svc-sales" href="/sales-history">
+          <div class="isp-svc-icon-bg" aria-hidden="true">📒</div>
+          <div class="overlay"><h3>Sales History</h3><p>Vendo list per barangay — sales bawat vendo.</p><span class="link">Open dashboard →</span></div>
+        </a>
+        <a class="isp-svc-card" href="/apply">
+          <img src="/landing/service-home.jpg" alt="" width="400" height="280" loading="lazy" decoding="async">
+          <div class="overlay"><h3>Home Internet</h3><p>Wireless plans para sa buong pamilya.</p><span class="link">Apply now →</span></div>
+        </a>
+        <a class="isp-svc-card" href="/apply">
+          <img src="/landing/service-family.jpg" alt="" width="400" height="280" loading="lazy" decoding="async">
+          <div class="overlay"><h3>Unlimited Plans</h3><p>Unlimited Internet ₱999/month.</p><span class="link">View plans →</span></div>
+        </a>
+        <a class="isp-svc-card" href="/account">
+          <img src="/landing/service-stream.jpg" alt="" width="400" height="280" loading="lazy" decoding="async">
+          <div class="overlay"><h3>Pay &amp; Support</h3><p>Customer portal — bill at GCash payment.</p><span class="link">Customer portal →</span></div>
+        </a>
+        <a class="isp-svc-card" href="https://www.facebook.com/joel.madera.495380" target="_blank" rel="noopener noreferrer">
+          <img src="/landing/service-cctv.jpg" alt="" width="400" height="280" loading="lazy" decoding="async">
+          <div class="overlay"><h3>CCTV Installation</h3><p>Security cameras para sa bahay at negosyo.</p><span class="link">Inquire now →</span></div>
+        </a>
+        <a class="isp-svc-card" href="https://www.facebook.com/profile.php?id=61592702023354" target="_blank" rel="noopener noreferrer">
+          <img src="/landing/service-solar.jpg" alt="" width="400" height="280" loading="lazy" decoding="async">
+          <div class="overlay"><h3>Solar Installation</h3><p>Solar panel setup para sa tipid sa kuryente.</p><span class="link">Inquire now →</span></div>
+        </a>
+        <a class="isp-svc-card isp-svc-icon svc-web" href="https://www.facebook.com/joel.madera.495380" target="_blank" rel="noopener noreferrer">
+          <div class="isp-svc-icon-bg" aria-hidden="true">🌐</div>
+          <div class="overlay"><h3>Customized Website</h3><p>Professional website para sa negosyo o ISP brand.</p><span class="link">Inquire now →</span></div>
+        </a>
+        <a class="isp-svc-card isp-svc-icon svc-billing" href="https://www.facebook.com/joel.madera.495380" target="_blank" rel="noopener noreferrer">
+          <div class="isp-svc-icon-bg" aria-hidden="true">📊</div>
+          <div class="overlay"><h3>Billing System</h3><p>Automated billing, payments, at customer portal.</p><span class="link">Inquire now →</span></div>
+        </a>
+        <a class="isp-svc-card" href="https://www.facebook.com/joel.madera.495380" target="_blank" rel="noopener noreferrer">
+          <img src="/landing/service-smartcity.jpg" alt="" width="400" height="280" loading="lazy" decoding="async">
+          <div class="overlay"><h3>Smart City</h3><p>Digital solutions para sa LGU at community services.</p><span class="link">Inquire now →</span></div>
+        </a>
+        <a class="isp-svc-card isp-svc-icon svc-gas" href="https://www.facebook.com/joel.madera.495380" target="_blank" rel="noopener noreferrer">
+          <div class="isp-svc-icon-bg" aria-hidden="true">⛽</div>
+          <div class="overlay"><h3>Gasoline Vendo</h3><p>Automated gasoline dispensing system para sa negosyo.</p><span class="link">Inquire now →</span></div>
+        </a>
+        <a class="isp-svc-card isp-svc-icon svc-bottle" href="https://www.facebook.com/joel.madera.495380" target="_blank" rel="noopener noreferrer">
+          <div class="isp-svc-icon-bg" aria-hidden="true">🍾</div>
+          <div class="overlay"><h3>Empty Bottle Vendo</h3><p>Bottle collection at vending machine solutions.</p><span class="link">Inquire now →</span></div>
+        </a>
+        <a class="isp-svc-card" href="https://www.facebook.com/joel.madera.495380" target="_blank" rel="noopener noreferrer">
+          <img src="/landing/service-mikrotik.jpg" alt="" width="400" height="280" loading="lazy" decoding="async">
+          <div class="overlay"><h3>Mikrotik OLT &amp; Server Setup</h3><p>Professional Mikrotik, OLT, at server configuration para sa ISP.</p><span class="link">Inquire now →</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="isp-sec isp-plans-wrap" id="plans">
+    <div class="isp-sec-head">
+      <h2>Internet Plans</h2>
+      <p>Piliin ang plan at mag-apply online.</p>
+    </div>
+    <div id="isp-plan-cards" class="isp-plans-grid"><div class="isp-plan empty">Loading plans…</div></div>
+  </section>
+
+  <section class="isp-promo-band">
+    <div class="isp-promo-band-inner">
+      <div>
+        <h2>Ready to get connected?</h2>
+        <p>Mag-apply sa jmwifi.pro/apply o i-message kami sa Facebook.</p>
+      </div>
+      <div class="isp-promo-actions">
+        <a id="isp-fb-btn" class="isp-btn isp-btn-fb" href="https://www.facebook.com/profile.php?id=61592702023354" target="_blank" rel="noopener">Facebook</a>
+        <a id="isp-apply-band" class="isp-btn isp-btn-navy" href="/apply">Apply Now</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="isp-sec isp-features" id="features">
+    <div class="isp-sec-head">
+      <h2>Why choose JM ESTRE WIFI & CCTV?</h2>
+      <p>Serbisyo na pinagkakatiwalaan sa inyong lugar.</p>
+    </div>
+    <div id="isp-offers" class="isp-offers"></div>
+    <div class="isp-feat-grid">
+      <div class="isp-feat"><div class="ic">⚡</div><h3>Mabilis na speed</h3><p>Stable connection para sa streaming at work-from-home.</p></div>
+      <div class="isp-feat"><div class="ic">💳</div><h3>GCash payment</h3><p>Magbayad online — QR Ph at customer portal.</p></div>
+      <div class="isp-feat"><div class="ic">📶</div><h3>Hotspot vouchers</h3><p>WiFi vouchers sa covered areas.</p></div>
+      <div class="isp-feat"><div class="ic">🛠️</div><h3>Local support</h3><p>Facebook message o apply form.</p></div>
+    </div>
+  </section>
+
+  <footer class="isp-foot">
+    <div id="isp-foot-name" class="fn">JM ESTRE WIFI & CCTV</div>
+    <div id="isp-foot-addr">Internet service provider</div>
+    <div id="isp-foot-contact"></div>
+    <div class="isp-foot-web">Website: <a id="isp-web-link" href="https://jmwifi.pro" target="_blank" rel="noopener">jmwifi.pro</a></div>
+  </footer>
+
+  <script src="/isp-landing.js?v=24" defer></script>
+  <script src="/portal/chat-bot.js?v=2"></script>
+</body>
+</html>

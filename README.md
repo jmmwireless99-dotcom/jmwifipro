@@ -2,6 +2,14 @@
 
 Full **jmwifi.pro** billing backup and deployment files.
 
+## All-in-one app (billing + VPN + VPS)
+
+See [`apps/jm-allinone/`](apps/jm-allinone/) — deployed on Proxmox VM `jmvps` (Tailscale `100.101.1.71:3000`).
+
+- Hub: `http://100.101.1.71:3000/hub`
+- VPN client portal: `http://100.101.1.71:3000/vpn`
+- Billing panel: `http://100.101.1.71:3000/` (default `admin` / `admin`)
+
 ## Latest backup
 
 `backup/20260703T234918Z/` — pulled from VPS `187.77.145.131` on 2026-07-04 (UTC).

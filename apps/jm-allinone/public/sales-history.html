@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <title>Sales History — JMM Internet Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a1120;
+      --panel: #121b2e;
+      --panel-2: #18233c;
+      --line: #25324f;
+      --text: #eef2fa;
+      --muted: #93a3c0;
+      --accent: #4a8cff;
+      --accent-2: #2bc4e8;
+      --accent-dim: #1e3a8a;
+      --grad: linear-gradient(135deg, #3b7bff 0%, #4a8cff 100%);
+      --grad-flat: #3b7bff;
+      --ok: #2dd482;
+      --warn: #ff5d6d;
+      --bad: #ff5d6d;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --sans: "IBM Plex Sans", system-ui, sans-serif;
+      --radius: 16px;
+      --shadow: 0 2px 8px rgba(0,0,0,.22), 0 1px 2px rgba(0,0,0,.16);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    .app-bgfx {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(900px 480px at 12% -10%, rgba(59,123,255,.12), transparent 55%),
+        radial-gradient(700px 420px at 90% 0%, rgba(43,196,232,.07), transparent 50%),
+        var(--bg);
+    }
+    .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px 18px 48px; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .brand-row { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--grad); display: grid; place-items: center;
+      font-weight: 800; font-size: 13px; color: #fff; box-shadow: 0 4px 14px rgba(59,123,255,.35);
+    }
+    .brand-name { font-family: var(--sans); font-weight: 800; font-size: 14px; letter-spacing: .02em; }
+    .brand-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+    .module-title { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text); margin: 0 0 4px; letter-spacing: -.3px; }
+    .module-desc { font-family: var(--sans); font-size: 13px; color: var(--muted); margin: 0 0 18px; }
+
+    .bgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .bcard {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 16px 14px 18px; position: relative; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .bcard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); opacity: .85; }
+    .bcard.ok::before { background: var(--ok); }
+    .bcard.teal::before { background: var(--accent-2); }
+    .bcard.warn::before { background: var(--warn); }
+    .bcard .k { font-family: var(--sans); font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+    .bcard .v { font-family: var(--mono); font-size: 23px; font-weight: 600; margin-top: 7px; color: var(--text); }
+    .bcard .v.money { color: var(--ok); }
+    .bcard.warn .v { color: var(--warn); }
+
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      overflow: hidden; box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+    .panel h2 {
+      font-family: var(--sans); font-weight: 700; font-size: 13.5px; letter-spacing: .7px;
+      text-transform: uppercase; color: var(--text); margin: 0; padding: 15px 20px;
+      border-bottom: 1px solid var(--line); display: flex; align-items: center;
+      justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    }
+    .panel h2 .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    button, .btn {
+      background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+      border-radius: 8px; padding: 8px 14px; font-family: var(--sans); font-size: 12.5px;
+      font-weight: 600; cursor: pointer; box-shadow: none;
+    }
+    button:hover, .btn:hover { filter: brightness(1.07); }
+    button.primary, .btn.primary {
+      background: var(--grad); color: #fff; border-color: transparent; font-weight: 700;
+      box-shadow: 0 3px 12px rgba(59,123,255,.35);
+    }
+    button.ghost { background: var(--panel-2); }
+    button.danger {
+      background: rgba(255,93,109,.12); border-color: rgba(255,93,109,.45); color: var(--warn);
+    }
+    button.mini { padding: 6px 12px; font-size: 12px; font-weight: 700; }
+    button.edit-btn {
+      background: rgba(74,140,255,.16); border-color: rgba(74,140,255,.55); color: #9ec1ff;
+    }
+    button:disabled, .btn:disabled { opacity: .45; cursor: not-allowed; filter: none !important; }
+    .lock-chip {
+      display: inline-block; background: rgba(255,93,109,.12); border: 1px solid rgba(255,93,109,.4);
+      color: var(--warn); border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 700;
+    }
+    .ok-chip {
+      display: inline-block; background: rgba(45,212,130,.12); border: 1px solid rgba(45,212,130,.35);
+      color: var(--ok); border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 700;
+    }
+    .row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .crumbs {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      padding: 12px 16px 0; font-size: 12.5px; color: var(--muted);
+    }
+    .crumbs button {
+      background: transparent; border: none; color: var(--accent); padding: 0;
+      font-size: 12.5px; font-weight: 700; box-shadow: none;
+    }
+    .crumbs button:hover { text-decoration: underline; filter: none; }
+    .crumbs .here { color: var(--text); font-weight: 700; }
+
+    .hint {
+      padding: 9px 16px 0; font-family: var(--sans); font-size: 12px; color: var(--muted);
+    }
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 12px 14px; margin-bottom: 16px; box-shadow: var(--shadow);
+    }
+    .filter-bar .fld { margin: 0; min-width: 160px; }
+    .filter-bar .fld label {
+      display: block; font-size: 10.5px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 5px;
+    }
+    .filter-bar .grow { flex: 1; min-width: 140px; }
+    .filter-bar .note { font-size: 12px; color: var(--muted); padding-bottom: 8px; }
+
+    .scroll { overflow: auto; max-height: 520px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      text-align: left; font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px; padding: 12px 16px;
+      border-bottom: 1px solid var(--line); background: rgba(0,0,0,.15); position: sticky; top: 0; z-index: 1;
+    }
+    tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover td { background: rgba(74,140,255,.06); }
+    tbody tr.novis { cursor: default; }
+    tbody tr.novis:hover td { background: transparent; }
+    td.empty { text-align: center; color: var(--muted); padding: 28px 16px; cursor: default; }
+    .money { font-family: var(--mono); font-weight: 600; color: var(--ok); }
+    .muted { color: var(--muted); }
+    .chip {
+      display: inline-block; background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 999px; padding: 2px 8px; font-size: 11px; color: var(--muted); font-weight: 600;
+    }
+
+    .modal {
+      position: fixed; inset: 0; z-index: 900; background: rgba(0,0,0,.6);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal.open { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.45);
+    }
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; border-bottom: 1px solid var(--line);
+      font-family: var(--mono); font-size: 13px; position: sticky; top: 0; background: var(--panel); z-index: 2;
+    }
+    .modal-head .x { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 18px; box-shadow: none; padding: 4px 8px; }
+    .modal-body { padding: 16px; }
+    .fld { margin-bottom: 12px; }
+    .fld label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+    .set-in {
+      display: block; width: 100%; box-sizing: border-box; background: var(--bg);
+      border: 1px solid var(--line); color: var(--text); border-radius: 8px;
+      padding: 10px 12px; font-family: var(--sans); font-size: 13.5px;
+    }
+    .set-in:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,140,255,.18); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .err { color: var(--warn); font-size: 12.5px; min-height: 18px; margin-bottom: 6px; }
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      background: #10263f; border: 1px solid var(--accent); color: var(--text);
+      padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      display: none; z-index: 950; box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+    .toast.show { display: block; }
+
+    .login-gate {
+      position: fixed; inset: 0; z-index: 1200;
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(700px 360px at 20% 0%, rgba(59,123,255,.22), transparent 55%),
+        rgba(6, 10, 20, .92);
+      backdrop-filter: blur(10px);
+    }
+    .login-gate.open { display: flex; }
+    .login-card {
+      width: min(400px, 100%);
+      background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+      padding: 22px 20px 18px; box-shadow: var(--shadow);
+    }
+    .login-card h2 { font-size: 20px; margin: 0 0 4px; }
+    .login-card .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .login-card .fld { margin-bottom: 12px; }
+    .login-card label {
+      display: block; font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
+    }
+    .login-card input.set-in, .login-card input {
+      width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 12px; color: var(--text); font: 600 15px var(--sans);
+      padding: 12px 14px; outline: none;
+    }
+    .login-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,140,255,.18); }
+    .login-card .err { color: var(--warn); font-size: 13px; font-weight: 600; min-height: 1.2em; margin-bottom: 10px; }
+    .login-card .primary { width: 100%; padding: 12px 14px; font-size: 14px; }
+
+    @media (max-width: 640px) {
+      .bcard .v { font-size: 20px; }
+      .module-title { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-gate open" id="login-gate" aria-label="Sales History login">
+    <form class="login-card" id="login-form">
+      <h2>Sales History Login</h2>
+      <div class="sub">Admin access required · JMM Internet Services</div>
+      <div class="err" id="login-err"></div>
+      <div class="fld">
+        <label for="login-user">Username</label>
+        <input id="login-user" name="username" autocomplete="username" required placeholder="admin" />
+      </div>
+      <div class="fld">
+        <label for="login-pass">Password</label>
+        <input id="login-pass" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="primary" id="login-btn">Login</button>
+    </form>
+  </div>
+  <div class="app-bgfx" aria-hidden="true"></div>
+  <div class="wrap" id="app-wrap" hidden>
+    <div class="topbar">
+      <div class="brand-row">
+        <div class="logo">JM</div>
+        <div>
+          <div class="brand-name">JMM INTERNET SERVICES</div>
+          <div class="brand-sub">Billing &amp; Network Control · Sales History</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="ghost" id="btn-logout">Logout</button>
+        <button type="button" class="ghost" onclick="location.href='/mobile'">📱 Mobile app</button>
+        <button type="button" class="ghost" onclick="location.href='/operator'">← Operator</button>
+      </div>
+    </div>
+
+    <h1 class="module-title">Sales History</h1>
+    <p class="module-desc">Pindutin ang municipality → barangay → ilagay ang amount sa bawat vendo (naka-ready na ang names). Gamitin ang month filter para sa buwan.</p>
+
+    <div class="filter-bar" aria-label="Monthly filter">
+      <div class="fld">
+        <label for="flt-month">Month filter</label>
+        <input class="set-in" id="flt-month" type="month" />
+      </div>
+      <div class="fld grow">
+        <label for="flt-month-quick">Quick pick (saved months)</label>
+        <select class="set-in" id="flt-month-quick">
+          <option value="">All months</option>
+        </select>
+      </div>
+      <button type="button" class="ghost" id="btn-all-months">All months</button>
+      <div class="note" id="flt-label">Showing: All months</div>
+    </div>
+
+    <section class="bgrid" aria-label="Summary">
+      <div class="bcard"><div class="k">Municipalities</div><div class="v" id="k-muni">—</div></div>
+      <div class="bcard"><div class="k">Barangays</div><div class="v" id="k-brgy">—</div></div>
+      <div class="bcard teal"><div class="k">Vendos</div><div class="v" id="k-vendo">—</div></div>
+      <div class="bcard ok"><div class="k">Filtered sales ₱</div><div class="v money" id="k-total">—</div></div>
+      <div class="bcard ok"><div class="k" id="k-month-label">This month ₱</div><div class="v money" id="k-month">—</div></div>
+      <div class="bcard warn"><div class="k">Entries</div><div class="v" id="k-rows">—</div></div>
+    </section>
+
+    <div class="panel">
+      <h2>
+        <span id="panel-title">Municipalities</span>
+        <span class="actions">
+          <button type="button" class="ghost" id="btn-refresh">⟳ refresh</button>
+          <button type="button" class="primary" id="btn-add" style="display:none">+ New vendo name</button>
+        </span>
+      </h2>
+      <nav class="crumbs" id="crumbs"></nav>
+      <div class="hint" id="panel-hint">Piliin ang municipality para makita ang barangays.</div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr id="thead-row">
+              <th>Municipality</th>
+              <th>Barangays</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rows"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span id="modal-title">Encode sales</span>
+        <button type="button" class="x" id="btn-x" aria-label="Close">✕</button>
+      </div>
+      <form class="modal-body" id="add-form">
+        <input type="hidden" id="f-id" value="" />
+        <div class="hint" style="padding:0 0 12px" id="modal-where">—</div>
+        <div class="err" id="form-err"></div>
+        <div class="fld">
+          <label for="f-vendo">Vendo name</label>
+          <input class="set-in" id="f-vendo" required placeholder="e.g. Vendo Candelaria Plaza" autocomplete="off" />
+        </div>
+        <div class="fld">
+          <label for="f-month">Month</label>
+          <input class="set-in" id="f-month" type="month" required />
+        </div>
+        <div class="fld">
+          <label for="f-date">Date</label>
+          <input class="set-in" id="f-date" type="date" />
+        </div>
+        <div class="fld">
+          <label for="f-amount">Sales amount (₱)</label>
+          <input class="set-in" id="f-amount" type="number" min="0" step="1" required placeholder="0" inputmode="numeric" />
+        </div>
+        <div class="hint" style="padding:0 0 10px;color:var(--muted)">
+          Vendo names are pre-listed per barangay — ilagay ang amount lang.
+          Edit allowed only for the sales month and the next month.
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="ghost" id="btn-cancel">Cancel</button>
+          <button type="submit" class="primary" id="btn-save">Save amount</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="toast" id="toast">Saved</div>
+
+  <script type="module">
+    import { APPLY_COVERAGE } from "/lib/apply-coverage.mjs?v=6";
+    import {
+      isSalesMonthEditable,
+      salesMonthLockReason,
+    } from "/lib/sales-history-lock.mjs?v=6";
+
+    const STORAGE_KEY = "jm_sales_history_vendos_v1";
+    const FILTER_KEY = "jm_sales_history_month_filter";
+    const state = { muni: null, brgy: null, entries: [], month: "", editId: null, user: null };
+    const $ = (id) => document.getElementById(id);
+
+    function showLogin(msg = "") {
+      state.user = null;
+      $("app-wrap").hidden = true;
+      $("login-gate").classList.add("open");
+      $("login-err").textContent = msg || "";
+    }
+    function showApp(user) {
+      state.user = user;
+      $("login-gate").classList.remove("open");
+      $("app-wrap").hidden = false;
+    }
+    async function checkAuth() {
+      try {
+        const r = await fetch("/api/sales-history/me", { credentials: "same-origin" });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok && d.user) return d.user;
+      } catch {}
+      return null;
+    }
+    async function doLogin(username, password) {
+      const r = await fetch("/api/sales-history/login", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || d.ok === false) throw new Error(d.error || "Login failed");
+      return d.user;
+    }
+    async function doLogout() {
+      await fetch("/api/sales-history/logout", { method: "POST", credentials: "same-origin" }).catch(() => {});
+      showLogin("");
+    }
+
+    function peso(n) {
+      return "₱" + Number(n || 0).toLocaleString("en-PH", { maximumFractionDigits: 0 });
+    }
+    function esc(s) {
+      return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function monthNow() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    }
+    function entryMonth(e) {
+      return String(e.month || (e.date || "").slice(0, 7) || "");
+    }
+    function formatMonthLabel(ym) {
+      if (!ym) return "All months";
+      const [y, m] = ym.split("-").map(Number);
+      const d = new Date(y, (m || 1) - 1, 1);
+      return d.toLocaleString("en-PH", { month: "long", year: "numeric" });
+    }
+    function loadLocal() {
+      try { const a = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(a) ? a : []; }
+      catch { return []; }
+    }
+    function saveLocal(entries) { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
+
+    async function loadEntries() {
+      try {
+        const r = await fetch("/api/sales-history", { credentials: "same-origin" });
+        if (r.status === 401) { showLogin("Please login again."); throw new Error("login"); }
+        if (r.ok) {
+          const d = await r.json();
+          if (d && Array.isArray(d.entries)) { state.entries = d.entries; saveLocal(d.entries); return; }
+        }
+      } catch (e) {
+        if (e && e.message === "login") throw e;
+      }
+      state.entries = loadLocal();
+    }
+
+    async function apiJson(method, body, qs = "") {
+      const r = await fetch("/api/sales-history" + qs, {
+        method,
+        credentials: "same-origin",
+        headers: body ? { "Content-Type": "application/json" } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 401 || d.needLogin) {
+        showLogin("Session expired. Login again.");
+        throw new Error("Login required");
+      }
+      if (!r.ok || d.ok === false) {
+        const err = new Error(d.error || ("HTTP " + r.status));
+        err.status = r.status;
+        throw err;
+      }
+      return d;
+    }
+
+    async function persistEntry(entry) {
+      const d = await apiJson("POST", entry);
+      const saved = d.entry || entry;
+      state.entries = [saved, ...state.entries.filter((e) => e.id !== saved.id)];
+      saveLocal(state.entries);
+      return saved;
+    }
+
+    async function updateEntry(entry) {
+      const d = await apiJson("PUT", entry);
+      const saved = d.entry || entry;
+      state.entries = state.entries.map((e) => (e.id === saved.id ? saved : e));
+      saveLocal(state.entries);
+      return saved;
+    }
+
+    async function removeEntry(id) {
+      await apiJson("DELETE", null, "?id=" + encodeURIComponent(id));
+      state.entries = state.entries.filter((e) => e.id !== id);
+      saveLocal(state.entries);
+    }
+
+    function canEditEntry(e) {
+      return isSalesMonthEditable(entryMonth(e));
+    }
+
+    function filteredEntries() {
+      if (!state.month) return state.entries;
+      return state.entries.filter((e) => entryMonth(e) === state.month);
+    }
+
+    function entriesFor(muni, brgy) {
+      return filteredEntries().filter(
+        (e) => String(e.municipality).toUpperCase() === muni && String(e.barangay).toUpperCase() === brgy
+      );
+    }
+
+    /** Working month for encode: selected filter, else current calendar month. */
+    function encodeMonth() {
+      return state.month || monthNow();
+    }
+
+    /** All unique vendo names ever recorded under a barangay (any month). */
+    function knownVendoNames(muni, brgy) {
+      const set = new Set();
+      for (const e of state.entries) {
+        if (String(e.municipality).toUpperCase() !== muni) continue;
+        if (String(e.barangay).toUpperCase() !== brgy) continue;
+        const v = String(e.vendo || "").trim();
+        if (v) set.add(v);
+      }
+      return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    }
+
+    /**
+     * One row per known vendo for the encode month.
+     * Missing month rows are stubs — user only enters amount.
+     */
+    function vendoEncodeRows(muni, brgy) {
+      const ym = encodeMonth();
+      const names = knownVendoNames(muni, brgy);
+      const byName = new Map();
+      for (const e of state.entries) {
+        if (String(e.municipality).toUpperCase() !== muni) continue;
+        if (String(e.barangay).toUpperCase() !== brgy) continue;
+        if (entryMonth(e) !== ym) continue;
+        const v = String(e.vendo || "").trim();
+        if (!v) continue;
+        if (!byName.has(v)) byName.set(v, e);
+      }
+      return names.map((vendo) => {
+        const entry = byName.get(vendo) || null;
+        return {
+          vendo,
+          month: ym,
+          entry,
+          amount: entry ? Number(entry.amount) || 0 : null,
+          pending: !entry,
+        };
+      });
+    }
+
+    function availableMonths() {
+      const set = new Set(state.entries.map(entryMonth).filter(Boolean));
+      set.add(monthNow());
+      return [...set].sort().reverse();
+    }
+
+    function syncMonthControls() {
+      const quick = $("flt-month-quick");
+      const months = availableMonths();
+      const cur = state.month;
+      quick.innerHTML =
+        `<option value="">All months</option>` +
+        months.map((m) => `<option value="${esc(m)}">${esc(formatMonthLabel(m))}</option>`).join("");
+      // keep custom past month even if not in list yet
+      if (cur && !months.includes(cur)) {
+        quick.insertAdjacentHTML("beforeend", `<option value="${esc(cur)}">${esc(formatMonthLabel(cur))}</option>`);
+      }
+      quick.value = cur || "";
+      $("flt-month").value = cur || "";
+      $("flt-label").textContent = "Showing: " + formatMonthLabel(cur);
+    }
+
+    function setMonthFilter(ym) {
+      state.month = ym || "";
+      try { localStorage.setItem(FILTER_KEY, state.month); } catch {}
+      syncMonthControls();
+      render();
+    }
+
+    function toast(msg) {
+      const el = $("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    /** Union of apply-coverage + barangays that already have encoded sales. */
+    function coverageTree() {
+      const tree = {};
+      for (const [m, list] of Object.entries(APPLY_COVERAGE)) {
+        tree[m] = new Set(list);
+      }
+      for (const e of state.entries) {
+        const m = String(e.municipality || "").toUpperCase().trim();
+        const b = String(e.barangay || "").toUpperCase().trim();
+        if (!m || !b) continue;
+        if (!tree[m]) tree[m] = new Set();
+        tree[m].add(b);
+      }
+      const out = {};
+      for (const m of Object.keys(tree).sort()) {
+        out[m] = [...tree[m]].sort();
+      }
+      return out;
+    }
+
+    function renderKpis() {
+      const tree = coverageTree();
+      const munis = Object.keys(tree);
+      const brgyCount = munis.reduce((n, m) => n + (tree[m] || []).length, 0);
+      const view = filteredEntries();
+      const vendos = new Set(view.map((e) => `${e.municipality}::${e.barangay}::${e.vendo}`));
+      const total = view.reduce((n, e) => n + (Number(e.amount) || 0), 0);
+      const ym = state.month || monthNow();
+      const monthTotal = state.entries
+        .filter((e) => entryMonth(e) === ym)
+        .reduce((n, e) => n + (Number(e.amount) || 0), 0);
+      $("k-muni").textContent = String(munis.length);
+      $("k-brgy").textContent = String(brgyCount);
+      $("k-vendo").textContent = String(vendos.size);
+      $("k-total").textContent = peso(total);
+      $("k-month-label").textContent = (state.month ? formatMonthLabel(state.month) : "This month") + " ₱";
+      $("k-month").textContent = peso(monthTotal);
+      $("k-rows").textContent = String(view.length);
+    }
+
+    function renderCrumbs() {
+      const el = $("crumbs");
+      const parts = [`<button type="button" data-go="root">Municipalities</button>`];
+      if (state.muni) {
+        parts.push("<span>›</span>");
+        if (state.brgy) {
+          parts.push(`<button type="button" data-go="muni">${esc(state.muni)}</button>`);
+          parts.push("<span>›</span>");
+          parts.push(`<span class="here">${esc(state.brgy)}</span>`);
+        } else {
+          parts.push(`<span class="here">${esc(state.muni)}</span>`);
+        }
+      }
+      el.innerHTML = parts.join(" ");
+      el.querySelectorAll("button[data-go]").forEach((btn) => {
+        btn.onclick = () => {
+          if (btn.dataset.go === "root") { state.muni = null; state.brgy = null; }
+          else if (btn.dataset.go === "muni") { state.brgy = null; }
+          render();
+        };
+      });
+    }
+
+    function renderMunicipalities() {
+      $("panel-title").textContent = "Municipalities";
+      $("panel-hint").textContent = "Location → barangay → encode amount sa naka-listang vendos · " +
+        formatMonthLabel(encodeMonth()) + (state.month ? "" : " (or piliin ang month filter)");
+      $("btn-add").style.display = "none";
+      $("thead-row").innerHTML = "<th>Location (Municipality)</th><th>Barangays</th><th>Vendos</th><th>Total sales</th><th></th>";
+      const tree = coverageTree();
+      const munis = Object.keys(tree);
+      const view = filteredEntries();
+      $("rows").innerHTML = munis.map((m) => {
+        const brgys = tree[m] || [];
+        const rows = view.filter((e) => String(e.municipality).toUpperCase() === m);
+        const vendoN = new Set(rows.map((e) => e.vendo)).size;
+        const total = rows.reduce((n, e) => n + (Number(e.amount) || 0), 0);
+        return `<tr data-muni="${esc(m)}">
+          <td><b>${esc(m)}</b></td>
+          <td>${brgys.length}</td>
+          <td>${vendoN}</td>
+          <td class="money">${peso(total)}</td>
+          <td class="muted">Open ›</td>
+        </tr>`;
+      }).join("");
+      $("rows").querySelectorAll("tr[data-muni]").forEach((tr) => {
+        tr.onclick = () => { state.muni = tr.dataset.muni; state.brgy = null; render(); };
+      });
+    }
+
+    function renderBarangays() {
+      const tree = coverageTree();
+      const list = tree[state.muni] || [];
+      const ym = encodeMonth();
+      $("panel-title").textContent = state.muni + " · Barangays";
+      $("panel-hint").textContent = "Pindutin ang barangay — naka-lista na ang vendo names; amount na lang ang ilalagay · " +
+        formatMonthLabel(ym) + (state.month ? "" : " (current month — piliin ang filter para ibang buwan)");
+      $("btn-add").style.display = "none";
+      $("thead-row").innerHTML = "<th>Location (Barangay)</th><th>Vendos</th><th>Encoded</th><th>Total sales</th><th></th>";
+      $("rows").innerHTML = list.map((b) => {
+        const names = knownVendoNames(state.muni, b);
+        const rows = vendoEncodeRows(state.muni, b);
+        const encoded = rows.filter((r) => !r.pending && Number(r.amount) > 0).length;
+        const total = rows.reduce((n, r) => n + (Number(r.amount) || 0), 0);
+        return `<tr data-brgy="${esc(b)}">
+          <td><b>${esc(b)}</b></td>
+          <td>${names.length}</td>
+          <td>${encoded}/${names.length || 0}</td>
+          <td class="money">${peso(total)}</td>
+          <td class="muted">Encode ›</td>
+        </tr>`;
+      }).join("");
+      $("rows").querySelectorAll("tr[data-brgy]").forEach((tr) => {
+        tr.onclick = () => { state.brgy = tr.dataset.brgy; render(); };
+      });
+    }
+
+    function renderVendoList() {
+      const ym = encodeMonth();
+      const rows = vendoEncodeRows(state.muni, state.brgy);
+      $("panel-title").textContent = state.brgy + " · Encode sales";
+      $("panel-hint").textContent = state.muni + " › " + state.brgy + " · " + formatMonthLabel(ym) +
+        " — vendo names ready; pindutin ang Amount para mag-encode. Locked pag lagpas ang grace month.";
+      $("btn-add").style.display = "";
+      $("btn-add").disabled = !isSalesMonthEditable(ym);
+      $("btn-add").title = isSalesMonthEditable(ym)
+        ? "Add a new vendo name under this barangay"
+        : salesMonthLockReason(ym);
+      $("thead-row").innerHTML = "<th>Vendo name / Address</th><th>Month</th><th>Amount</th><th>Status</th><th>Actions</th>";
+
+      if (!rows.length) {
+        $("rows").innerHTML = `<tr class="novis"><td colspan="5" class="empty">
+          Walang naka-lista pang vendo dito. Gamitin ang "+ New vendo name" para magdagdag, tapos amount na lang sa susunod.
+        </td></tr>`;
+        return;
+      }
+
+      $("rows").innerHTML = rows.map((r) => {
+        const unlocked = isSalesMonthEditable(ym);
+        const lockReason = unlocked ? "" : salesMonthLockReason(ym);
+        const status = !unlocked
+          ? `<span class="lock-chip" title="${esc(lockReason)}">Locked</span>`
+          : r.pending
+            ? `<span class="chip">Need amount</span>`
+            : Number(r.amount) > 0
+              ? `<span class="ok-chip">Encoded</span>`
+              : `<span class="chip">₱0</span>`;
+        const dis = unlocked ? "" : " disabled";
+        const tip = unlocked ? "" : ` title="${esc(lockReason)}"`;
+        const amtLabel = r.pending ? "—" : peso(r.amount);
+        const encodeLabel = r.pending || !(Number(r.amount) > 0) ? "₱ Amount" : "✏️ Edit amount";
+        const delBtn = r.entry
+          ? `<button type="button" class="mini danger" data-del="${esc(r.entry.id)}"${dis}${tip}>🗑 Delete</button>`
+          : "";
+        const actions = `<div class="row-actions">
+              <button type="button" class="mini edit-btn" data-encode="${esc(r.vendo)}"${dis}${tip}>${encodeLabel}</button>
+              ${delBtn}
+            </div>`;
+        return `<tr class="novis" data-vendo="${esc(r.vendo)}">
+          <td><b>${esc(r.vendo)}</b></td>
+          <td><span class="chip">${esc(ym)}</span></td>
+          <td class="money">${amtLabel}</td>
+          <td>${status}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join("");
+
+      $("rows").querySelectorAll("[data-encode]").forEach((btn) => {
+        btn.onclick = (ev) => {
+          ev.stopPropagation();
+          openEncodeForm(btn.dataset.encode);
+        };
+      });
+      $("rows").querySelectorAll("[data-del]").forEach((btn) => {
+        btn.onclick = async (ev) => {
+          ev.stopPropagation();
+          const entry = state.entries.find((e) => e.id === btn.dataset.del);
+          if (!entry) return;
+          if (!canEditEntry(entry)) {
+            toast(salesMonthLockReason(entryMonth(entry)));
+            return;
+          }
+          if (!confirm(`Delete "${entry.vendo}" (${entryMonth(entry)} · ${peso(entry.amount)})?`)) return;
+          try {
+            await removeEntry(entry.id);
+            toast("Deleted");
+            render();
+          } catch (err) {
+            toast(err.message || "Delete failed");
+          }
+        };
+      });
+    }
+
+    function render() {
+      syncMonthControls();
+      renderKpis();
+      renderCrumbs();
+      if (!state.muni) renderMunicipalities();
+      else if (!state.brgy) renderBarangays();
+      else renderVendoList();
+    }
+
+    function openEncodeForm(vendoName, { allowNewName = false } = {}) {
+      $("form-err").textContent = "";
+      const ym = encodeMonth();
+      const name = String(vendoName || "").trim();
+      const existing = name
+        ? state.entries.find(
+            (e) =>
+              String(e.municipality).toUpperCase() === state.muni &&
+              String(e.barangay).toUpperCase() === state.brgy &&
+              String(e.vendo || "").trim() === name &&
+              entryMonth(e) === ym
+          )
+        : null;
+      state.editId = existing ? existing.id : null;
+      const lockedName = !!name && !allowNewName;
+      $("modal-title").textContent = existing
+        ? "Edit amount"
+        : lockedName
+          ? "Encode amount"
+          : "New vendo name";
+      $("btn-save").textContent = "Save amount";
+      $("modal-where").textContent = state.muni + " › " + state.brgy + " · " + formatMonthLabel(ym);
+      if (!isSalesMonthEditable(ym)) {
+        $("form-err").textContent = salesMonthLockReason(ym);
+      }
+      const d = new Date();
+      const day = existing && existing.date
+        ? existing.date.slice(8, 10)
+        : (ym !== monthNow() ? "01" : String(d.getDate()).padStart(2, "0"));
+      $("f-id").value = existing ? existing.id : "";
+      $("f-vendo").value = name;
+      $("f-vendo").readOnly = lockedName;
+      $("f-vendo").style.opacity = lockedName ? "0.85" : "";
+      $("f-month").value = ym;
+      $("f-month").readOnly = lockedName;
+      $("f-date").value = existing && existing.date ? existing.date : `${ym}-${day}`;
+      $("f-amount").value = existing ? String(Number(existing.amount) || 0) : "";
+      $("modal").classList.add("open");
+      setTimeout(() => (lockedName ? $("f-amount") : $("f-vendo")).focus(), 40);
+    }
+    function openForm(entry = null) {
+      if (entry) openEncodeForm(entry.vendo);
+      else openEncodeForm("", { allowNewName: true });
+    }
+    function closeForm() {
+      state.editId = null;
+      $("f-vendo").readOnly = false;
+      $("f-vendo").style.opacity = "";
+      $("f-month").readOnly = false;
+      $("modal").classList.remove("open");
+    }
+
+    $("btn-add").onclick = () => openEncodeForm("", { allowNewName: true });
+    $("btn-cancel").onclick = closeForm;
+    $("btn-x").onclick = closeForm;
+    $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeForm(); });
+    $("btn-refresh").onclick = async () => { await loadEntries(); render(); toast("Refreshed"); };
+    $("btn-logout").onclick = () => doLogout();
+    $("flt-month").addEventListener("change", (e) => setMonthFilter(e.target.value || ""));
+    $("flt-month-quick").addEventListener("change", (e) => setMonthFilter(e.target.value || ""));
+    $("btn-all-months").onclick = () => setMonthFilter("");
+    $("login-form").onsubmit = async (e) => {
+      e.preventDefault();
+      $("login-err").textContent = "";
+      $("login-btn").disabled = true;
+      try {
+        const user = await doLogin($("login-user").value.trim(), $("login-pass").value);
+        showApp(user);
+        await loadEntries();
+        render();
+        toast("Welcome, " + (user.username || "admin"));
+      } catch (err) {
+        $("login-err").textContent = err.message || "Login failed";
+      } finally {
+        $("login-btn").disabled = false;
+      }
+    };
+
+    $("add-form").onsubmit = async (e) => {
+      e.preventDefault();
+      $("form-err").textContent = "";
+      const vendo = $("f-vendo").value.trim();
+      const month = $("f-month").value;
+      let date = $("f-date").value;
+      const amount = Number($("f-amount").value);
+      if (!vendo) return ($("form-err").textContent = "Lagyan ng vendo name.");
+      if (!month) return ($("form-err").textContent = "Piliin ang month.");
+      if (!(amount >= 0)) return ($("form-err").textContent = "Invalid sales amount.");
+      if (!isSalesMonthEditable(month)) {
+        return ($("form-err").textContent = salesMonthLockReason(month));
+      }
+      if (!date) date = month + "-01";
+      if (date.slice(0, 7) !== month) date = month + "-01";
+      try {
+        if (state.editId) {
+          await updateEntry({
+            id: state.editId,
+            municipality: state.muni,
+            barangay: state.brgy,
+            vendo, month, date, amount,
+          });
+          toast("Amount updated");
+        } else {
+          await persistEntry({
+            id: "sh_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            municipality: state.muni,
+            barangay: state.brgy,
+            vendo, month, date, amount,
+            createdAt: new Date().toISOString(),
+          });
+          toast("Amount saved");
+        }
+        closeForm();
+        if (state.month !== month) setMonthFilter(month);
+        else render();
+      } catch (err) {
+        $("form-err").textContent = err.message || "Save failed";
+      }
+    };
+
+    try { state.month = localStorage.getItem(FILTER_KEY) || ""; } catch { state.month = ""; }
+    const user = await checkAuth();
+    if (!user) {
+      showLogin("");
+      $("login-user").value = "admin";
+      setTimeout(() => $("login-pass").focus(), 40);
+    } else {
+      showApp(user);
+      await loadEntries();
+      render();
+    }
+  </script>
+</body>
+</html>
