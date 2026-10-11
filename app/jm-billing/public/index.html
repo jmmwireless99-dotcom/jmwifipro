@@ -10184,7 +10184,8 @@ function canManageRouterSites() { return window._role === "admin"; }
 function applyRouterSiteUi(role) {
   const superAdmin = role === "admin";
   const scoped = role === "site_admin";
-  $("sites-panel") && ($("sites-panel").style.display = (superAdmin || scoped) ? "" : "none");
+  // Multi-site / VPN Clients sidebar hub removed — keep dashboard sites panel hidden.
+  $("sites-panel") && ($("sites-panel").style.display = "none");
   ["sales-router-panel", "profit-router-panel"].forEach(id => {
     const el = $(id); if (el) el.style.display = (superAdmin || scoped) ? "" : "none";
   });
