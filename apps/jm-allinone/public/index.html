@@ -1411,10 +1411,13 @@
       <button class="refresh" onclick="loadDashNetwork()">⟳ refresh</button>
       <span class="chart-total" id="dash-net-line" style="margin-left:auto">—</span>
     </h2>
+    <div id="dash-vps-meta" style="padding:0 16px 6px;font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.55">VPS metrics loading…</div>
     <div class="dash-net-grid stats">
-      <div class="stat"><div class="k">CPU load</div><div class="v" id="s-cpu">—</div><div class="bar"><span id="s-cpu-bar" style="width:0"></span></div></div>
-      <div class="stat"><div class="k">Memory</div><div class="v" id="s-mem">—</div><div class="bar"><span id="s-mem-bar" style="width:0"></span></div></div>
-      <div class="stat"><div class="k">Live sessions</div><div class="v" id="s-ppp">—</div></div>
+      <div class="stat"><div class="k">CPU load</div><div class="v" id="s-cpu">—</div><div class="bar"><span id="s-cpu-bar" style="width:0"></span></div><div style="font-size:11px;color:var(--muted);margin-top:4px" id="s-cpu-sub">jmvps host</div></div>
+      <div class="stat"><div class="k">Memory</div><div class="v" id="s-mem">—</div><div class="bar"><span id="s-mem-bar" style="width:0"></span></div><div style="font-size:11px;color:var(--muted);margin-top:4px" id="s-mem-sub">RAM</div></div>
+      <div class="stat"><div class="k">Disk</div><div class="v" id="s-disk">—</div><div class="bar"><span id="s-disk-bar" style="width:0"></span></div><div style="font-size:11px;color:var(--muted);margin-top:4px" id="s-disk-sub">root /</div></div>
+      <div class="stat"><div class="k">Network</div><div class="v" id="s-net">—</div><div style="font-size:11px;color:var(--muted);margin-top:4px" id="s-net-sub">—</div></div>
+      <div class="stat"><div class="k">Live sessions</div><div class="v" id="s-ppp">—</div><div style="font-size:11px;color:var(--muted);margin-top:4px">PPPoE across sites</div></div>
     </div>
     <div class="scroll" style="max-height:150px;margin-top:8px"><table><thead><tr><th>User</th><th>Address</th><th>Uptime</th></tr></thead><tbody id="dash-ppp-snap"></tbody></table></div>
     <div class="dash-footnote">
@@ -3001,20 +3004,107 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&l
 const peso = (n) => "\u20B1" + Number(n||0).toLocaleString();
 
 // ---------- live monitoring ----------
+function fmtUptime(sec) {
+  sec = Math.max(0, Math.floor(Number(sec) || 0));
+  const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60);
+  if (d > 0) return d + "d " + h + "h";
+  if (h > 0) return h + "h " + m + "m";
+  return m + "m";
+}
+function barColor(pct) {
+  if (pct == null || !Number.isFinite(pct)) return "";
+  if (pct >= 90) return "#ff5d5d";
+  if (pct >= 75) return "#ffb454";
+  return "";
+}
 async function loadStatus() {
+  // VPS host metrics (jmvps) — primary source for Network snapshot CPU/RAM/disk/net
   try {
-    const r = await api("/api/status");
-    if (!r.ok) throw new Error(r.error);
-    const res = r.data.resource, id = r.data.identity;
-    $("ident").innerHTML = `<b>${esc(id?.name || "router")}</b> · ${esc(res["board-name"]||"")} · RouterOS ${esc(res.version||"")} · up ${esc(res.uptime||"")}`;
-    const cpu = Number(res["cpu-load"] ?? 0);
-    $("s-cpu").innerHTML = cpu + "<small>%</small>";
-    $("s-cpu-bar").style.width = cpu + "%";
-    const total = Number(res["total-memory"]||0), free = Number(res["free-memory"]||0);
-    const usedPct = total ? Math.round((total-free)/total*100) : 0;
-    $("s-mem").innerHTML = usedPct + "<small>% used</small>";
-    $("s-mem-bar").style.width = usedPct + "%";
-  } catch (e) { $("ident").textContent = "⚠ " + e.message; }
+    const r = await api("/api/system/stats");
+    if (!r.ok) throw new Error(r.error || "VPS stats failed");
+    const d = r.data || {};
+    const cpu = d.cpu?.pct != null ? Number(d.cpu.pct) : null;
+    const memPct = d.ram?.usedPct != null ? Number(d.ram.usedPct) : null;
+    const diskPct = d.disk?.usedPct != null ? Number(d.disk.usedPct) : null;
+    if ($("s-cpu")) {
+      $("s-cpu").innerHTML = cpu != null ? cpu + "<small>%</small>" : "—";
+      if ($("s-cpu-bar")) {
+        $("s-cpu-bar").style.width = (cpu != null ? cpu : 0) + "%";
+        $("s-cpu-bar").style.background = barColor(cpu) || "";
+      }
+      if ($("s-cpu-sub")) {
+        const load = Array.isArray(d.cpu?.loadavg) ? d.cpu.loadavg.map((x) => Number(x).toFixed(2)).join(" / ") : "—";
+        $("s-cpu-sub").textContent = (d.cpu?.cores || "?") + " cores · load " + load;
+      }
+    }
+    if ($("s-mem")) {
+      const memLabel = memPct != null
+        ? memPct + "<small>% · " + (d.ram.usedGb ?? "—") + "/" + (d.ram.totalGb ?? "—") + " GB</small>"
+        : "—";
+      $("s-mem").innerHTML = memLabel;
+      if ($("s-mem-bar")) {
+        $("s-mem-bar").style.width = (memPct != null ? memPct : 0) + "%";
+        $("s-mem-bar").style.background = barColor(memPct) || "";
+      }
+      if ($("s-mem-sub")) {
+        const freeGb = d.ram?.availableBytes != null
+          ? Math.round((d.ram.availableBytes / 1e9) * 100) / 100
+          : null;
+        $("s-mem-sub").textContent = freeGb != null
+          ? freeGb + " GB free · " + (d.ram.totalGb ?? "—") + " GB total"
+          : "RAM";
+      }
+    }
+    if ($("s-disk")) {
+      $("s-disk").innerHTML = diskPct != null
+        ? diskPct + "<small>% · " + (d.disk.usedGb ?? "—") + "/" + (d.disk.totalGb ?? "—") + " GB</small>"
+        : "—";
+      if ($("s-disk-bar")) {
+        $("s-disk-bar").style.width = (diskPct != null ? diskPct : 0) + "%";
+        $("s-disk-bar").style.background = barColor(diskPct) || "";
+      }
+      if ($("s-disk-sub")) {
+        const freeDisk = d.disk?.availableBytes != null
+          ? Math.round((d.disk.availableBytes / 1e9) * 100) / 100
+          : null;
+        $("s-disk-sub").textContent = freeDisk != null ? freeDisk + " GB free on /" : "root /";
+      }
+    }
+    if ($("s-net")) {
+      const rx = d.net?.rxMbps != null ? Number(d.net.rxMbps) : 0;
+      const tx = d.net?.txMbps != null ? Number(d.net.txMbps) : 0;
+      $("s-net").innerHTML = (rx + tx).toFixed(2) + "<small> Mbps</small>";
+      if ($("s-net-sub")) {
+        $("s-net-sub").textContent = (d.net?.iface || "wan") + " · ↓" + rx.toFixed(2) + " ↑" + tx.toFixed(2) + " Mbps";
+      }
+    }
+    if ($("dash-vps-meta")) {
+      const load = Array.isArray(d.cpu?.loadavg) ? d.cpu.loadavg.map((x) => Number(x).toFixed(2)).join(" / ") : "—";
+      const ipList = Array.isArray(d.ips) ? d.ips.map((x) => x.address).filter(Boolean) : [];
+      const ipTxt = ipList.length ? ipList.slice(0, 3).join(", ") : "—";
+      $("dash-vps-meta").innerHTML =
+        "<b style=\"color:var(--text)\">VPS " + esc(d.hostname || "jmvps") + "</b>"
+        + " · " + (d.cpu?.cores || "?") + " cores"
+        + (d.cpu?.model ? " · " + esc(String(d.cpu.model).slice(0, 48)) : "")
+        + " · " + (d.ram?.totalGb != null ? d.ram.totalGb + " GB RAM" : "")
+        + " · " + (d.disk?.totalGb != null ? d.disk.totalGb + " GB disk" : "")
+        + "<br>up " + fmtUptime(d.uptimeSec)
+        + " · load " + esc(load)
+        + " · IP " + esc(ipTxt)
+        + (d.arch ? " · " + esc(d.arch) : "")
+        + (d.platform ? " · " + esc(d.platform) : "");
+    }
+    if ($("ident")) {
+      $("ident").innerHTML =
+        "<b>" + esc(d.hostname || "VPS") + "</b> · "
+        + (d.cpu?.cores || "?") + " CPU · "
+        + (d.ram?.totalGb != null ? d.ram.totalGb + " GB RAM" : "RAM")
+        + " · up " + fmtUptime(d.uptimeSec);
+    }
+  } catch (e) {
+    if ($("dash-vps-meta")) $("dash-vps-meta").textContent = "⚠ VPS stats: " + (e.message || e);
+    if ($("ident")) $("ident").textContent = "⚠ " + (e.message || e);
+  }
 }
 
 function sessionRows(list, userKey, kind) {

@@ -52,6 +52,7 @@ import { Usage } from "./lib/db.js";
 import { parseQueues } from "./lib/usage.js";
 import * as Auth from "./lib/auth.js";
 import * as License from "./lib/license.js";
+import { collectSystemStats } from "./lib/system-stats.js";
 
 loadEnv(); // read .env next to the executable, if present
 
@@ -440,6 +441,7 @@ function execute(action, p) {
 // GET routes -> data producers
 const GET_ROUTES = {
   "/api/status": async () => ({ resource: await mt.systemResource(), identity: await mt.identity() }),
+  "/api/system/stats": () => collectSystemStats(),
   "/api/interfaces": () => mt.interfaces(),
   "/api/pppoe": () => mt.listPppoe(),
   "/api/pppoe/active": () => listAllPppoeActive(),
