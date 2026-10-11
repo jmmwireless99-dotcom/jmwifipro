@@ -2354,14 +2354,18 @@
   </section>
   <div id="rt-list-wrap">
   <section class="panel">
-    <h2>Multi-site routers <button class="refresh" onclick="refreshRouterHealth()" style="margin-left:8px">↻ Check all sites</button>
-      <span class="chart-total" id="rt-h-msg" style="margin-left:auto">VPN → MikroTik API per site</span></h2>
+    <h2 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span>Multi-site routers</span>
+      <button class="refresh" onclick="refreshRouterHealth()" style="margin-left:0">↻ Check all sites</button>
+      <button type="button" onclick="openCreateVpn()" style="margin-left:0;width:auto;padding:8px 14px;font-size:12.5px">+ Add VPN Client</button>
+      <span class="chart-total" id="rt-h-msg" style="margin-left:auto">SSTP VPN → Winbox + MikroTik API</span>
+    </h2>
     <div class="sites-hub">
       <h3>One panel, many MikroTik sites</h3>
       <p>Each site is a MikroTik reached over VPN. Customers are tied to a site — suspend, renew, and provision always go to the correct router automatically.</p>
       <div class="site-flow">
         <span class="sf-node accent">☁ This panel</span><span class="sf-arrow">→</span>
-        <span class="sf-node">VPN tunnel</span><span class="sf-arrow">→</span>
+        <button type="button" class="sf-node accent" onclick="openCreateVpn()" title="Create SSTP VPN client" style="cursor:pointer;font:inherit;color:inherit">+ Create VPN</button><span class="sf-arrow">→</span>
         <span class="sf-node ok">🖧 Site A</span><span class="sf-arrow">→</span>
         <span class="sf-node">PPPoE clients</span>
         <span class="sf-arrow">+</span>
@@ -2374,12 +2378,13 @@
       <div class="site-guide-body">
         <p style="margin:0 0 4px">Use this layout: <b style="color:var(--text)">Panel (VPS)</b> → VPN → each branch MikroTik. Customers must point at the right site before you provision.</p>
         <div class="site-guide-steps">
-          <div class="site-guide-step"><b>1 · Add each site</b><span>Click <b style="color:var(--text)">+ Connect a new MikroTik site</b>. Enter VPN IP, API user, and password for each branch router.</span></div>
-          <div class="site-guide-step"><b>2 · Test every site</b><span>Press <b style="color:var(--text)">Test</b> on each card until it shows connected. Offline sites will break provision.</span></div>
-          <div class="site-guide-step"><b>3 · Set default site</b><span>Edit your <b style="color:var(--text)">main/core</b> router → check <b style="color:var(--text)">Default router</b>. Use this only for unassigned customers.</span></div>
-          <div class="site-guide-step"><b>4 · Name sites clearly</b><span>e.g. <b style="color:var(--text)">Candelaria Main</b>, <b style="color:var(--text)">PPPOE-3</b>, <b style="color:var(--text)">Uson</b> — match your barangay or tower.</span></div>
-          <div class="site-guide-step"><b>5 · Add plans &amp; customers</b><span>Create packages in <b style="color:var(--text)">Plans / Packages</b>, then add clients under <b style="color:var(--text)">Customers</b> and pick the <b style="color:var(--text)">Target site</b> for each one.</span></div>
-          <div class="site-guide-step"><b>6 · Provision</b><span>Click <b style="color:var(--text)">prov</b> after adding. If the account already exists on the router, the panel updates it (no duplicate error).</span></div>
+          <div class="site-guide-step"><b>1 · Create VPN</b><span>Click <b style="color:var(--text)">+ Add VPN Client</b> / <b style="color:var(--text)">+ Create VPN</b> muna — auto-allocate ang SSTP IP, Winbox, at API port.</span></div>
+          <div class="site-guide-step"><b>2 · Connect billing site</b><span>Click <b style="color:var(--text)">+ Connect a new MikroTik site</b>. Enter VPN IP, API user, and password for each branch router.</span></div>
+          <div class="site-guide-step"><b>3 · Test every site</b><span>Press <b style="color:var(--text)">Test</b> on each card until it shows connected. Offline sites will break provision.</span></div>
+          <div class="site-guide-step"><b>4 · Set default site</b><span>Edit your <b style="color:var(--text)">main/core</b> router → check <b style="color:var(--text)">Default router</b>. Use this only for unassigned customers.</span></div>
+          <div class="site-guide-step"><b>5 · Name sites clearly</b><span>e.g. <b style="color:var(--text)">Candelaria Main</b>, <b style="color:var(--text)">PPPOE-3</b>, <b style="color:var(--text)">Uson</b> — match your barangay or tower.</span></div>
+          <div class="site-guide-step"><b>6 · Add plans &amp; customers</b><span>Create packages in <b style="color:var(--text)">Plans / Packages</b>, then add clients under <b style="color:var(--text)">Customers</b> and pick the <b style="color:var(--text)">Target site</b> for each one.</span></div>
+          <div class="site-guide-step"><b>7 · Provision</b><span>Click <b style="color:var(--text)">prov</b> after adding. If the account already exists on the router, the panel updates it (no duplicate error).</span></div>
         </div>
         <div class="site-guide-tip">💡 Moving a client to another site? Use the <b style="color:var(--text)">🖧 move</b> button — it removes them from the old router and creates them on the new one.</div>
       </div>
@@ -2394,7 +2399,10 @@
     </div>
     <div id="rt-cards" class="site-grid"></div>
     <div class="site-add-wrap">
-      <button type="button" class="site-add-toggle" onclick="toggleAddSiteForm()">+ Connect a new MikroTik site</button>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:stretch">
+        <button type="button" class="site-add-toggle" onclick="openCreateVpn()" style="flex:1;min-width:200px;margin:0">+ Add VPN Client</button>
+        <button type="button" class="site-add-toggle" onclick="toggleAddSiteForm()" style="flex:1;min-width:200px;margin:0">+ Connect a new MikroTik site</button>
+      </div>
       <div id="rt-add-panel" class="site-add-panel">
         <div style="font-size:13px;font-weight:700;margin-bottom:10px">New site connection</div>
         <div class="site-add-grid">
@@ -3353,15 +3361,19 @@ async function getOpsSsoToken(force) {
   try { sessionStorage.setItem("ops_sso", JSON.stringify(o)); } catch {}
   return o;
 }
-async function loadOpsFrame(tab, forceReload) {
+let _opsFrameAction = "";
+async function loadOpsFrame(tab, forceReload, action) {
   const el = $(opsFrameId(tab));
   if (!el) return;
   try {
     const sso = await getOpsSsoToken(!!forceReload);
-    const url = "/cctv/?tab=" + encodeURIComponent(tab) + "&embed=1&sso=" + encodeURIComponent(sso.token)
+    let url = "/cctv/?tab=" + encodeURIComponent(tab) + "&embed=1&sso=" + encodeURIComponent(sso.token)
       + "&ssoRole=" + encodeURIComponent(sso.role || "admin")
       + "&ssoName=" + encodeURIComponent(sso.displayName || "Admin");
+    const act = action || _opsFrameAction || "";
+    if (act) url += "&action=" + encodeURIComponent(act);
     if (forceReload || el.getAttribute("src") !== url) el.setAttribute("src", url);
+    _opsFrameAction = "";
   } catch (e) {
     console.error(e);
     alert("Hindi ma-open ang JM Ops: " + (e.message || e));
@@ -3369,6 +3381,12 @@ async function loadOpsFrame(tab, forceReload) {
 }
 function reloadOpsFrame(tab) {
   loadOpsFrame(tab, true);
+}
+/** Open VPN Clients and show Create / Add VPN Client modal (from Multi-site routers). */
+function openCreateVpn() {
+  _opsFrameAction = "add";
+  showView("vpnclients");
+  loadOpsFrame("vpn", true, "add");
 }
 
 
