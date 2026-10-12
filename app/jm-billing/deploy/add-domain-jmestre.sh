@@ -40,8 +40,43 @@ if [ "${DNS_IP}" != "${EXPECT_IP}" ] && [ -n "${VPS_IP:-}" ] && [ "${DNS_IP}" !=
 fi
 ok "DNS OK (${DNS_IP})"
 
+step "Allowlist ${DOMAIN} (stop captive /welcome?suspended=1 redirect)"
+if [ -f /opt/jm-billing/server.js ]; then
+  cp -a /opt/jm-billing/server.js "/opt/jm-billing/server.js.bak-jmestre-$(date +%Y%m%d%H%M%S)"
+  python3 - <<'PY'
+from pathlib import Path
+p = Path("/opt/jm-billing/server.js")
+src = p.read_text()
+needle = 'for (const h of ["jmwifi.pro", "www.jmwifi.pro", "187.77.145.131"]) hosts.add(h);'
+repl = 'for (const h of ["jmwifi.pro", "www.jmwifi.pro", "187.77.145.131", "jmestre.tech", "www.jmestre.tech", "112.209.31.253"]) hosts.add(h);'
+if needle in src:
+    p.write_text(src.replace(needle, repl, 1))
+    print("patched portalHostNames")
+elif "jmestre.tech" in src:
+    print("portalHostNames already mentions jmestre.tech")
+else:
+    print("WARN: portalHostNames pattern not found")
+PY
+fi
+
+step "Set settings.public_url=https://${DOMAIN}"
+if command -v sqlite3 >/dev/null && [ -f /opt/jm-billing/billing.db ]; then
+  sqlite3 /opt/jm-billing/billing.db \
+    "INSERT INTO settings (k,v) VALUES ('public_url','https://${DOMAIN}') ON CONFLICT(k) DO UPDATE SET v=excluded.v;"
+  ok "SQLite public_url updated"
+fi
+if [ -f /opt/jm-billing/.env ]; then
+  if grep -q '^PUBLIC_URL=' /opt/jm-billing/.env; then
+    sed -i "s|^PUBLIC_URL=.*|PUBLIC_URL=https://${DOMAIN}|" /opt/jm-billing/.env
+  else
+    echo "PUBLIC_URL=https://${DOMAIN}" >> /opt/jm-billing/.env
+  fi
+  ok ".env PUBLIC_URL=https://${DOMAIN}"
+fi
+systemctl restart jm-billing 2>/dev/null || true
+
 step "Write nginx site ${SITE_NAME}"
-apt-get install -y nginx certbot python3-certbot-nginx >/dev/null
+apt-get install -y nginx certbot python3-certbot-nginx sqlite3 >/dev/null
 cat > "${NGINX_AVAIL}" <<NGINX
 # Managed by deploy/add-domain-jmestre.sh — ${DOMAIN} → :${APP_PORT}
 server {
@@ -75,21 +110,10 @@ certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email 
 nginx -t && systemctl reload nginx
 ok "TLS ready"
 
-# Optional: keep PUBLIC_URL in sync if .env exists
-if [ -f /opt/jm-billing/.env ]; then
-  step "Update PUBLIC_URL in /opt/jm-billing/.env"
-  if grep -q '^PUBLIC_URL=' /opt/jm-billing/.env; then
-    sed -i "s|^PUBLIC_URL=.*|PUBLIC_URL=https://${DOMAIN}|" /opt/jm-billing/.env
-  else
-    echo "PUBLIC_URL=https://${DOMAIN}" >> /opt/jm-billing/.env
-  fi
-  systemctl restart jm-billing 2>/dev/null || true
-  ok "PUBLIC_URL=https://${DOMAIN}"
-fi
-
 step "Smoke check"
-CODE="$(curl -sS -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/ || true)"
-echo "  Host: ${DOMAIN} → HTTP ${CODE}"
+CODE="$(curl -sS -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1:${APP_PORT}/ || true)"
+echo "  app Host: ${DOMAIN} → HTTP ${CODE} (want 200)"
 CODE2="$(curl -sS -o /dev/null -w '%{http_code}' "https://${DOMAIN}/" || true)"
 echo "  https://${DOMAIN}/ → HTTP ${CODE2}"
+[ "${CODE}" = "200" ] || die "Still redirecting/captive — check portalHostNames + public_url"
 ok "Done — use https://${DOMAIN}"
