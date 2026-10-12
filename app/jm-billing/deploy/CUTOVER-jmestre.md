@@ -3,6 +3,7 @@
 ## Active billing
 - **Panel:** `http://jmestre.tech` (JM VPS `112.209.31.253`)
 - **Settings `public_url`:** `http://jmestre.tech`
+- **`dry_run=0`** (live writer — SAFE MODE banner hidden when routers enabled)
 - Old Hostinger/VPS panel at `187.77.145.131` (`jmwifi.pro`) is **stopped**
 
 ## Old VPS (`187.77.145.131` / jmwifi.pro)
