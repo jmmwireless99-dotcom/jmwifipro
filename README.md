@@ -43,3 +43,23 @@ Full **jmwifi.pro** billing backup and deployment files.
 Copy `databases/jm-billing-billing.db` to `/opt/jm-billing/billing.db` on the VPS, then restart `jm-billing`.
 
 **Warning:** This repo contains customer data, credentials, and SSL private keys. Keep access restricted.
+
+## Extra domain: jmestre.tech → VPS `112.209.31.253`
+
+Point Hostinger DNS for `jmestre.tech` at this VPS (currently parked elsewhere):
+
+| Type | Name | Value |
+|------|------|-------|
+| A | @ | `112.209.31.253` |
+| A | www | `112.209.31.253` |
+
+Then:
+
+```bash
+cd app/jm-billing
+VPS_HOST=112.209.31.253 VPS_PASS=... node deploy/deploy-jmestre-domain.mjs
+# or on the VPS: sudo bash /opt/jm-billing/deploy/add-domain-jmestre.sh
+```
+
+Nginx + certbot bind `jmestre.tech` / `www.jmestre.tech` to the JEFF NETWORK SERVICE panel on port 3000 and set `PUBLIC_URL=https://jmestre.tech`.
+

@@ -1,3 +1,6 @@
 # Local-only scratch files
 .DS_Store
 Thumbs.db
+
+# Regenerated local working copy
+run/
