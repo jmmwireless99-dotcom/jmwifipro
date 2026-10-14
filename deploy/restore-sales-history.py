@@ -15,17 +15,18 @@ from pathlib import Path
 server = Path("/opt/jm-allinone/server.js")
 text = server.read_text()
 
-if "function salesHistorySessionOk(" in text and 'pathname === "/api/sales-history/login"' in text:
+api_ready = "function salesHistorySessionOk(" in text and 'pathname === "/api/sales-history/login"' in text
+if api_ready:
     print("sales history API already wired")
-    raise SystemExit(0)
 
-import_old = 'import * as License from "./lib/license.js";\n'
-import_new = import_old + 'import { salesMonthLockReason } from "./lib/sales-history-lock.mjs";\n'
-if import_old not in text:
-    raise SystemExit("import anchor missing")
-if "sales-history-lock.mjs" not in text:
-    text = text.replace(import_old, import_new, 1)
-    print("patched import")
+if not api_ready:
+    import_old = 'import * as License from "./lib/license.js";\n'
+    import_new = import_old + 'import { salesMonthLockReason } from "./lib/sales-history-lock.mjs";\n'
+    if import_old not in text:
+        raise SystemExit("import anchor missing")
+    if "sales-history-lock.mjs" not in text:
+        text = text.replace(import_old, import_new, 1)
+        print("patched import")
 
 helpers = r'''
 const SALES_HISTORY_AUTH_USER = "admin";
@@ -241,6 +242,34 @@ if 'pathname === "/api/sales-history/login"' not in text:
         raise SystemExit("gate anchor missing")
     text = text.replace(gate, routes + gate, 1)
     print("patched routes")
+
+# The page is a module. These two files must load or the login form never runs.
+# Do not serve the rest of lib/ — sales-history-auth.mjs holds the password.
+lib_route = '''    if (req.method === "GET" && (pathname === "/lib/apply-coverage.mjs" || pathname === "/lib/sales-history-lock.mjs")) {
+      const name = path.basename(pathname);
+      try {
+        const buf = fs.readFileSync(path.join(__dirname, "lib", name));
+        res.writeHead(200, {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
+        });
+        return res.end(buf);
+      } catch {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        return res.end("not found");
+      }
+    }
+'''
+page_anchor = '''    if (req.method === "GET" && (pathname === "/sales-history" || pathname === "/sales-history.html")) {
+      return servePublicFile(res, "sales-history.html", { maxAge: 0 });
+    }
+'''
+if 'pathname === "/lib/apply-coverage.mjs"' not in text:
+    if page_anchor not in text:
+        raise SystemExit("sales-history page anchor missing")
+    text = text.replace(page_anchor, page_anchor + lib_route, 1)
+    print("patched sales history module files")
 
 server.write_text(text)
 print("wrote", server)
