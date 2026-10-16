@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add RouterOS v6 VPN client</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:24px}
+.card{max-width:720px;margin:0 auto;background:#1e293b;border-radius:16px;padding:24px}
+h1{font-size:22px;margin:0 0 8px}
+p{color:#94a3b8;line-height:1.5}
+label{display:block;margin:12px 0 4px;font-size:13px}
+input{width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0}
+button{margin-top:16px;padding:10px 16px;border:0;border-radius:8px;background:#22c55e;color:#052e16;font-weight:700;cursor:pointer}
+.err{color:#fca5a5;margin-top:10px}
+pre{white-space:pre-wrap;background:#0f172a;padding:12px;border-radius:8px;font-size:12px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+td{padding:4px 0;vertical-align:top}
+td:first-child{color:#94a3b8;width:160px}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Add RouterOS v6 VPN client</h1>
+<p>Bagong client lang. Hindi nito binabago ang script ng mga VPN na online na.</p>
+<div id="login">
+<label>Portal username</label>
+<input id="user" autocomplete="username">
+<label>Password</label>
+<input id="pass" type="password" autocomplete="current-password">
+<button id="loginBtn" type="button">Login</button>
+<div class="err" id="loginErr"></div>
+</div>
+<div id="form" hidden>
+<label>Client / site name</label>
+<input id="name" placeholder="e.g. Cagbatang v6">
+<label>SSTP username <span style="color:#94a3b8">(blanko = auto)</span></label>
+<input id="sstpUser">
+<label>SSTP password <span style="color:#94a3b8">(blanko = auto, min 8)</span></label>
+<input id="sstpPass">
+<button id="createBtn" type="button">Create v6 VPN client</button>
+<div class="err" id="formErr"></div>
+</div>
+<div id="done" hidden>
+<p id="summary"></p>
+<table id="facts"></table>
+<h2>RouterOS v6 paste</h2>
+<pre id="script"></pre>
+<button type="button" id="copyBtn">Copy v6 script</button>
+</div>
+</div>
+<script>
+const BASE = (location.pathname.match(/^(\/(?:cctv|mrp))(?:\/|$)/) || [""])[0].replace(/\/$/, "");
+let TOKEN = sessionStorage.getItem("cctv_token") || "";
+function rosQuote(v){ return String(v == null ? "" : v).replace(/\\/g,"\\\\").replace(/"/g,"\\\""); }
+function v6Script(s){
+  const iface = "sstp-cctv";
+  const tag = "JM TECH SOLUTION";
+  const apiUser = s.apiUser || "jmcloud";
+  const apiPass = s.apiPassword || "";
+  return [
+    "# --- " + tag + ": RouterOS v6 paste para sa \"" + s.name + "\" ---",
+    "# Bagong client. Huwag i-paste ito sa router na naka-v7 na.",
+    "",
+    "# 1) SSTP VPN client -> " + s.sstpServer + ":" + s.sstpPort,
+    ":do { /interface sstp-client remove [find name=\"" + iface + "\"] } on-error={}",
+    "/interface sstp-client add name=" + iface + " connect-to=" + s.sstpServer + " port=" + s.sstpPort + " \\",
+    "    user=\"" + rosQuote(s.username) + "\" password=\"" + rosQuote(s.password) + "\" profile=default \\",
+    "    authentication=pap,chap,mschap1,mschap2 \\",
+    "    verify-server-certificate=no disabled=no",
+    "",
+    "# 2) Cloud API user",
+    ":if ([:len [/user find where name=\"" + rosQuote(apiUser) + "\"]] = 0) do={",
+    "  /user add name=\"" + rosQuote(apiUser) + "\" password=\"" + rosQuote(apiPass) + "\" group=full comment=\"" + tag + " cloud API\"",
+    "} else={",
+    "  /user set [find where name=\"" + rosQuote(apiUser) + "\"] password=\"" + rosQuote(apiPass) + "\"",
+    "}",
+    "",
+    "# 3) Winbox + API + www, VPN subnet only",
+    "/ip service set winbox disabled=no address=10.90.0.0/21",
+    "/ip service set api disabled=no address=10.90.0.0/21",
+    "/ip service set www disabled=no address=10.90.0.0/21",
+    ":do { /ip firewall filter remove [find where comment~\"" + tag + ":\"] } on-error={}",
+    "/ip firewall filter add chain=input action=accept protocol=tcp dst-port=8291 src-address=10.90.0.0/21 comment=\"" + tag + ": Winbox via VPN\"",
+    "/ip firewall filter add chain=input action=accept protocol=tcp dst-port=8728 src-address=10.90.0.0/21 comment=\"" + tag + ": API via VPN\"",
+    "/ip firewall filter add chain=input action=accept protocol=tcp dst-port=80 src-address=10.90.0.0/21 comment=\"" + tag + ": REST www via VPN\"",
+    "",
+    "# Done. RouterOS v6 lang."
+  ].join("\n");
+}
+async function api(path, opts){
+  opts = opts || {};
+  const res = await fetch(BASE + "/api" + path, {
+    method: opts.method || "GET",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + TOKEN },
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  const data = await res.json().catch(function(){ return {}; });
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+function showForm(){
+  document.getElementById("login").hidden = true;
+  document.getElementById("form").hidden = false;
+}
+if (TOKEN) showForm();
+document.getElementById("loginBtn").onclick = async function(){
+  document.getElementById("loginErr").textContent = "";
+  try {
+    const r = await api("/login", { method: "POST", body: {
+      username: document.getElementById("user").value,
+      password: document.getElementById("pass").value
+    }});
+    TOKEN = r.token;
+    sessionStorage.setItem("cctv_token", r.token);
+    showForm();
+  } catch (e) { document.getElementById("loginErr").textContent = e.message; }
+};
+document.getElementById("createBtn").onclick = async function(){
+  document.getElementById("formErr").textContent = "";
+  const name = document.getElementById("name").value.trim();
+  if (!name) { document.getElementById("formErr").textContent = "Kailangan ang site name."; return; }
+  try {
+    const body = { name: name, apiUser: "jmcloud" };
+    const u = document.getElementById("sstpUser").value.trim();
+    const p = document.getElementById("sstpPass").value;
+    if (u) body.username = u;
+    if (p) body.password = p;
+    const made = await api("/stations", { method: "POST", body: body });
+    const script = v6Script(made);
+    if (script.indexOf("verify-server-address-from-certificate") !== -1) throw new Error("v6 script invalid");
+    document.getElementById("form").hidden = true;
+    document.getElementById("done").hidden = false;
+    document.getElementById("summary").textContent = "Na-add ang bagong client. I-paste ito sa RouterOS v6 lang.";
+    document.getElementById("facts").innerHTML = [
+      ["Name", made.name],
+      ["SSTP", made.sstpServer + ":" + made.sstpPort],
+      ["Username", made.username],
+      ["Tunnel IP", made.vpnIp],
+      ["Winbox", made.vpnAddress]
+    ].map(function(r){ return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("");
+    document.getElementById("script").textContent = script;
+    document.getElementById("copyBtn").onclick = function(){ navigator.clipboard.writeText(script); };
+  } catch (e) { document.getElementById("formErr").textContent = e.message; }
+};
+</script>
+</body>
+</html>
