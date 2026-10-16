@@ -36,7 +36,7 @@ MODAL = r'''
     <div class="modal-head"><span>Add VPN Client v6</span><button class="x" onclick="closeCreateVpnV6()">✕</button></div>
     <div class="modal-body">
       <div id="rt-v6-form">
-        <p style="font-family:var(--sans);font-size:13px;color:var(--muted);margin:0 0 12px">Bagong RouterOS v6 client. Papasok ito sa MikroTik site list at sa billing. Hindi nito binabago ang mga VPN na online na.</p>
+        <p style="font-family:var(--sans);font-size:13px;color:var(--muted);margin:0 0 12px">Gaya ng jmfx.pro/vpnserver. SoftEther SSTP 992, connect-to=IP:992. Papasok sa MikroTik site list at billing. Ang mga online na client sa 4443 ay hindi kasama dito.</p>
         <label class="fld">Client / site name<input id="rt-v6-name" class="set-in" placeholder="e.g. Cagbatang v6"></label>
         <label class="fld">SSTP username <span style="color:var(--muted);font-size:11px">(blanko = auto)</span><input id="rt-v6-user" class="set-in"></label>
         <label class="fld">SSTP password <span style="color:var(--muted);font-size:11px">(blanko = auto, min 8)</span><input id="rt-v6-pass" class="set-in" type="password"></label>
@@ -64,49 +64,6 @@ MODAL = r'''
 '''
 
 JS = r'''
-function rosQuoteV6(v) {
-  return String(v == null ? "" : v).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-function routerosV6Script(s) {
-  const iface = "sstp-cctv";
-  const tag = "JM TECH SOLUTION";
-  const apiUser = s.apiUser || "jmcloud";
-  const apiPass = s.apiPassword || "";
-  const lines = [
-    "# --- " + tag + ': RouterOS v6 paste para sa "' + s.name + '" ---',
-    "# Bagong client. I-paste ito sa RouterOS v6 lang.",
-    "",
-    "# 1) SSTP VPN client -> " + s.sstpServer + ":" + s.sstpPort,
-    ':do { /interface sstp-client remove [find name="' + iface + '"] } on-error={}',
-    "/interface sstp-client add name=" + iface + " connect-to=" + s.sstpServer + " port=" + s.sstpPort + " \\",
-    '    user="' + rosQuoteV6(s.username) + '" password="' + rosQuoteV6(s.password) + '" profile=default \\',
-    "    authentication=pap,chap,mschap1,mschap2 \\",
-    "    verify-server-certificate=no disabled=no",
-    "",
-    "# 2) Cloud API user — ito ang gamit ng billing site list",
-    ':if ([:len [/user find where name="' + rosQuoteV6(apiUser) + '"]] = 0) do={',
-    '  /user add name="' + rosQuoteV6(apiUser) + '" password="' + rosQuoteV6(apiPass) + '" group=full comment="' + tag + ' cloud API"',
-    "} else={",
-    '  /user set [find where name="' + rosQuoteV6(apiUser) + '"] password="' + rosQuoteV6(apiPass) + '"',
-    "}",
-    "",
-    "# 3) Winbox + API + www, VPN subnet only",
-    "#    Winbox: " + (s.vpnAddress || "") + " -> " + (s.vpnIp || "") + ":8291",
-    "#    API:    124.105.235.44:" + (s.apiPort || "") + " -> " + (s.vpnIp || "") + ":8728",
-    "/ip service set winbox disabled=no address=10.90.0.0/21",
-    "/ip service set api disabled=no address=10.90.0.0/21",
-    "/ip service set www disabled=no address=10.90.0.0/21",
-    ':do { /ip firewall filter remove [find where comment~"' + tag + ':"] } on-error={}',
-    '/ip firewall filter add chain=input action=accept protocol=tcp dst-port=8291 src-address=10.90.0.0/21 comment="' + tag + ': Winbox via VPN"',
-    '/ip firewall filter add chain=input action=accept protocol=tcp dst-port=8728 src-address=10.90.0.0/21 comment="' + tag + ': API via VPN"',
-    '/ip firewall filter add chain=input action=accept protocol=tcp dst-port=80 src-address=10.90.0.0/21 comment="' + tag + ': REST www via VPN"',
-    "",
-    "# Done. Nasa MikroTik site list na ang site na ito."
-  ];
-  const script = lines.join("\n");
-  if (script.indexOf("verify-server-address-from-certificate") !== -1) throw new Error("v6 script invalid");
-  return script;
-}
 function openCreateVpnV6() {
   const modal = $("rt-v6-modal");
   if (!modal) return;
@@ -143,61 +100,34 @@ async function submitCreateVpnV6() {
   }
   go.disabled = true;
   go.textContent = "Creating…";
-  let made = null;
   try {
-    const sso = await getOpsSsoToken(true);
-    const body = { name: name, apiUser: "jmcloud" };
+    const body = { name: name };
     const u = $("rt-v6-user").value.trim();
     const p = $("rt-v6-pass").value;
     if (u) body.username = u;
     if (p) body.password = p;
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 45000);
-    try {
-      const res = await fetch("/cctv/api/stations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + sso.token },
-        body: JSON.stringify(body),
-        signal: ctrl.signal
-      });
-      made = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(made.error || ("VPN create failed (" + res.status + ")"));
-    } finally {
-      clearTimeout(timer);
-    }
-    const host = "124.105.235.44";
-    const port = Number(made.apiPort) || 0;
-    if (!port) throw new Error("Walang API port ang bagong client.");
-    const notes = "RouterOS v6 · SSTP " + made.username + " → jmestre.tech:4443 · tunnel " + made.vpnIp
-      + " · Winbox " + made.vpnAddress + " · API " + host + ":" + port;
-    const saved = await api("/api/billing/routers", {
+    const saved = await api("/api/billing/vpn-ros6", {
       method: "POST",
-      timeoutMs: 20000,
+      timeoutMs: 30000,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: made.name || name,
-        host: host,
-        port: port,
-        username: made.apiUser || "jmcloud",
-        password: made.apiPassword || "",
-        ssl: 0,
-        area: "",
-        vpn_notes: notes
-      })
+      body: JSON.stringify(body)
     });
-    if (!saved.ok) throw new Error(saved.error || "Hindi na-save sa billing site list.");
-    const script = routerosV6Script(made);
+    if (!saved.ok) throw new Error(saved.error || "Hindi na-create ang v6 client.");
+    const made = saved.data || {};
+    const script = made.script || "";
+    var addLine = "";
+    script.split("\n").forEach(function (l) { if (l.indexOf("sstp-client add") !== -1) addLine = l; });
+    if (addLine.indexOf('connect-to="124.105.235.44:992"') === -1 || addLine.indexOf(" port=") !== -1) throw new Error("v6 script invalid");
     $("rt-v6-form").style.display = "none";
     $("rt-v6-done").style.display = "";
-    $("rt-v6-summary").textContent = "Na-add sa MikroTik site list at billing. I-paste ang script sa RouterOS v6 lang.";
+    $("rt-v6-summary").textContent = "Na-add sa MikroTik site list at billing. I-paste ito sa RouterOS v6. Dial " + made.sstpServer + ":" + made.sstpPort + ".";
     const rows = [
       ["Site", made.name || name],
-      ["Billing API", host + ":" + port],
-      ["API user", made.apiUser || "jmcloud"],
-      ["SSTP", (made.sstpServer || "jmestre.tech") + ":" + (made.sstpPort || 4443)],
+      ["SSTP", (made.sstpServer || "") + ":" + (made.sstpPort || "")],
       ["SSTP user", made.username || ""],
-      ["Tunnel IP", made.vpnIp || ""],
-      ["Winbox", made.vpnAddress || ""]
+      ["Tunnel IP", made.tunnelIp || ""],
+      ["Billing API", (made.tunnelIp || "") + ":8728"],
+      ["API user", made.apiUser || "jmcloud"]
     ];
     $("rt-v6-facts").innerHTML = rows.map(function (r) {
       return "<tr><td style=\"color:var(--muted);width:140px;padding:3px 0\">" + esc(r[0]) + "</td><td class=\"mono\">" + esc(r[1]) + "</td></tr>";
@@ -205,19 +135,10 @@ async function submitCreateVpnV6() {
     $("rt-v6-script").textContent = script;
     if (typeof loadRouters === "function") loadRouters();
   } catch (e) {
-    const msg = e.name === "AbortError" ? "Timeout habang gumagawa ng VPN client." : (e.message || String(e));
-    if (made && made.username) {
-      const script = routerosV6Script(made);
-      $("rt-v6-form").style.display = "none";
-      $("rt-v6-done").style.display = "";
-      $("rt-v6-summary").textContent = "Na-create ang VPN, pero hindi pumasok sa billing site list: " + msg;
-      $("rt-v6-script").textContent = script;
-    } else {
-      err.style.display = "";
-      err.textContent = msg;
-      go.disabled = false;
-      go.textContent = "Create v6 client";
-    }
+    err.style.display = "";
+    err.textContent = e.name === "AbortError" ? "Timeout habang gumagawa ng VPN client." : (e.message || String(e));
+    go.disabled = false;
+    go.textContent = "Create v6 client";
   }
 }
 
@@ -251,6 +172,8 @@ def main():
         changed = True
     else:
         start = text.find("function rosQuoteV6")
+        if start < 0:
+            start = text.find("function openCreateVpnV6")
         end = text.find("\nasync function loadCustomersPage()", start)
         wanted = JS.strip() + "\n"
         if start < 0 or end < 0:
@@ -261,10 +184,14 @@ def main():
     # The original handler must still open the v7 add screen.
     if 'action=add' not in text.split("function openCreateVpn()")[1].split("function openCreateVpnV6")[0]:
         raise SystemExit("existing Add VPN Client handler changed")
-    v6_body = text.split("function routerosV6Script")[1].split("function openCreateVpnV6")[0]
-    pasted = "\n".join(line for line in v6_body.splitlines() if "indexOf(" not in line)
-    if "verify-server-address-from-certificate" in pasted:
-        raise SystemExit("v6 script contains the v7-only property")
+    v6_body = text.split("function submitCreateVpnV6")[1].split("async function loadCustomersPage")[0]
+    if "/api/billing/vpn-ros6" not in v6_body or "/cctv/api/stations" in v6_body:
+        raise SystemExit("v6 create path is wrong")
+    old_blurb = "Bagong RouterOS v6 client. Papasok ito sa MikroTik site list at sa billing. Hindi nito binabago ang mga VPN na online na."
+    new_blurb = "Gaya ng jmfx.pro/vpnserver. SoftEther SSTP 992, connect-to=IP:992. Papasok sa MikroTik site list at billing. Ang mga online na client sa 4443 ay hindi kasama dito."
+    if old_blurb in text:
+        text = text.replace(old_blurb, new_blurb, 1)
+        changed = True
     if not changed:
         print("already patched")
         return
