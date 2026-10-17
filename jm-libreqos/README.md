@@ -28,9 +28,13 @@ Export without the web UI:
 node bin/export.js --db /opt/jm-billing/billing.db --out out/ --sessions sessions.txt
 ```
 
+## Shaper path
+
+CCR1036 stays physical. LibreQoS, the PPPoE VM, and the hotspot VM run on Proxmox. Traffic crosses LibreQoS, leaves on the 10G SFP to the switch, then enters the ISP-in interface of each MikroTik VM. NAT stays on the CCR so each subscriber IP is visible on the bridge. The wiring is in `docs/proxmox-ccr1036.md`.
+
 ## Shaper box
 
-On the LibreQoS machine:
+On the LibreQoS VM:
 
 ```bash
 sudo bash deploy/install-libreqos-2.2.sh
