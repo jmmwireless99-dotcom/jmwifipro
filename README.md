@@ -38,6 +38,10 @@ Full **jmwifi.pro** billing backup and deployment files.
 - 5,166 audit entries
 - 41 tables total
 
+## LibreQoS 2.2
+
+`jm-libreqos/` builds LibreQoS 2.2 `network.json` and `ShapedDevices.csv` from the billing database, then pushes them to the shaper API. See `jm-libreqos/README.md`.
+
 ## Restore
 
 Copy `databases/jm-billing-billing.db` to `/opt/jm-billing/billing.db` on the VPS, then restart `jm-billing`.

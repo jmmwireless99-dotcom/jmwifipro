@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JM LibreQoS</title>
+<style>
+  :root {
+    --bg: #12122b;
+    --panel: #1e2138;
+    --panel-2: #252945;
+    --line: #2d3354;
+    --text: #eef0ff;
+    --muted: #8b93b8;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --bad: #ff6b8a;
+    --grad: linear-gradient(135deg, #00f2ff 0%, #a18cd1 48%, #ff7eb3 100%);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, sans-serif; }
+  header { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--line); background: #16182f; }
+  h1 { margin: 0; font-size: 22px; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); margin-top: 2px; }
+  main { padding: 18px 22px 40px; display: grid; gap: 16px; }
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .kpi, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; }
+  .kpi { padding: 12px 14px; }
+  .kpi b { display: block; font-size: 26px; margin-top: 2px; }
+  .kpi span, .muted { color: var(--muted); }
+  .panel { padding: 14px 16px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button, .btn { border: 0; border-radius: 10px; padding: 9px 12px; background: var(--grad); color: #12122b; font-weight: 700; cursor: pointer; text-decoration: none; }
+  button.ghost, a.ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+  input, textarea, select { width: 100%; background: #12122b; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+  label { display: grid; gap: 4px; color: var(--muted); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+  .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .tree { font-family: ui-monospace, monospace; font-size: 13px; }
+  .tree div { margin-left: 14px; }
+  .warn { color: var(--warn); }
+  .bad { color: var(--bad); }
+  .ok { color: var(--ok); }
+  pre { white-space: pre-wrap; background: #12122b; padding: 10px; border-radius: 10px; max-height: 180px; overflow: auto; }
+  @media (max-width: 980px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid, .form { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>JM <span>LibreQoS</span> 2.2</h1>
+    <div class="sub">Billing plans and plant map become the LibreQoS shaping files.</div>
+  </div>
+  <div class="row">
+    <button id="refresh" type="button">Refresh</button>
+    <a class="btn ghost" href="/api/network.json" download="network.json">network.json</a>
+    <a class="btn ghost" href="/api/ShapedDevices.csv" download="ShapedDevices.csv">ShapedDevices.csv</a>
+    <button id="push" type="button">Push to LibreQoS</button>
+  </div>
+</header>
+<main>
+  <section class="kpis" id="kpis"></section>
+  <div id="messages"></div>
+  <section class="grid">
+    <div class="panel">
+      <h2>Topology</h2>
+      <div class="tree" id="tree"></div>
+    </div>
+    <div class="panel">
+      <h2>Shaper link</h2>
+      <form id="settings" class="form">
+        <label>API base<input name="apiBase" placeholder="http://127.0.0.1:9122" /></label>
+        <label>API key (x-bearer)<input name="apiKey" type="password" autocomplete="off" placeholder="lqos_api_..." /></label>
+        <label>Upstream down Mbps<input name="upstreamDownloadMbps" type="number" min="1" step="1" /></label>
+        <label>Upstream up Mbps<input name="upstreamUploadMbps" type="number" min="1" step="1" /></label>
+        <label>Site down Mbps<input name="siteDownloadMbps" type="number" min="1" step="1" /></label>
+        <label>Site up Mbps<input name="siteUploadMbps" type="number" min="1" step="1" /></label>
+        <label>NAP / AP down Mbps<input name="apDownloadMbps" type="number" min="1" step="1" /></label>
+        <label>NAP / AP up Mbps<input name="apUploadMbps" type="number" min="1" step="1" /></label>
+        <label>Plan headroom<input name="headroom" type="number" min="1" step="0.01" /></label>
+        <label>Minimum Mbps<input name="minMbps" type="number" min="0.01" step="0.01" /></label>
+        <label>SQM override<input name="sqm" placeholder="blank = LibreQoS default" /></label>
+        <label>Reload after push<select name="reloadAfterPush"><option value="true">Yes</option><option value="false">No</option></select></label>
+        <div class="row" style="grid-column: 1 / -1">
+          <button type="submit">Save settings</button>
+          <span class="muted" id="settings-note"></span>
+        </div>
+      </form>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>PPPoE sessions</h2>
+    <p class="muted">Paste RouterOS <b>/ppp active print terse</b>, or JSON like {"user":"100.64.0.10"}. A circuit is shaped only after it has an IP.</p>
+    <textarea id="sessions" rows="5" placeholder='0 R name="ana@jm" service=pppoe address=100.64.0.10'></textarea>
+    <div class="row" style="margin-top:8px">
+      <button id="apply-sessions" type="button">Apply sessions</button>
+      <button id="clear-sessions" class="ghost" type="button">Clear sessions</button>
+      <span class="muted" id="session-note"></span>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Circuits ready to shape</h2>
+    <table>
+      <thead><tr><th>Circuit</th><th>Parent</th><th>IPv4</th><th>Down</th><th>Up</th></tr></thead>
+      <tbody id="ready"></tbody>
+    </table>
+  </section>
+  <section class="panel">
+    <h2>Waiting for a session IP</h2>
+    <table>
+      <thead><tr><th>Circuit</th><th>Username</th><th>Parent</th><th>Down</th><th>Up</th></tr></thead>
+      <tbody id="waiting"></tbody>
+    </table>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+
+function kpi(label, value) {
+  const el = document.createElement("div");
+  el.className = "kpi";
+  const span = document.createElement("span");
+  span.textContent = label;
+  const strong = document.createElement("b");
+  strong.textContent = value;
+  el.append(span, strong);
+  return el;
+}
+
+function addText(tag, text, className) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  el.textContent = text;
+  return el;
+}
+
+function renderTree(obj, host) {
+  host.textContent = "";
+  const names = Object.keys(obj || {});
+  if (!names.length) {
+    host.append(addText("div", "No sites yet."));
+    return;
+  }
+  for (const name of names) {
+    const node = obj[name];
+    const row = document.createElement("div");
+    row.append(addText("div", `${name} · ${node.type} · ${node.downloadBandwidthMbps}/${node.uploadBandwidthMbps} Mbps`));
+    if (node.children) {
+      const nested = document.createElement("div");
+      renderTree(node.children, nested);
+      row.append(nested);
+    }
+    host.append(row);
+  }
+}
+
+function fillTable(body, rows, cells) {
+  body.textContent = "";
+  if (!rows.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = cells.length;
+    td.textContent = "None";
+    tr.append(td);
+    body.append(tr);
+    return;
+  }
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    for (const cell of cells) tr.append(addText("td", row[cell] ?? ""));
+    body.append(tr);
+  }
+}
+
+function showMessages(preview) {
+  const box = $("messages");
+  box.textContent = "";
+  for (const error of preview.errors || []) box.append(addText("div", error, "bad"));
+  for (const warning of (preview.warnings || []).slice(0, 8)) box.append(addText("div", warning, "warn"));
+  if ((preview.warnings || []).length > 8) box.append(addText("div", `${preview.warnings.length - 8} more warnings`, "warn"));
+}
+
+async function loadSettings() {
+  const settings = await (await fetch("/api/settings")).json();
+  const form = $("settings");
+  for (const el of form.elements) {
+    if (!el.name || settings[el.name] == null) continue;
+    if (el.name === "reloadAfterPush") el.value = String(settings.reloadAfterPush !== false);
+    else if (el.name === "apiKey") el.value = "";
+    else el.value = settings[el.name];
+  }
+  $("settings-note").textContent = settings.apiKeySet ? `Key saved ${settings.apiKey}` : "No API key saved";
+}
+
+async function refresh() {
+  const preview = await (await fetch("/api/preview")).json();
+  if (preview.error) {
+    $("messages").textContent = "";
+    $("messages").append(addText("div", preview.error, "bad"));
+    return;
+  }
+  const s = preview.summary;
+  const kpis = $("kpis");
+  kpis.textContent = "";
+  kpis.append(
+    kpi("Shaped circuits", s.shaped),
+    kpi("Waiting for IP", s.waitingForIp),
+    kpi("Suspended skipped", s.skippedSuspended),
+    kpi("Routers", s.routers),
+    kpi("NAPs", s.naps),
+    kpi("Customers", s.customers),
+  );
+  renderTree(preview.network, $("tree"));
+  fillTable($("ready"), preview.rows, ["circuitId", "parent", "ipv4", "down", "up"]);
+  fillTable($("waiting"), preview.pending, ["circuitId", "username", "parent", "downloadMax", "uploadMax"]);
+  showMessages(preview);
+}
+
+$("refresh").onclick = refresh;
+$("settings").onsubmit = async (event) => {
+  event.preventDefault();
+  const form = new FormData(event.target);
+  const body = Object.fromEntries(form.entries());
+  for (const key of ["upstreamDownloadMbps", "upstreamUploadMbps", "siteDownloadMbps", "siteUploadMbps", "apDownloadMbps", "apUploadMbps", "headroom", "minMbps"]) {
+    body[key] = Number(body[key]);
+  }
+  body.reloadAfterPush = body.reloadAfterPush === "true";
+  if (!body.apiKey) delete body.apiKey;
+  const saved = await (await fetch("/api/settings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).json();
+  $("settings-note").textContent = saved.apiKeySet ? `Saved ${saved.apiKey}` : "Saved";
+  await refresh();
+};
+$("apply-sessions").onclick = async () => {
+  const res = await fetch("/api/sessions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: $("sessions").value }) });
+  const data = await res.json();
+  $("session-note").textContent = data.error ? data.error : `${data.count} session rows stored`;
+  $("session-note").className = data.error ? "bad" : "ok";
+  await refresh();
+};
+$("clear-sessions").onclick = async () => {
+  await fetch("/api/sessions", { method: "DELETE" });
+  $("sessions").value = "";
+  $("session-note").textContent = "Sessions cleared";
+  await refresh();
+};
+$("push").onclick = async () => {
+  $("push").disabled = true;
+  try {
+    const res = await fetch("/api/push", { method: "POST" });
+    const data = await res.json();
+    const box = $("messages");
+    const status = addText("div", data.ok ? "Pushed to LibreQoS and reload requested." : "Push did not complete.", data.ok ? "ok" : "bad");
+    box.prepend(status);
+    let cursor = status;
+    for (const step of data.steps || []) {
+      const pre = addText("pre", `${step.name} ${step.status}\n${step.body || ""}`);
+      cursor.after(pre);
+      cursor = pre;
+    }
+  } finally {
+    $("push").disabled = false;
+  }
+};
+
+loadSettings().then(refresh).catch((error) => {
+  $("messages").append(addText("div", error.message, "bad"));
+});
+</script>
+</body>
+</html>
