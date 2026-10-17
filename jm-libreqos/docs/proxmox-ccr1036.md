@@ -74,6 +74,25 @@ Subscriber pools, halimbawa `100.64.0.0/16` sa PPPoE at `100.70.0.0/16` sa hotsp
 
 Ang mga IP na iyon ang laman ng `ShapedDevices.csv`. Ang JM bridge sa billing VPS ang magpu-push ng listahan sa API ng LibreQoS VM (`tcp/9122` sa management IP).
 
+## Tailscale, bago ang LibreQoS install
+
+Ang management NIC ng VM na ito ay `ens18` sa `192.168.200.148`. Doon lang nakakabit ang Tailscale. Ang ens19 at ens20, ang bridge papunta sa CCR at sa 10G switch, walang Tailscale.
+
+Sa console ng VM:
+
+```bash
+sudo bash deploy/install-tailscale.sh
+```
+
+Kapag walang auth key, magbibigay ang Tailscale ng login URL. Buksan iyon sa telepono o laptop na naka-login na sa tailnet, tapos aprubahan ang `jm-libreqos`. Pagkatapos:
+
+```bash
+ssh root@<tailscale-ip>
+sudo bash deploy/install-libreqos-2.2.sh
+```
+
+Hindi naka-advertise na route o exit node ang VM. Ang internet ng subscriber ay CCR → LibreQoS bridge → 10G switch pa rin, hindi Tailscale.
+
 ## VM size
 
 LibreQoS VM: 4 vCPU, 8 GB RAM, disk 32 GB. PPPoE at hotspot manatili sa sarili nilang VM, may hiwalay na LAN port papunta sa mga access site. Ang LAN na iyon ay hindi dadaan sa `vmbr1` o `vmbr2`.

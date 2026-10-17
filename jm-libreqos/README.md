@@ -34,7 +34,13 @@ CCR1036 stays physical. LibreQoS, the PPPoE VM, and the hotspot VM run on Proxmo
 
 ## Shaper box
 
-On the LibreQoS VM:
+On the LibreQoS VM console, join Tailscale first (`ens18` is `192.168.200.148`). Subscriber packets stay on the bridge.
+
+```bash
+sudo bash deploy/install-tailscale.sh
+```
+
+Approve the login URL, SSH to the Tailscale address, then install:
 
 ```bash
 sudo bash deploy/install-libreqos-2.2.sh
