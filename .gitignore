@@ -3,3 +3,5 @@
 Thumbs.db
 jm-libreqos/data/
 jm-libreqos/out/
+*.db-shm
+*.db-wal
