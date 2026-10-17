@@ -1,0 +1,17 @@
+[Unit]
+Description=JM LibreQoS 2.2 billing bridge
+After=network-online.target jm-billing.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/jm-libreqos
+Environment=BILLING_DB=/opt/jm-billing/billing.db
+Environment=HOST=127.0.0.1
+Environment=PORT=9130
+ExecStart=/usr/bin/node /opt/jm-libreqos/server.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

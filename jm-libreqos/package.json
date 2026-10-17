@@ -1,0 +1,15 @@
+{
+  "name": "jm-libreqos",
+  "version": "2.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Build LibreQoS 2.2 network.json and ShapedDevices.csv from the JM billing database.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "export": "node bin/export.js",
+    "test": "node --test"
+  }
+}
