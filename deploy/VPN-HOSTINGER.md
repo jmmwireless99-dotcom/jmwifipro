@@ -1,31 +1,40 @@
-# VPN on Hostinger `187.77.145.131` (jmwifi.pro)
+# jmwifi.pro — Billing + VPN tunnel (Hostinger)
 
-## Why sites were offline
-Billing sites dial **`jmestre.tech:4443`** (DNS A = dead CORE `112.208.245.181`). Accel-PPP/SSTP + high-port DNAT lived on jmvps behind CORE. CORE :4443/:22022 timed out → **ONLINE 0/16**.
+**Single active stack:** `https://jmwifi.pro` on `187.77.145.131`.  
+`jmestre.tech` is ignored for now.
 
-## Fix applied on Hostinger
-1. **accel-ppp SSTP** on `:4443` with production `/etc/ppp/chap-secrets` (36 users, static `10.90.0.x`)
-2. **nftables DNAT** `jm_vpn_dnat`: public high ports → `10.90.0.x:8728/8291` (same map as jmvps)
-3. Billing **routers.host** → `187.77.145.131` (ports unchanged)
-4. SoftEther kept on **992/5555** for new create-client v6 path
-5. Per-site resync scripts: `/opt/jm-billing/deploy/vpn-resync-scripts/*.rsc` (dial `187.77.145.131:4443`)
+## Services
 
-## REQUIRED to bring sites online
-Point DNS so MikroTiks hit Hostinger:
+| Role | Detail |
+|------|--------|
+| Billing | `https://jmwifi.pro` (pm2 `jm-billing`) |
+| Site SSTP tunnel | **accel-ppp** `:4443` · pool `10.90.0.0/24` · `/etc/ppp/chap-secrets` |
+| API/Winbox DNAT | nftables `jm_vpn_dnat` → `10.90.0.x:8728/8291` |
+| SoftEther (optional) | `:992` / `:5555` hub `JMVPN` — not used for site tunnels |
+| JM Ops | `/cctv/` → SoftEther/accel status + Create VPN |
+
+## Create VPN Client
+
+Billing **+ Add VPN Client v6** or JM Ops Create → writes chap-secrets + DNAT + MikroTik script:
 
 ```
-jmestre.tech  A  →  187.77.145.131
+connect-to="jmwifi.pro:4443"
 ```
 
-Hostinger hPanel → Domains → jmestre.tech → DNS.  
-After TTL, SSTP sessions appear: `accel-cmd show sessions`
+## Existing sites (still offline until re-scripted)
 
-**Or** paste each site’s `.rsc` from `deploy/vpn-resync-scripts/` on the MikroTik (uses IP, skips DNS).
+Old MikroTiks still dial `jmestre.tech:4443` (dead CORE). To bring a site online on jmwifi.pro, paste the matching file from:
+
+`/opt/jm-billing/deploy/vpn-resync-scripts/`  
+(or repo `deploy/vpn-resync-scripts/`)
+
+Dial target in those scripts: **`jmwifi.pro:4443`**.
 
 ## Smoke
+
 ```bash
-ss -tlnp | grep 4443          # accel-pppd
-nft list table ip jm_vpn_dnat | head
-accel-cmd show sessions
 curl -sS https://jmwifi.pro/api/vpn/info
+curl -sS https://jmwifi.pro/cctv/api/vpn-status
+ss -tlnp | grep 4443
+accel-cmd show sessions
 ```

@@ -1,7 +1,7 @@
-# MAGSAY2X-CORE SSTP resync -> Hostinger 187.77.145.131:4443 (accel-ppp)
-# user magsay2x-core-td8k tunnel 10.90.0.33 API port 52712
+# MAGSAY2X-CORE — jmwifi.pro accel-ppp SSTP
+# Paste in MikroTik terminal. Dial jmwifi.pro:4443
 :do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}
 :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}
-/interface sstp-client add name="sstp-cctv" connect-to="187.77.145.131:4443" user="magsay2x-core-td8k" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no
+/interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="magsay2x-core-td8k" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no
 /interface sstp-client enable [find name="sstp-cctv"]
 /interface sstp-client print detail
