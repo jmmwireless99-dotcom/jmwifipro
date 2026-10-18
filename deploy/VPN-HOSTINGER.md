@@ -23,12 +23,13 @@ connect-to="jmwifi.pro:4443"
 
 ## Existing sites (still offline until re-scripted)
 
-Old MikroTiks still dial `jmestre.tech:4443` (dead CORE). To bring a site online on jmwifi.pro, paste the matching file from:
+Old MikroTiks still dial `jmestre.tech:4443` (dead CORE). **Remote SSH/API/Winbox to site WANs is closed** — see `deploy/MIKROTIK-REMOTE-BLOCKED.md`. Bring a site online by pasting a **semicolon one-liner** via local Winbox:
 
-`/opt/jm-billing/deploy/vpn-resync-scripts/`  
-(or repo `deploy/vpn-resync-scripts/`)
+- Live (with passwords): VPS `/opt/jm-billing/deploy/vpn-resync-oneliners/`
+- Multi-line: VPS `/opt/jm-billing/deploy/vpn-resync-scripts/`
+- Repo templates (passwords redacted): `deploy/vpn-resync-oneliners/`
 
-Dial target in those scripts: **`jmwifi.pro:4443`**.
+Dial target: **`jmwifi.pro:4443`**.
 
 ## Smoke
 
