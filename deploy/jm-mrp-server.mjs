@@ -163,8 +163,10 @@ pre{white-space:pre-wrap;word-break:break-word;background:#0b1220;padding:12px;b
 </div>
 <script>
 const action=${JSON.stringify(action || "")};
+// Under nginx /cctv/ → MRP; keep API calls on the same prefix.
+const API_BASE = location.pathname.startsWith("/cctv") ? "/cctv" : "";
 async function refresh(){
-  const r=await fetch("/api/vpn-status");
+  const r=await fetch(API_BASE + "/api/vpn-status");
   const d=await r.json();
   document.getElementById("st").innerHTML =
     "<p>SoftEther: <b class='"+(d.softether==="running"?"ok":"bad")+"'>"+d.softether+"</b></p>"+
@@ -188,7 +190,7 @@ document.getElementById("go").onclick=async()=>{
     const p=document.getElementById("pass").value;
     if(u) body.username=u;
     if(p) body.password=p;
-    const r=await fetch("/api/vpn/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const r=await fetch(API_BASE + "/api/vpn/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const j=await r.json();
     if(!r.ok||!j.ok) throw new Error(j.error||("HTTP "+r.status));
     out.style.display="";
