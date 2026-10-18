@@ -1,0 +1,47 @@
+# 32-MALUBI-PPPOE.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="malubi-pppoe-04fi" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 34-Candelaria-kitifi.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="candelaria-kitifi-gzi1" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 37-4rth-server.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="4rthserver-jq5f" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 39-CAWAYAN-SERVER.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="cawayan-server-mrol" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 40-BURIAS-KITIFI.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="burias-kitifi-server-acq7" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 41-SANCARLOS-KITIFI.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="sancarlos-kitifi-74kd" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 43-MALUBI-KITIFI.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="malubi-kitifi-5yas" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 45-5thserver.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="5thserver-mxw5" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 50-CANDELARIA-PPPOE.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="pppoe-ipoe-t2y4" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 51-PANISIJAN-CCTV.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="panisijan-free-equ4" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 52-1STSERVER.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="1stserver-7igg" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 53-MAGSAY2X-CORE.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="magsay2x-core-td8k" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 56-2NDSERVER.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="2nd-server-henq" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 57-3RDSERVER.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="3rd-server-hz1t" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 61-MANAMOC.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="manamoc-qj5n" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
+
+# 62-PPPOE-CCR1036.rsc
+:do { /interface sstp-client remove [find name="sstp-cctv"] } on-error={}; :do { /interface sstp-client remove [find name="SPVPN"] } on-error={}; /interface sstp-client add name="sstp-cctv" connect-to="jmwifi.pro:4443" user="pppoe-ccr1036-9n3r" password="REDACTED_SEE_VPS" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no; /interface sstp-client enable [find name="sstp-cctv"]; /interface sstp-client print detail
