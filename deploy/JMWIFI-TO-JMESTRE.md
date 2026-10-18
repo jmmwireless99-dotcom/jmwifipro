@@ -1,18 +1,20 @@
-# Reverse redirect: jmwifi.pro → jmestre.tech
+# Public site: jmwifi.pro (active) · jmestre.tech → jmwifi.pro
 
 ## Goal
-Opening **jmwifi.pro** must land on **jmestre.tech** (public JM ESTRE landing).
+- **jmwifi.pro** = active public billing / landing
+- **jmestre.tech** = redirect to `https://jmwifi.pro`
 
-## Live Hostinger state
-- Failover scripts: `jm-jmwifi-failover.sh`, `jm-cutover-jmestre-dns.sh`
-- While CORE WAN (`112.208.245.181`) for jmestre is down, jmwifi **serves** the landing so the site stays up.
-- When jmestre is healthy (or DNS is moved to Hostinger), failover switches to **301 → https://jmestre.tech**.
+## Hostinger (live)
+- Serves landing + billing on `jmwifi.pro`
+- If Host header is `jmestre.tech`, nginx returns `301 https://jmwifi.pro$request_uri`
+- `PUBLIC_URL=https://jmwifi.pro`
 
-## Finish cutover (DNS)
-1. Hostinger hPanel → Domains → **jmestre.tech** → DNS  
-2. A record `@` → `187.77.145.131` (same for `www` if it is an A record)  
-3. On VPS: `jm-cutover-jmestre-dns.sh`  
-4. Confirm: `curl -sI https://jmwifi.pro/` → `Location: https://jmestre.tech/`
+## Make jmestre.tech redirect while CORE WAN is down
+`jmestre.tech` DNS currently points at CORE `112.208.245.181` (unreachable).
 
-## Nginx reference
-See `deploy/nginx-jmwifi-to-jmestre.conf`.
+In Hostinger hPanel → Domains → **jmestre.tech** → DNS:
+1. Set A `@` → `187.77.145.131`
+2. Wait for propagation
+3. `curl -sI https://jmestre.tech/` → `Location: https://jmwifi.pro/`
+
+When CORE/jmvps is reachable again, nginx on jmvps can also `return 301 https://jmwifi.pro` for `jmestre.tech` if DNS stays on CORE.
