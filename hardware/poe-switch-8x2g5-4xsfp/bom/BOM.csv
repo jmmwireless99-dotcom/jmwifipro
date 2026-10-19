@@ -1,0 +1,671 @@
+Sheet,Ref,Value,Package,MPN,LCSC,Description
+01_Power_Input,J1,54V_IN,TERMINAL-2,2-pin 54V terminal or barrel,,54 VDC power input
+01_Power_Input,F1,8A,fuse-2410,8 A slow,,Input fuse before the reverse-protection FET
+01_Power_Input,Q1,IRF9540N,TO-220,IRF9540NPBF,,100 V P-MOS reverse polarity. Dissipation is high at 6 A. Swap a part under 20 mohm before build.
+01_Power_Input,R1,100k,0805,100k,,Gate pull-down
+01_Power_Input,D1,BZT52C12,SOD-123,BZT52C12,,Vgs clamp. Pin 1 anode = QGATE; pin 2 cathode = VIN_FUSED.
+01_Power_Input,D2,SMBJ58A,SMB,SMBJ58A,,Input TVS. Pin 1 anode = GND; pin 2 cathode = VIN_54V. Clamp can exceed the TPS23881 70 V abs max.
+01_Power_Input,C1,100uF/100V,electro-10mm,100uF 100V,,Input bulk
+01_Power_Input,C2,4.7uF/100V,1210,4.7uF 100V X7R,,Input ceramic
+01_Power_Input,C3,4.7uF/100V,1210,4.7uF 100V X7R,,Input ceramic
+01_Power_Input,R2,1M,1206,1M,,Chassis bleed. The only DC bond from GND to CHASSIS.
+01_Power_Input,C4,4.7nF/2kV,1206,4.7nF 2kV,,Chassis Y-cap; one place only
+02_Rails_5V_3V3_12V,U1,TPS54560B,SOIC-8-EP,TPS54560BDDA,,60 V 5 A buck. 400 kHz values from SLVSF00; except FB and the 12 V inductor.
+02_Rails_5V_3V3_12V,R3,243k,0402,243k 1%,,RT sets 400 kHz. R(kohm) = 101756 / fsw^1.008
+02_Rails_5V_3V3_12V,R4,1.18M,0402,1.18M 1%,,UVLO top; start about 48 V
+02_Rails_5V_3V3_12V,R5,29.4k,0402,29.4k 1%,,UVLO bottom; stop about 44 V
+02_Rails_5V_3V3_12V,D3,BZT52C6V2,SOD-123,BZT52C6V2,,EN clamp. Pin 1 anode to GND; pin 2 cathode to EN.
+02_Rails_5V_3V3_12V,R6,243k,0402,243k,,COMP series R
+02_Rails_5V_3V3_12V,C5,4700pF,0402,4700pF,,COMP series C
+02_Rails_5V_3V3_12V,C6,47pF,0402,47pF,,COMP high-frequency C
+02_Rails_5V_3V3_12V,C7,100nF,0402,100nF 16V,,BOOT to SW
+02_Rails_5V_3V3_12V,L1,7.2uH,ind-7x7,7.2uH,,Output inductor
+02_Rails_5V_3V3_12V,D4,SS510,SMC,SS510,,100 V 5 A catch diode. Pin 1 anode = GND; pin 2 cathode = SW.
+02_Rails_5V_3V3_12V,R7,53.6k,0402,53.6k 1%,,FB top
+02_Rails_5V_3V3_12V,R8,10.2k,0402,10.2k 1%,,FB bottom
+02_Rails_5V_3V3_12V,C8,2.2uF/100V,1210,2.2uF 100V,,VIN ceramic
+02_Rails_5V_3V3_12V,C9,2.2uF/100V,1210,2.2uF 100V,,VIN ceramic
+02_Rails_5V_3V3_12V,C10,47uF/16V,0805,47uF/16V,,VOUT ceramic
+02_Rails_5V_3V3_12V,U2,TPS54560B,SOIC-8-EP,TPS54560BDDA,,60 V 5 A buck. 400 kHz values from SLVSF00; except FB and the 12 V inductor.
+02_Rails_5V_3V3_12V,R9,243k,0402,243k 1%,,RT sets 400 kHz. R(kohm) = 101756 / fsw^1.008
+02_Rails_5V_3V3_12V,R10,1.18M,0402,1.18M 1%,,UVLO top; start about 48 V
+02_Rails_5V_3V3_12V,R11,29.4k,0402,29.4k 1%,,UVLO bottom; stop about 44 V
+02_Rails_5V_3V3_12V,D5,BZT52C6V2,SOD-123,BZT52C6V2,,EN clamp. Pin 1 anode to GND; pin 2 cathode to EN.
+02_Rails_5V_3V3_12V,R12,243k,0402,243k,,COMP series R
+02_Rails_5V_3V3_12V,C11,4700pF,0402,4700pF,,COMP series C
+02_Rails_5V_3V3_12V,C12,47pF,0402,47pF,,COMP high-frequency C
+02_Rails_5V_3V3_12V,C13,100nF,0402,100nF 16V,,BOOT to SW
+02_Rails_5V_3V3_12V,L2,7.2uH,ind-7x7,7.2uH,,Output inductor
+02_Rails_5V_3V3_12V,D6,SS510,SMC,SS510,,100 V 5 A catch diode. Pin 1 anode = GND; pin 2 cathode = SW.
+02_Rails_5V_3V3_12V,R13,31.6k,0402,31.6k 1%,,FB top
+02_Rails_5V_3V3_12V,R14,10.0k,0402,10.0k 1%,,FB bottom
+02_Rails_5V_3V3_12V,C14,2.2uF/100V,1210,2.2uF 100V,,VIN ceramic
+02_Rails_5V_3V3_12V,C15,2.2uF/100V,1210,2.2uF 100V,,VIN ceramic
+02_Rails_5V_3V3_12V,C16,47uF/16V,0805,47uF/16V,,VOUT ceramic
+02_Rails_5V_3V3_12V,U3,TPS54560B,SOIC-8-EP,TPS54560BDDA,,60 V 5 A buck. 400 kHz values from SLVSF00; except FB and the 12 V inductor.
+02_Rails_5V_3V3_12V,R15,243k,0402,243k 1%,,RT sets 400 kHz. R(kohm) = 101756 / fsw^1.008
+02_Rails_5V_3V3_12V,R16,1.18M,0402,1.18M 1%,,UVLO top; start about 48 V
+02_Rails_5V_3V3_12V,R17,29.4k,0402,29.4k 1%,,UVLO bottom; stop about 44 V
+02_Rails_5V_3V3_12V,D7,BZT52C6V2,SOD-123,BZT52C6V2,,EN clamp. Pin 1 anode to GND; pin 2 cathode to EN.
+02_Rails_5V_3V3_12V,R18,243k,0402,243k,,COMP series R
+02_Rails_5V_3V3_12V,C17,4700pF,0402,4700pF,,COMP series C
+02_Rails_5V_3V3_12V,C18,47pF,0402,47pF,,COMP high-frequency C
+02_Rails_5V_3V3_12V,C19,100nF,0402,100nF 16V,,BOOT to SW
+02_Rails_5V_3V3_12V,L3,15uH,ind-7x7,15uH,,Output inductor
+02_Rails_5V_3V3_12V,D8,SS510,SMC,SS510,,100 V 5 A catch diode. Pin 1 anode = GND; pin 2 cathode = SW.
+02_Rails_5V_3V3_12V,R19,140k,0402,140k 1%,,FB top
+02_Rails_5V_3V3_12V,R20,10.0k,0402,10.0k 1%,,FB bottom
+02_Rails_5V_3V3_12V,C20,2.2uF/100V,1210,2.2uF 100V,,VIN ceramic
+02_Rails_5V_3V3_12V,C21,2.2uF/100V,1210,2.2uF 100V,,VIN ceramic
+02_Rails_5V_3V3_12V,C22,47uF/25V,0805,47uF/25V,,VOUT ceramic
+02_Rails_5V_3V3_12V,C23,47uF/16V,0805,47uF 16V,,extra 5 V bulk
+02_Rails_5V_3V3_12V,C24,47uF/16V,0805,47uF 16V,,extra 3.3 V bulk
+03_PHY_0V95_and_DDR,U4,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L4,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C25,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R21,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R22,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C26,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C27,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R23,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U5,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L5,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C28,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R24,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R25,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C29,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C30,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R26,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U6,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L6,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C31,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R27,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R28,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C32,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C33,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R29,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U7,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L7,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C34,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R30,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R31,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C35,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C36,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R32,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U8,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L8,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C37,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R33,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R34,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C38,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C39,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R35,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U9,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L9,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C40,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R36,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R37,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C41,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C42,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R38,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U10,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L10,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C43,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R39,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R40,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C44,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C45,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R41,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U11,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L11,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C46,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R42,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R43,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C47,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C48,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R44,100k,0402,100k,,EN pulldown until POW_EXT_SWR goes high
+03_PHY_0V95_and_DDR,U12,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L12,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C49,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R45,15.4k,0402,15.4k 1%,,FB top
+03_PHY_0V95_and_DDR,R46,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C50,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C51,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,U13,TPS54302,SOT-23-6,TPS54302DDCR,,3 A synchronous buck; 400 kHz; Vref 0.596 V. Pins: 1 GND; 2 SW; 3 VIN; 4 FB; 5 EN; 6 BOOT.
+03_PHY_0V95_and_DDR,L13,4.7uH,ind-4x4,4.7uH,,TPS54302 inductor
+03_PHY_0V95_and_DDR,C52,100nF,0402,100nF,,BOOT cap
+03_PHY_0V95_and_DDR,R47,6.04k,0402,6.04k 1%,,FB top
+03_PHY_0V95_and_DDR,R48,10.2k,0402,10.2k 1%,,FB bottom
+03_PHY_0V95_and_DDR,C53,10uF,0805,10uF 16V,,VIN cap
+03_PHY_0V95_and_DDR,C54,22uF,0805,22uF 6.3V,,VOUT cap
+03_PHY_0V95_and_DDR,R49,1.00k 0.1%,0402,1.00k 0.1%,,VREF divider top
+03_PHY_0V95_and_DDR,R50,1.00k 0.1%,0402,1.00k 0.1%,,VREF divider bottom
+03_PHY_0V95_and_DDR,C55,100nF,0402,100nF,,VREF cap
+03_PHY_0V95_and_DDR,U14,TPS51200,DSK-10 functional,TPS51200DSKR,,DDR termination. Pin numbers here are functional. Map them to the TI DSK-10 footprint before layout.
+03_PHY_0V95_and_DDR,C56,10uF,0805,10uF,,VTT bulk
+03_PHY_0V95_and_DDR,C57,100nF,0402,100nF,,VTTREF cap
+04_PSE_TPS23881,U15,TPS23881,VQFN-56,TPS23881RTQR,,8-channel 802.3bt PSE controller used here as 8x 2-pair 30 W.
+04_PSE_TPS23881,C58,100nF/100V,0805,100nF 100V,,VPWR bypass at pin 17
+04_PSE_TPS23881,C59,100nF,0402,100nF,,VDD bypass at pin 43
+04_PSE_TPS23881,C60,10uF,0805,10uF 10V,,VDD bulk
+04_PSE_TPS23881,R51,10k,0402,10k,,PSE reset pull-up
+04_PSE_TPS23881,R52,10k,0402,10k,,INT pull-up; open drain
+04_PSE_TPS23881,R53,10k,0402,10k,,OSS pulldown. The SoC may drive this high to shut every port off.
+04_PSE_TPS23881,R54,0,0402,0 ohm,,Kelvin net-tie for channels 1 and 2. Place it on the GND pads of those sense resistors.
+04_PSE_TPS23881,R55,0,0402,0 ohm,,Kelvin net-tie for channels 3 and 4.
+04_PSE_TPS23881,R56,0,0402,0 ohm,,Kelvin net-tie for channels 5 and 6.
+04_PSE_TPS23881,R57,0,0402,0 ohm,,Kelvin net-tie for channels 7 and 8.
+05_PoE_Ports_1_4,F2,1.5A,fuse-1206,1.5 A,,Port 1 positive fuse
+05_PoE_Ports_1_4,Q2,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+05_PoE_Ports_1_4,R58,0.200,2512,0.200 1% 1W,,Port 1 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+05_PoE_Ports_1_4,D9,SMBJ58A,SMB,SMBJ58A,,Port 1 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+05_PoE_Ports_1_4,C61,10nF/100V,0805,10nF 100V,,Port 1 EMI cap. Keep it small so detection still works.
+05_PoE_Ports_1_4,F3,1.5A,fuse-1206,1.5 A,,Port 2 positive fuse
+05_PoE_Ports_1_4,Q3,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+05_PoE_Ports_1_4,R59,0.200,2512,0.200 1% 1W,,Port 2 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+05_PoE_Ports_1_4,D10,SMBJ58A,SMB,SMBJ58A,,Port 2 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+05_PoE_Ports_1_4,C62,10nF/100V,0805,10nF 100V,,Port 2 EMI cap. Keep it small so detection still works.
+05_PoE_Ports_1_4,F4,1.5A,fuse-1206,1.5 A,,Port 3 positive fuse
+05_PoE_Ports_1_4,Q4,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+05_PoE_Ports_1_4,R60,0.200,2512,0.200 1% 1W,,Port 3 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+05_PoE_Ports_1_4,D11,SMBJ58A,SMB,SMBJ58A,,Port 3 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+05_PoE_Ports_1_4,C63,10nF/100V,0805,10nF 100V,,Port 3 EMI cap. Keep it small so detection still works.
+05_PoE_Ports_1_4,F5,1.5A,fuse-1206,1.5 A,,Port 4 positive fuse
+05_PoE_Ports_1_4,Q5,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+05_PoE_Ports_1_4,R61,0.200,2512,0.200 1% 1W,,Port 4 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+05_PoE_Ports_1_4,D12,SMBJ58A,SMB,SMBJ58A,,Port 4 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+05_PoE_Ports_1_4,C64,10nF/100V,0805,10nF 100V,,Port 4 EMI cap. Keep it small so detection still works.
+06_PoE_Ports_5_8,F6,1.5A,fuse-1206,1.5 A,,Port 5 positive fuse
+06_PoE_Ports_5_8,Q6,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+06_PoE_Ports_5_8,R62,0.200,2512,0.200 1% 1W,,Port 5 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+06_PoE_Ports_5_8,D13,SMBJ58A,SMB,SMBJ58A,,Port 5 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+06_PoE_Ports_5_8,C65,10nF/100V,0805,10nF 100V,,Port 5 EMI cap. Keep it small so detection still works.
+06_PoE_Ports_5_8,F7,1.5A,fuse-1206,1.5 A,,Port 6 positive fuse
+06_PoE_Ports_5_8,Q7,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+06_PoE_Ports_5_8,R63,0.200,2512,0.200 1% 1W,,Port 6 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+06_PoE_Ports_5_8,D14,SMBJ58A,SMB,SMBJ58A,,Port 6 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+06_PoE_Ports_5_8,C66,10nF/100V,0805,10nF 100V,,Port 6 EMI cap. Keep it small so detection still works.
+06_PoE_Ports_5_8,F8,1.5A,fuse-1206,1.5 A,,Port 7 positive fuse
+06_PoE_Ports_5_8,Q8,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+06_PoE_Ports_5_8,R64,0.200,2512,0.200 1% 1W,,Port 7 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+06_PoE_Ports_5_8,D15,SMBJ58A,SMB,SMBJ58A,,Port 7 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+06_PoE_Ports_5_8,C67,10nF/100V,0805,10nF 100V,,Port 7 EMI cap. Keep it small so detection still works.
+06_PoE_Ports_5_8,F9,1.5A,fuse-1206,1.5 A,,Port 8 positive fuse
+06_PoE_Ports_5_8,Q9,IRF540N,TO-220,IRF540N,,100 V N-MOS low-side PoE switch. Pins 1=G; 2=D; 3=S. An SMD 100 V FET can replace it.
+06_PoE_Ports_5_8,R65,0.200,2512,0.200 1% 1W,,Port 8 RSENSE. TPS23881 value is 0.200 ohm; not 0.255.
+06_PoE_Ports_5_8,D16,SMBJ58A,SMB,SMBJ58A,,Port 8 TVS. Pin 1 anode = VPORT_N; pin 2 cathode = VPORT_P.
+06_PoE_Ports_5_8,C68,10nF/100V,0805,10nF 100V,,Port 8 EMI cap. Keep it small so detection still works.
+07_Copper_Ports_1_4,U16,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+07_Copper_Ports_1_4,R66,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+07_Copper_Ports_1_4,Y1,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+07_Copper_Ports_1_4,C69,27pF,0402,27pF C0G,,XTAL1 shunt
+07_Copper_Ports_1_4,C70,27pF,0402,27pF C0G,,XTAL2 shunt
+07_Copper_Ports_1_4,R67,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+07_Copper_Ports_1_4,R68,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+07_Copper_Ports_1_4,R69,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+07_Copper_Ports_1_4,C71,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,C72,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,R70,4.7k,0402,4.7k,,PHYAD0=0 pull-down
+07_Copper_Ports_1_4,R71,1k,0402,1k,,LED0 series from the PHY pin
+07_Copper_Ports_1_4,D17,LED,0603,LED,,Port 1 LED0. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,R72,4.7k,0402,4.7k,,PHYAD1=0 pull-down
+07_Copper_Ports_1_4,R73,1k,0402,1k,,LED1 series from the PHY pin
+07_Copper_Ports_1_4,D18,LED,0603,LED,,Port 1 LED1. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,R74,4.7k,0402,4.7k,,PHYAD2=0 pull-down
+07_Copper_Ports_1_4,R75,1k,0402,1k,,LED2 series from the PHY pin
+07_Copper_Ports_1_4,D19,LED,0603,LED,,Port 1 LED2. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,T1,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+07_Copper_Ports_1_4,C73,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+07_Copper_Ports_1_4,C74,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+07_Copper_Ports_1_4,C75,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+07_Copper_Ports_1_4,C76,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+07_Copper_Ports_1_4,R76,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+07_Copper_Ports_1_4,C77,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+07_Copper_Ports_1_4,R77,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+07_Copper_Ports_1_4,C78,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+07_Copper_Ports_1_4,R78,75,0402,75 1%,,Bob Smith pair C
+07_Copper_Ports_1_4,R79,75,0402,75 1%,,Bob Smith pair D into the same node
+07_Copper_Ports_1_4,C79,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+07_Copper_Ports_1_4,D20,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+07_Copper_Ports_1_4,D21,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+07_Copper_Ports_1_4,J2,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+07_Copper_Ports_1_4,C80,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C81,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C82,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C83,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C84,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C85,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C86,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C87,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C88,10uF,0805,10uF,,PHY 3.3 V bulk
+07_Copper_Ports_1_4,C89,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+07_Copper_Ports_1_4,U17,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+07_Copper_Ports_1_4,R80,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+07_Copper_Ports_1_4,Y2,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+07_Copper_Ports_1_4,C90,27pF,0402,27pF C0G,,XTAL1 shunt
+07_Copper_Ports_1_4,C91,27pF,0402,27pF C0G,,XTAL2 shunt
+07_Copper_Ports_1_4,R81,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+07_Copper_Ports_1_4,R82,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+07_Copper_Ports_1_4,R83,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+07_Copper_Ports_1_4,C92,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,C93,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,R84,4.7k,0402,4.7k,,PHYAD0=1 pull-up to the LED pin
+07_Copper_Ports_1_4,R85,1k,0402,1k,,LED0 current limit from 3.3 V
+07_Copper_Ports_1_4,D22,LED,0603,LED,,Port 2 LED0. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+07_Copper_Ports_1_4,R86,4.7k,0402,4.7k,,PHYAD1=0 pull-down
+07_Copper_Ports_1_4,R87,1k,0402,1k,,LED1 series from the PHY pin
+07_Copper_Ports_1_4,D23,LED,0603,LED,,Port 2 LED1. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,R88,4.7k,0402,4.7k,,PHYAD2=0 pull-down
+07_Copper_Ports_1_4,R89,1k,0402,1k,,LED2 series from the PHY pin
+07_Copper_Ports_1_4,D24,LED,0603,LED,,Port 2 LED2. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,T2,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+07_Copper_Ports_1_4,C94,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+07_Copper_Ports_1_4,C95,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+07_Copper_Ports_1_4,C96,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+07_Copper_Ports_1_4,C97,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+07_Copper_Ports_1_4,R90,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+07_Copper_Ports_1_4,C98,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+07_Copper_Ports_1_4,R91,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+07_Copper_Ports_1_4,C99,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+07_Copper_Ports_1_4,R92,75,0402,75 1%,,Bob Smith pair C
+07_Copper_Ports_1_4,R93,75,0402,75 1%,,Bob Smith pair D into the same node
+07_Copper_Ports_1_4,C100,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+07_Copper_Ports_1_4,D25,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+07_Copper_Ports_1_4,D26,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+07_Copper_Ports_1_4,J3,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+07_Copper_Ports_1_4,C101,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C102,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C103,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C104,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C105,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C106,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C107,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C108,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C109,10uF,0805,10uF,,PHY 3.3 V bulk
+07_Copper_Ports_1_4,C110,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+07_Copper_Ports_1_4,U18,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+07_Copper_Ports_1_4,R94,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+07_Copper_Ports_1_4,Y3,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+07_Copper_Ports_1_4,C111,27pF,0402,27pF C0G,,XTAL1 shunt
+07_Copper_Ports_1_4,C112,27pF,0402,27pF C0G,,XTAL2 shunt
+07_Copper_Ports_1_4,R95,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+07_Copper_Ports_1_4,R96,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+07_Copper_Ports_1_4,R97,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+07_Copper_Ports_1_4,C113,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,C114,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,R98,4.7k,0402,4.7k,,PHYAD0=0 pull-down
+07_Copper_Ports_1_4,R99,1k,0402,1k,,LED0 series from the PHY pin
+07_Copper_Ports_1_4,D27,LED,0603,LED,,Port 3 LED0. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,R100,4.7k,0402,4.7k,,PHYAD1=1 pull-up to the LED pin
+07_Copper_Ports_1_4,R101,1k,0402,1k,,LED1 current limit from 3.3 V
+07_Copper_Ports_1_4,D28,LED,0603,LED,,Port 3 LED1. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+07_Copper_Ports_1_4,R102,4.7k,0402,4.7k,,PHYAD2=0 pull-down
+07_Copper_Ports_1_4,R103,1k,0402,1k,,LED2 series from the PHY pin
+07_Copper_Ports_1_4,D29,LED,0603,LED,,Port 3 LED2. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,T3,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+07_Copper_Ports_1_4,C115,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+07_Copper_Ports_1_4,C116,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+07_Copper_Ports_1_4,C117,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+07_Copper_Ports_1_4,C118,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+07_Copper_Ports_1_4,R104,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+07_Copper_Ports_1_4,C119,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+07_Copper_Ports_1_4,R105,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+07_Copper_Ports_1_4,C120,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+07_Copper_Ports_1_4,R106,75,0402,75 1%,,Bob Smith pair C
+07_Copper_Ports_1_4,R107,75,0402,75 1%,,Bob Smith pair D into the same node
+07_Copper_Ports_1_4,C121,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+07_Copper_Ports_1_4,D30,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+07_Copper_Ports_1_4,D31,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+07_Copper_Ports_1_4,J4,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+07_Copper_Ports_1_4,C122,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C123,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C124,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C125,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C126,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C127,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C128,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C129,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C130,10uF,0805,10uF,,PHY 3.3 V bulk
+07_Copper_Ports_1_4,C131,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+07_Copper_Ports_1_4,U19,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+07_Copper_Ports_1_4,R108,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+07_Copper_Ports_1_4,Y4,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+07_Copper_Ports_1_4,C132,27pF,0402,27pF C0G,,XTAL1 shunt
+07_Copper_Ports_1_4,C133,27pF,0402,27pF C0G,,XTAL2 shunt
+07_Copper_Ports_1_4,R109,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+07_Copper_Ports_1_4,R110,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+07_Copper_Ports_1_4,R111,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+07_Copper_Ports_1_4,C134,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,C135,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+07_Copper_Ports_1_4,R112,4.7k,0402,4.7k,,PHYAD0=1 pull-up to the LED pin
+07_Copper_Ports_1_4,R113,1k,0402,1k,,LED0 current limit from 3.3 V
+07_Copper_Ports_1_4,D32,LED,0603,LED,,Port 4 LED0. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+07_Copper_Ports_1_4,R114,4.7k,0402,4.7k,,PHYAD1=1 pull-up to the LED pin
+07_Copper_Ports_1_4,R115,1k,0402,1k,,LED1 current limit from 3.3 V
+07_Copper_Ports_1_4,D33,LED,0603,LED,,Port 4 LED1. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+07_Copper_Ports_1_4,R116,4.7k,0402,4.7k,,PHYAD2=0 pull-down
+07_Copper_Ports_1_4,R117,1k,0402,1k,,LED2 series from the PHY pin
+07_Copper_Ports_1_4,D34,LED,0603,LED,,Port 4 LED2. Pin 1 anode after the 1k; pin 2 cathode to GND.
+07_Copper_Ports_1_4,T4,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+07_Copper_Ports_1_4,C136,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+07_Copper_Ports_1_4,C137,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+07_Copper_Ports_1_4,C138,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+07_Copper_Ports_1_4,C139,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+07_Copper_Ports_1_4,R118,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+07_Copper_Ports_1_4,C140,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+07_Copper_Ports_1_4,R119,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+07_Copper_Ports_1_4,C141,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+07_Copper_Ports_1_4,R120,75,0402,75 1%,,Bob Smith pair C
+07_Copper_Ports_1_4,R121,75,0402,75 1%,,Bob Smith pair D into the same node
+07_Copper_Ports_1_4,C142,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+07_Copper_Ports_1_4,D35,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+07_Copper_Ports_1_4,D36,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+07_Copper_Ports_1_4,J5,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+07_Copper_Ports_1_4,C143,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C144,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C145,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C146,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C147,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C148,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C149,100nF,0402,100nF,,V3V3 at the PHY
+07_Copper_Ports_1_4,C150,100nF,0402,100nF,,0.95 V at the PHY
+07_Copper_Ports_1_4,C151,10uF,0805,10uF,,PHY 3.3 V bulk
+07_Copper_Ports_1_4,C152,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+08_Copper_Ports_5_8,U20,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+08_Copper_Ports_5_8,R122,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+08_Copper_Ports_5_8,Y5,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+08_Copper_Ports_5_8,C153,27pF,0402,27pF C0G,,XTAL1 shunt
+08_Copper_Ports_5_8,C154,27pF,0402,27pF C0G,,XTAL2 shunt
+08_Copper_Ports_5_8,R123,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+08_Copper_Ports_5_8,R124,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+08_Copper_Ports_5_8,R125,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+08_Copper_Ports_5_8,C155,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,C156,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,R126,4.7k,0402,4.7k,,PHYAD0=0 pull-down
+08_Copper_Ports_5_8,R127,1k,0402,1k,,LED0 series from the PHY pin
+08_Copper_Ports_5_8,D37,LED,0603,LED,,Port 5 LED0. Pin 1 anode after the 1k; pin 2 cathode to GND.
+08_Copper_Ports_5_8,R128,4.7k,0402,4.7k,,PHYAD1=0 pull-down
+08_Copper_Ports_5_8,R129,1k,0402,1k,,LED1 series from the PHY pin
+08_Copper_Ports_5_8,D38,LED,0603,LED,,Port 5 LED1. Pin 1 anode after the 1k; pin 2 cathode to GND.
+08_Copper_Ports_5_8,R130,4.7k,0402,4.7k,,PHYAD2=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R131,1k,0402,1k,,LED2 current limit from 3.3 V
+08_Copper_Ports_5_8,D39,LED,0603,LED,,Port 5 LED2. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,T5,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+08_Copper_Ports_5_8,C157,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+08_Copper_Ports_5_8,C158,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+08_Copper_Ports_5_8,C159,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+08_Copper_Ports_5_8,C160,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+08_Copper_Ports_5_8,R132,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+08_Copper_Ports_5_8,C161,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+08_Copper_Ports_5_8,R133,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+08_Copper_Ports_5_8,C162,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+08_Copper_Ports_5_8,R134,75,0402,75 1%,,Bob Smith pair C
+08_Copper_Ports_5_8,R135,75,0402,75 1%,,Bob Smith pair D into the same node
+08_Copper_Ports_5_8,C163,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+08_Copper_Ports_5_8,D40,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+08_Copper_Ports_5_8,D41,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+08_Copper_Ports_5_8,J6,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+08_Copper_Ports_5_8,C164,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C165,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C166,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C167,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C168,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C169,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C170,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C171,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C172,10uF,0805,10uF,,PHY 3.3 V bulk
+08_Copper_Ports_5_8,C173,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+08_Copper_Ports_5_8,U21,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+08_Copper_Ports_5_8,R136,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+08_Copper_Ports_5_8,Y6,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+08_Copper_Ports_5_8,C174,27pF,0402,27pF C0G,,XTAL1 shunt
+08_Copper_Ports_5_8,C175,27pF,0402,27pF C0G,,XTAL2 shunt
+08_Copper_Ports_5_8,R137,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+08_Copper_Ports_5_8,R138,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+08_Copper_Ports_5_8,R139,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+08_Copper_Ports_5_8,C176,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,C177,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,R140,4.7k,0402,4.7k,,PHYAD0=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R141,1k,0402,1k,,LED0 current limit from 3.3 V
+08_Copper_Ports_5_8,D42,LED,0603,LED,,Port 6 LED0. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,R142,4.7k,0402,4.7k,,PHYAD1=0 pull-down
+08_Copper_Ports_5_8,R143,1k,0402,1k,,LED1 series from the PHY pin
+08_Copper_Ports_5_8,D43,LED,0603,LED,,Port 6 LED1. Pin 1 anode after the 1k; pin 2 cathode to GND.
+08_Copper_Ports_5_8,R144,4.7k,0402,4.7k,,PHYAD2=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R145,1k,0402,1k,,LED2 current limit from 3.3 V
+08_Copper_Ports_5_8,D44,LED,0603,LED,,Port 6 LED2. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,T6,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+08_Copper_Ports_5_8,C178,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+08_Copper_Ports_5_8,C179,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+08_Copper_Ports_5_8,C180,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+08_Copper_Ports_5_8,C181,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+08_Copper_Ports_5_8,R146,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+08_Copper_Ports_5_8,C182,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+08_Copper_Ports_5_8,R147,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+08_Copper_Ports_5_8,C183,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+08_Copper_Ports_5_8,R148,75,0402,75 1%,,Bob Smith pair C
+08_Copper_Ports_5_8,R149,75,0402,75 1%,,Bob Smith pair D into the same node
+08_Copper_Ports_5_8,C184,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+08_Copper_Ports_5_8,D45,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+08_Copper_Ports_5_8,D46,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+08_Copper_Ports_5_8,J7,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+08_Copper_Ports_5_8,C185,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C186,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C187,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C188,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C189,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C190,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C191,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C192,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C193,10uF,0805,10uF,,PHY 3.3 V bulk
+08_Copper_Ports_5_8,C194,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+08_Copper_Ports_5_8,U22,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+08_Copper_Ports_5_8,R150,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+08_Copper_Ports_5_8,Y7,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+08_Copper_Ports_5_8,C195,27pF,0402,27pF C0G,,XTAL1 shunt
+08_Copper_Ports_5_8,C196,27pF,0402,27pF C0G,,XTAL2 shunt
+08_Copper_Ports_5_8,R151,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+08_Copper_Ports_5_8,R152,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+08_Copper_Ports_5_8,R153,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+08_Copper_Ports_5_8,C197,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,C198,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,R154,4.7k,0402,4.7k,,PHYAD0=0 pull-down
+08_Copper_Ports_5_8,R155,1k,0402,1k,,LED0 series from the PHY pin
+08_Copper_Ports_5_8,D47,LED,0603,LED,,Port 7 LED0. Pin 1 anode after the 1k; pin 2 cathode to GND.
+08_Copper_Ports_5_8,R156,4.7k,0402,4.7k,,PHYAD1=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R157,1k,0402,1k,,LED1 current limit from 3.3 V
+08_Copper_Ports_5_8,D48,LED,0603,LED,,Port 7 LED1. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,R158,4.7k,0402,4.7k,,PHYAD2=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R159,1k,0402,1k,,LED2 current limit from 3.3 V
+08_Copper_Ports_5_8,D49,LED,0603,LED,,Port 7 LED2. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,T7,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+08_Copper_Ports_5_8,C199,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+08_Copper_Ports_5_8,C200,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+08_Copper_Ports_5_8,C201,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+08_Copper_Ports_5_8,C202,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+08_Copper_Ports_5_8,R160,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+08_Copper_Ports_5_8,C203,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+08_Copper_Ports_5_8,R161,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+08_Copper_Ports_5_8,C204,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+08_Copper_Ports_5_8,R162,75,0402,75 1%,,Bob Smith pair C
+08_Copper_Ports_5_8,R163,75,0402,75 1%,,Bob Smith pair D into the same node
+08_Copper_Ports_5_8,C205,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+08_Copper_Ports_5_8,D50,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+08_Copper_Ports_5_8,D51,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+08_Copper_Ports_5_8,J8,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+08_Copper_Ports_5_8,C206,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C207,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C208,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C209,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C210,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C211,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C212,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C213,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C214,10uF,0805,10uF,,PHY 3.3 V bulk
+08_Copper_Ports_5_8,C215,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+08_Copper_Ports_5_8,U23,RTL8221B,QFN-48-EP,RTL8221B-VB-CG,C5155988,2.5GBASE-T PHY; QFN-48. LCSC C5155988. SerDes mode is set by the switch over MDIO.
+08_Copper_Ports_5_8,R164,2.49k,0402,2.49k 1%,,RSET to GND; datasheet pin 12
+08_Copper_Ports_5_8,Y8,25MHz,3225,25 MHz parallel,,Crystal. Datasheet table 147: 27 pF from each pin to GND.
+08_Copper_Ports_5_8,C216,27pF,0402,27pF C0G,,XTAL1 shunt
+08_Copper_Ports_5_8,C217,27pF,0402,27pF C0G,,XTAL2 shunt
+08_Copper_Ports_5_8,R165,4.7k,0402,4.7k,,CFG_OPT0 pulldown = clock out off
+08_Copper_Ports_5_8,R166,4.7k,0402,4.7k,,CFG_OPT1 pulldown = normal MDI order
+08_Copper_Ports_5_8,R167,4.7k,0402,4.7k,,GPIO15882 pulldown required by the datasheet
+08_Copper_Ports_5_8,C218,100nF,0402,100nF,,HSOP AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,C219,100nF,0402,100nF,,HSON AC couple; place next to the PHY pin
+08_Copper_Ports_5_8,R168,4.7k,0402,4.7k,,PHYAD0=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R169,1k,0402,1k,,LED0 current limit from 3.3 V
+08_Copper_Ports_5_8,D52,LED,0603,LED,,Port 8 LED0. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,R170,4.7k,0402,4.7k,,PHYAD1=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R171,1k,0402,1k,,LED1 current limit from 3.3 V
+08_Copper_Ports_5_8,D53,LED,0603,LED,,Port 8 LED1. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,R172,4.7k,0402,4.7k,,PHYAD2=1 pull-up to the LED pin
+08_Copper_Ports_5_8,R173,1k,0402,1k,,LED2 current limit from 3.3 V
+08_Copper_Ports_5_8,D54,LED,0603,LED,,Port 8 LED2. Pin 1 anode; pin 2 cathode at the PHY pin (active low).
+08_Copper_Ports_5_8,T8,2.5G_POE_MAG,24-pin discrete,2.5GBASE-T PoE magnetics 1:1,,Logical pinout. Remap to the chosen Pulse/Wurth/Link-PP 2.5G PoE transformer before PCB.
+08_Copper_Ports_5_8,C220,100nF,0402,100nF 50V,,PHY-side center tap A to GND
+08_Copper_Ports_5_8,C221,100nF,0402,100nF 50V,,PHY-side center tap B to GND
+08_Copper_Ports_5_8,C222,100nF,0402,100nF 50V,,PHY-side center tap C to GND
+08_Copper_Ports_5_8,C223,100nF,0402,100nF 50V,,PHY-side center tap D to GND
+08_Copper_Ports_5_8,R174,75,0402,75 1%,,Bob Smith pair A. Own capacitor so 54 V has no DC path.
+08_Copper_Ports_5_8,C224,1nF/2kV,1206,1nF 2kV,,Bob Smith pair A to chassis
+08_Copper_Ports_5_8,R175,75,0402,75 1%,,Bob Smith pair B. Own capacitor.
+08_Copper_Ports_5_8,C225,1nF/2kV,1206,1nF 2kV,,Bob Smith pair B to chassis
+08_Copper_Ports_5_8,R176,75,0402,75 1%,,Bob Smith pair C
+08_Copper_Ports_5_8,R177,75,0402,75 1%,,Bob Smith pair D into the same node
+08_Copper_Ports_5_8,C226,1nF/2kV,1206,1nF 2kV,,Bob Smith pairs C and D; one capacitor
+08_Copper_Ports_5_8,D55,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs A and B. Assign the real TPD4E02B04 pinout from the TI datasheet.
+08_Copper_Ports_5_8,D56,ESD_0.3pF,functional,TPD4E02B04 x1,,Low-cap ESD on cable pairs C and D. Functional pin numbers.
+08_Copper_Ports_5_8,J9,RJ45,RJ45 1x1 no magnetics,Shielded RJ45, magnetics are discrete,,Tab-down jack. Pins are IEEE pairs: 1-2 A; 3/6 B; 4-5 C; 7-8 D.
+08_Copper_Ports_5_8,C227,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C228,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C229,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C230,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C231,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C232,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C233,100nF,0402,100nF,,V3V3 at the PHY
+08_Copper_Ports_5_8,C234,100nF,0402,100nF,,0.95 V at the PHY
+08_Copper_Ports_5_8,C235,10uF,0805,10uF,,PHY 3.3 V bulk
+08_Copper_Ports_5_8,C236,10uF,0805,10uF 6.3V,,PHY 0.95 V bulk
+09_SFP_10G,J10,SFP1,SFP+ cage,SFP+ 20-pin host connector,,Standard SFP host pins. Cage shield to CHASSIS.
+09_SFP_10G,R178,4.7k,0402,4.7k,,TX_FAULT pull-up
+09_SFP_10G,R179,10k,0402,10k,,TX_DISABLE pull-down keeps the laser enabled
+09_SFP_10G,R180,10k,0402,10k,,MOD_ABS pull-up
+09_SFP_10G,R181,10k,0402,10k,,RX_LOS pull-up
+09_SFP_10G,R182,10k,0402,10k,,RS0 pull-down
+09_SFP_10G,R183,10k,0402,10k,,RS1 pull-down
+09_SFP_10G,R184,4.7k,0402,4.7k,,SFP SDA pull-up on the mux channel
+09_SFP_10G,R185,4.7k,0402,4.7k,,SFP SCL pull-up on the mux channel
+09_SFP_10G,FB1,600R,0805,600R 1A,,VccR ferrite
+09_SFP_10G,C237,100nF,0402,100nF,,VccR
+09_SFP_10G,C238,10uF,0805,10uF,,VccR bulk
+09_SFP_10G,FB2,600R,0805,600R 1A,,VccT ferrite
+09_SFP_10G,C239,100nF,0402,100nF,,VccT
+09_SFP_10G,C240,10uF,0805,10uF,,VccT bulk
+09_SFP_10G,C241,100nF,0402,100nF,,TD+ host AC couple
+09_SFP_10G,C242,100nF,0402,100nF,,TD- host AC couple
+09_SFP_10G,C243,100nF,0402,100nF,,RD+ cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,C244,100nF,0402,100nF,,RD- cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,J11,SFP2,SFP+ cage,SFP+ 20-pin host connector,,Standard SFP host pins. Cage shield to CHASSIS.
+09_SFP_10G,R186,4.7k,0402,4.7k,,TX_FAULT pull-up
+09_SFP_10G,R187,10k,0402,10k,,TX_DISABLE pull-down keeps the laser enabled
+09_SFP_10G,R188,10k,0402,10k,,MOD_ABS pull-up
+09_SFP_10G,R189,10k,0402,10k,,RX_LOS pull-up
+09_SFP_10G,R190,10k,0402,10k,,RS0 pull-down
+09_SFP_10G,R191,10k,0402,10k,,RS1 pull-down
+09_SFP_10G,R192,4.7k,0402,4.7k,,SFP SDA pull-up on the mux channel
+09_SFP_10G,R193,4.7k,0402,4.7k,,SFP SCL pull-up on the mux channel
+09_SFP_10G,FB3,600R,0805,600R 1A,,VccR ferrite
+09_SFP_10G,C245,100nF,0402,100nF,,VccR
+09_SFP_10G,C246,10uF,0805,10uF,,VccR bulk
+09_SFP_10G,FB4,600R,0805,600R 1A,,VccT ferrite
+09_SFP_10G,C247,100nF,0402,100nF,,VccT
+09_SFP_10G,C248,10uF,0805,10uF,,VccT bulk
+09_SFP_10G,C249,100nF,0402,100nF,,TD+ host AC couple
+09_SFP_10G,C250,100nF,0402,100nF,,TD- host AC couple
+09_SFP_10G,C251,100nF,0402,100nF,,RD+ cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,C252,100nF,0402,100nF,,RD- cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,J12,SFP3,SFP+ cage,SFP+ 20-pin host connector,,Standard SFP host pins. Cage shield to CHASSIS.
+09_SFP_10G,R194,4.7k,0402,4.7k,,TX_FAULT pull-up
+09_SFP_10G,R195,10k,0402,10k,,TX_DISABLE pull-down keeps the laser enabled
+09_SFP_10G,R196,10k,0402,10k,,MOD_ABS pull-up
+09_SFP_10G,R197,10k,0402,10k,,RX_LOS pull-up
+09_SFP_10G,R198,10k,0402,10k,,RS0 pull-down
+09_SFP_10G,R199,10k,0402,10k,,RS1 pull-down
+09_SFP_10G,R200,4.7k,0402,4.7k,,SFP SDA pull-up on the mux channel
+09_SFP_10G,R201,4.7k,0402,4.7k,,SFP SCL pull-up on the mux channel
+09_SFP_10G,FB5,600R,0805,600R 1A,,VccR ferrite
+09_SFP_10G,C253,100nF,0402,100nF,,VccR
+09_SFP_10G,C254,10uF,0805,10uF,,VccR bulk
+09_SFP_10G,FB6,600R,0805,600R 1A,,VccT ferrite
+09_SFP_10G,C255,100nF,0402,100nF,,VccT
+09_SFP_10G,C256,10uF,0805,10uF,,VccT bulk
+09_SFP_10G,C257,100nF,0402,100nF,,TD+ host AC couple
+09_SFP_10G,C258,100nF,0402,100nF,,TD- host AC couple
+09_SFP_10G,C259,100nF,0402,100nF,,RD+ cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,C260,100nF,0402,100nF,,RD- cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,J13,SFP4,SFP+ cage,SFP+ 20-pin host connector,,Standard SFP host pins. Cage shield to CHASSIS.
+09_SFP_10G,R202,4.7k,0402,4.7k,,TX_FAULT pull-up
+09_SFP_10G,R203,10k,0402,10k,,TX_DISABLE pull-down keeps the laser enabled
+09_SFP_10G,R204,10k,0402,10k,,MOD_ABS pull-up
+09_SFP_10G,R205,10k,0402,10k,,RX_LOS pull-up
+09_SFP_10G,R206,10k,0402,10k,,RS0 pull-down
+09_SFP_10G,R207,10k,0402,10k,,RS1 pull-down
+09_SFP_10G,R208,4.7k,0402,4.7k,,SFP SDA pull-up on the mux channel
+09_SFP_10G,R209,4.7k,0402,4.7k,,SFP SCL pull-up on the mux channel
+09_SFP_10G,FB7,600R,0805,600R 1A,,VccR ferrite
+09_SFP_10G,C261,100nF,0402,100nF,,VccR
+09_SFP_10G,C262,10uF,0805,10uF,,VccR bulk
+09_SFP_10G,FB8,600R,0805,600R 1A,,VccT ferrite
+09_SFP_10G,C263,100nF,0402,100nF,,VccT
+09_SFP_10G,C264,10uF,0805,10uF,,VccT bulk
+09_SFP_10G,C265,100nF,0402,100nF,,TD+ host AC couple
+09_SFP_10G,C266,100nF,0402,100nF,,TD- host AC couple
+09_SFP_10G,C267,100nF,0402,100nF,,RD+ cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,C268,100nF,0402,100nF,,RD- cap. Mark DNP if the module already AC-couples RX.
+09_SFP_10G,U24,PCA9546A,TSSOP-16,PCA9546APW,,4-channel I2C mux. This TSSOP pin order must be checked against NXP Fig. 1.
+09_SFP_10G,R210,10k,0402,10k,,Mux RESET pull-up
+09_SFP_10G,C269,100nF,0402,100nF,,Mux VDD
+10_Switch_SoC,U25,RTL9313_FUNC,BGA functional,RTL9313-CG functional,,Functional SoC only. Nets match the PHY and SFP sheets. Do not route a PCB from these pin numbers.
+10_Switch_SoC,C270,100nF,0402,100nF,,SoC TX1+ AC couple; next to the BGA
+10_Switch_SoC,C271,100nF,0402,100nF,,SoC TX1- AC couple; next to the BGA
+10_Switch_SoC,C272,100nF,0402,100nF,,SoC TX2+ AC couple; next to the BGA
+10_Switch_SoC,C273,100nF,0402,100nF,,SoC TX2- AC couple; next to the BGA
+10_Switch_SoC,C274,100nF,0402,100nF,,SoC TX3+ AC couple; next to the BGA
+10_Switch_SoC,C275,100nF,0402,100nF,,SoC TX3- AC couple; next to the BGA
+10_Switch_SoC,C276,100nF,0402,100nF,,SoC TX4+ AC couple; next to the BGA
+10_Switch_SoC,C277,100nF,0402,100nF,,SoC TX4- AC couple; next to the BGA
+10_Switch_SoC,C278,100nF,0402,100nF,,SoC TX5+ AC couple; next to the BGA
+10_Switch_SoC,C279,100nF,0402,100nF,,SoC TX5- AC couple; next to the BGA
+10_Switch_SoC,C280,100nF,0402,100nF,,SoC TX6+ AC couple; next to the BGA
+10_Switch_SoC,C281,100nF,0402,100nF,,SoC TX6- AC couple; next to the BGA
+10_Switch_SoC,C282,100nF,0402,100nF,,SoC TX7+ AC couple; next to the BGA
+10_Switch_SoC,C283,100nF,0402,100nF,,SoC TX7- AC couple; next to the BGA
+10_Switch_SoC,C284,100nF,0402,100nF,,SoC TX8+ AC couple; next to the BGA
+10_Switch_SoC,C285,100nF,0402,100nF,,SoC TX8- AC couple; next to the BGA
+10_Switch_SoC,U26,W25Q256,SOIC-8,W25Q256JVSSIQ,,32 MB SPI NOR. Pinout is the standard Winbond SOIC-8.
+10_Switch_SoC,U27,DDR3,FBGA-96,MT41K256M16TW-107,,512 MB x16 DDR3. Only power and the bus stub are drawn. Connect A/DQ/DQS from the Realtek pin table.
+10_Switch_SoC,J14,UART,HDR-4,1x4 2.54 mm,,3.3 V console; 115200 8N1. TX is the SoC transmit pin.
+10_Switch_SoC,Y9,25MHz,3225,25 MHz 3.3 V oscillator,,SoC reference. Confirm 25 MHz against the Realtek hardware design guide.
+10_Switch_SoC,SW1,RESET,tact,tact switch,,Reset button to GND
+10_Switch_SoC,Q10,AO3400A,SOT-23,AO3400A,,Fan low-side FET. AOS SOT-23: pin 1 gate; pin 2 source; pin 3 drain. Confirm the mark on the datasheet.
+10_Switch_SoC,J15,FAN,HDR-2,fan header,,12 V fan. Flyback diode cathode is V12.
+10_Switch_SoC,R211,10k,0402,10k,,CS pull-up
+10_Switch_SoC,R212,10k,0402,10k,,WP pull-up
+10_Switch_SoC,R213,10k,0402,10k,,HOLD pull-up
+10_Switch_SoC,C286,100nF,0402,100nF,,Flash VCC
+10_Switch_SoC,C287,100nF,0402,100nF,,DDR VDD
+10_Switch_SoC,C288,10uF,0805,10uF,,DDR bulk
+10_Switch_SoC,R214,100,0402,100,,UART TX series
+10_Switch_SoC,R215,100,0402,100,,UART RX series
+10_Switch_SoC,C289,100nF,0402,100nF,,Oscillator VCC
+10_Switch_SoC,R216,1.5k,0402,1.5k,,MDIO pull-up; one only
+10_Switch_SoC,R217,4.7k,0402,4.7k,,I2C SCL pull-up
+10_Switch_SoC,R218,4.7k,0402,4.7k,,I2C SDA pull-up
+10_Switch_SoC,R219,10k,0402,10k,,PHY reset pull-up
+10_Switch_SoC,R220,4.7k,0402,4.7k,,PHY INT pull-up; open drain
+10_Switch_SoC,R221,10k,0402,10k,,SoC reset pull-up
+10_Switch_SoC,C290,100nF,0402,100nF,,Reset capacitor
+10_Switch_SoC,R222,100,0402,100,,Fan gate series
+10_Switch_SoC,R223,100k,0402,100k,,Fan gate pulldown
+10_Switch_SoC,D57,SS14,SMA,SS14,,Fan flyback. Pin 1 anode = drain; pin 2 cathode = V12.
