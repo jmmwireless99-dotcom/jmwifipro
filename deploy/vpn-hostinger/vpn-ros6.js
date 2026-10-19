@@ -89,15 +89,16 @@ async function reloadAccel() {
 }
 
 function scriptRos({ user, pass, apiUser, apiPass, tip }) {
-  const dial = `${DIAL_HOST}:${DIAL_PORT}`;
+  const dialHost = DIAL_HOST;
+  const dialPort = DIAL_PORT;
   return [
     ':put "=== JM VPN jmwifi.pro (accel-ppp SSTP) ==="',
-    `:put "Dial ${dial}"`,
+    `:put "Dial ${dialHost}:${dialPort}"`,
     ":do { /system package enable sstp } on-error={}",
     ":delay 1s",
     `:do { /interface sstp-client remove [find name="${IFACE}"] } on-error={}`,
     `:do { /interface sstp-client remove [find name="SPVPN"] } on-error={}`,
-    `/interface sstp-client add name="${IFACE}" connect-to="${dial}" user="${user}" password="${pass}" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no`,
+    `/interface sstp-client add name="${IFACE}" connect-to="${dialHost}" port=${dialPort} user="${user}" password="${pass}" disabled=no verify-server-certificate=no verify-server-address-from-certificate=no`,
     `:do { /interface sstp-client enable [find name="${IFACE}"] } on-error={}`,
     `:do { /user remove [find name="${apiUser}"] } on-error={}`,
     `:do { /user add name="${apiUser}" password="${apiPass}" group=full comment="JM VPN API" } on-error={}`,
