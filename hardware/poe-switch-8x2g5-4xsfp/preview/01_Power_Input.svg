@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="702" height="234" viewBox="0 0 702 234">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="5.6" y="5.6" font-size="7.2" fill="#1a1a1a" font-family="sans-serif">8x 2.5G PoE+ switch  +  4x 10G SFP+     reference schematic</text>
+<text x="5.6" y="11.8" font-size="6.0" fill="#444444" font-family="sans-serif">Copper: RTL8221B-VB-CG (HiSGMII) x8.  PoE: TPS23881, 2-pair 802.3at, 30 W/port, 240 W budget.</text>
+<text x="5.6" y="15.7" font-size="6.0" fill="#444444" font-family="sans-serif">Uplinks: SFP+ cages on switch SerDes (10GBASE-R).  Switch SoC: RTL9313-class functional symbol.</text>
+<text x="5.6" y="19.6" font-size="6.0" fill="#444444" font-family="sans-serif">External supply: 54 VDC, 6 A minimum (about 320 W).  Logic ground = 54 V return (non-isolated).</text>
+<text x="5.6" y="23.5" font-size="6.0" fill="#444444" font-family="sans-serif">NOT a fabrication file. Replace U_SW with the Realtek BGA symbol before any PCB.</text>
+<text x="5.6" y="32.5" font-size="6.0" fill="#111111" font-family="sans-serif">54 V input, reverse polarity, fuse, TVS</text>
+<text x="5.6" y="38.1" font-size="6.0" fill="#333333" font-family="sans-serif">P-MOS: source = fused input, drain = VIN_54V, gate pulled to GND. 12 V zener from gate to source. IRF9540N pins are 1=G, 2=D, 3=S.</text>
+<rect x="11.2" y="55.4" width="39.2" height="31.4" fill="none" stroke="#800000" stroke-width="1"/>
+<text x="11.2" y="51.0" font-size="6.0" fill="#000080" font-family="sans-serif">J1</text>
+<text x="11.2" y="54.3" font-size="6.0" fill="#000080" font-family="sans-serif">54V_IN</text>
+<polyline points="50.4,58.8 57.7,58.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="57.7,58.8 59.4,57.1 75.9,57.1 75.9,60.5 59.4,60.5" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="59.9" y="56.6" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_RAW</text>
+<polyline points="50.4,72.2 97.4,72.2" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="97.4" y1="72.2" x2="97.4" y2="74.5" stroke="#000" stroke-width="0.8"/>
+<line x1="95.8" y1="74.5" x2="99.1" y2="74.5" stroke="#000" stroke-width="0.8"/>
+<text x="98.6" y="77.3" font-size="6" fill="#000" text-anchor="start">GND</text>
+<text x="128.8" y="53.8" font-size="6.0" fill="#000080" font-family="sans-serif">F1 8A</text>
+<polyline points="128.8,58.8 121.5,58.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="121.5,58.8 119.8,57.1 103.3,57.1 103.3,60.5 119.8,60.5" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="104.4" y="56.6" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_RAW</text>
+<polyline points="148.4,58.8 155.7,58.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="155.7,58.8 157.4,57.1 177.8,57.1 177.8,60.5 157.4,60.5" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="157.9" y="56.6" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_FUSED</text>
+<rect x="252.0" y="53.2" width="42.0" height="26.9" fill="none" stroke="#800000" stroke-width="1"/>
+<text x="252.0" y="48.7" font-size="6.0" fill="#000080" font-family="sans-serif">Q1</text>
+<text x="252.0" y="52.1" font-size="6.0" fill="#000080" font-family="sans-serif">IRF9540N</text>
+<polyline points="252.0,56.6 244.7,56.6" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="244.7,56.6 243.0,54.9 230.4,54.9 230.4,58.2 243.0,58.2" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="231.6" y="54.3" font-size="5.0" fill="#00c" font-family="sans-serif">QGATE</text>
+<polyline points="294.0,56.6 301.3,56.6" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="301.3,56.6 303.0,54.9 319.5,54.9 319.5,58.2 303.0,58.2" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="303.5" y="54.3" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_54V</text>
+<polyline points="294.0,67.8 301.3,67.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="301.3,67.8 303.0,66.1 323.4,66.1 323.4,69.4 303.0,69.4" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="303.5" y="65.5" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_FUSED</text>
+<text x="431.2" y="50.4" font-size="6.0" fill="#000080" font-family="sans-serif">R1 100k</text>
+<polyline points="431.2,55.4 423.9,55.4" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="423.9,55.4 422.2,53.8 409.6,53.8 409.6,57.1 422.2,57.1" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="410.8" y="53.2" font-size="5.0" fill="#00c" font-family="sans-serif">QGATE</text>
+<polyline points="450.8,55.4 497.8,55.4" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="497.8" y1="55.4" x2="497.8" y2="57.7" stroke="#000" stroke-width="0.8"/>
+<line x1="496.2" y1="57.7" x2="499.5" y2="57.7" stroke="#000" stroke-width="0.8"/>
+<text x="499.0" y="60.5" font-size="6" fill="#000" text-anchor="start">GND</text>
+<text x="431.2" y="72.8" font-size="6.0" fill="#000080" font-family="sans-serif">D1 BZT52C12</text>
+<polyline points="431.2,77.8 423.9,77.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="423.9,77.8 422.2,76.2 409.6,76.2 409.6,79.5 422.2,79.5" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="410.8" y="75.6" font-size="5.0" fill="#00c" font-family="sans-serif">QGATE</text>
+<polyline points="450.8,77.8 458.1,77.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="458.1,77.8 459.8,76.2 480.2,76.2 480.2,79.5 459.8,79.5" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="460.3" y="75.6" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_FUSED</text>
+<text x="431.2" y="95.2" font-size="6.0" fill="#000080" font-family="sans-serif">D2 SMBJ58A</text>
+<polyline points="431.2,100.2 384.2,100.2" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="384.2" y1="100.2" x2="384.2" y2="102.5" stroke="#000" stroke-width="0.8"/>
+<line x1="382.5" y1="102.5" x2="385.8" y2="102.5" stroke="#000" stroke-width="0.8"/>
+<text x="381.9" y="105.3" font-size="6" fill="#000" text-anchor="end">GND</text>
+<polyline points="450.8,100.2 458.1,100.2" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="458.1,100.2 459.8,98.6 476.3,98.6 476.3,101.9 459.8,101.9" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="460.3" y="98.0" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_54V</text>
+<text x="431.2" y="117.6" font-size="6.0" fill="#000080" font-family="sans-serif">C1 100uF/100V</text>
+<polyline points="431.2,122.6 423.9,122.6" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="423.9,122.6 422.2,121.0 405.7,121.0 405.7,124.3 422.2,124.3" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="406.8" y="120.4" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_54V</text>
+<polyline points="450.8,122.6 497.8,122.6" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="497.8" y1="122.6" x2="497.8" y2="124.9" stroke="#000" stroke-width="0.8"/>
+<line x1="496.2" y1="124.9" x2="499.5" y2="124.9" stroke="#000" stroke-width="0.8"/>
+<text x="499.0" y="127.7" font-size="6" fill="#000" text-anchor="start">GND</text>
+<text x="431.2" y="140.0" font-size="6.0" fill="#000080" font-family="sans-serif">C2 4.7uF/100V</text>
+<polyline points="431.2,145.0 423.9,145.0" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="423.9,145.0 422.2,143.4 405.7,143.4 405.7,146.7 422.2,146.7" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="406.8" y="142.8" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_54V</text>
+<polyline points="450.8,145.0 497.8,145.0" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="497.8" y1="145.0" x2="497.8" y2="147.3" stroke="#000" stroke-width="0.8"/>
+<line x1="496.2" y1="147.3" x2="499.5" y2="147.3" stroke="#000" stroke-width="0.8"/>
+<text x="499.0" y="150.1" font-size="6" fill="#000" text-anchor="start">GND</text>
+<text x="431.2" y="162.4" font-size="6.0" fill="#000080" font-family="sans-serif">C3 4.7uF/100V</text>
+<polyline points="431.2,167.4 423.9,167.4" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="423.9,167.4 422.2,165.8 405.7,165.8 405.7,169.1 422.2,169.1" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="406.8" y="165.2" font-size="5.0" fill="#00c" font-family="sans-serif">VIN_54V</text>
+<polyline points="450.8,167.4 497.8,167.4" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="497.8" y1="167.4" x2="497.8" y2="169.7" stroke="#000" stroke-width="0.8"/>
+<line x1="496.2" y1="169.7" x2="499.5" y2="169.7" stroke="#000" stroke-width="0.8"/>
+<text x="499.0" y="172.5" font-size="6" fill="#000" text-anchor="start">GND</text>
+<text x="582.4" y="50.4" font-size="6.0" fill="#000080" font-family="sans-serif">R2 1M</text>
+<polyline points="582.4,55.4 535.4,55.4" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="535.4" y1="55.4" x2="535.4" y2="57.7" stroke="#000" stroke-width="0.8"/>
+<line x1="533.7" y1="57.7" x2="537.0" y2="57.7" stroke="#000" stroke-width="0.8"/>
+<text x="533.1" y="60.5" font-size="6" fill="#000" text-anchor="end">GND</text>
+<polyline points="602.0,55.4 609.3,55.4" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="609.3,55.4 611.0,53.8 627.5,53.8 627.5,57.1 611.0,57.1" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="611.5" y="53.2" font-size="5.0" fill="#00c" font-family="sans-serif">CHASSIS</text>
+<text x="582.4" y="72.8" font-size="6.0" fill="#000080" font-family="sans-serif">C4 4.7nF/2kV</text>
+<polyline points="582.4,77.8 535.4,77.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<line x1="535.4" y1="77.8" x2="535.4" y2="80.1" stroke="#000" stroke-width="0.8"/>
+<line x1="533.7" y1="80.1" x2="537.0" y2="80.1" stroke="#000" stroke-width="0.8"/>
+<text x="533.1" y="82.9" font-size="6" fill="#000" text-anchor="end">GND</text>
+<polyline points="602.0,77.8 609.3,77.8" fill="none" stroke="#0a0" stroke-width="1"/>
+<polygon points="609.3,77.8 611.0,76.2 627.5,76.2 627.5,79.5 611.0,79.5" fill="#eef" stroke="#00c" stroke-width="0.6"/>
+<text x="611.5" y="75.6" font-size="5.0" fill="#00c" font-family="sans-serif">CHASSIS</text>
+<text x="582.4" y="100.2" font-size="6.0" fill="#333333" font-family="sans-serif">CHASSIS is the RJ45 shields and the mounting holes.</text>
+<text x="5.6" y="195.4" font-size="6.0" fill="#333333" font-family="sans-serif">Power tree (sheets 02 and 03)</text>
+<text x="5.6" y="202.2" font-size="6.0" fill="#333333" font-family="sans-serif">VIN_54V -&gt; TPS54560B -&gt; 5.0 V. PHY core bucks, DDR buck, SoC core buck. RT = 243k (400 kHz). FB = 53.6k / 10.2k.</text>
+<text x="5.6" y="206.6" font-size="6.0" fill="#333333" font-family="sans-serif">VIN_54V -&gt; TPS54560B -&gt; 3.3 V. PHY I/O, SFP, flash, SoC I/O. FB = 31.6k / 10.0k.</text>
+<text x="5.6" y="211.1" font-size="6.0" fill="#333333" font-family="sans-serif">VIN_54V -&gt; TPS54560B -&gt; 12 V fan. FB = 140k / 10.0k. Inductor 15 uH. COMP is copied from the 5 V example.</text>
+<text x="5.6" y="215.6" font-size="6.0" fill="#333333" font-family="sans-serif">5 V -&gt; TPS54302 x8, one per RTL8221B, 0.95 V, enabled by that PHY POW_EXT_SWR pin.</text>
+<text x="5.6" y="220.1" font-size="6.0" fill="#333333" font-family="sans-serif">5 V -&gt; TPS54302 DDR 1.5 V, then TPS51200 for VTT. 5 V -&gt; TPS54302 SoC core placeholder (confirm the Realtek voltage).</text>
+<text x="5.6" y="224.6" font-size="6.0" fill="#333333" font-family="sans-serif">UVLO on the 54 V bucks starts near 48 V and stops near 44 V.</text>
+</svg>
